@@ -28,21 +28,21 @@
 
 ## Phase 3 — Protocol Parsers
 
-- [ ] Base parser interface
-- [ ] VLESS parser
-- [ ] VMess parser
-- [ ] Trojan parser
-- [ ] Shadowsocks parser
-- [ ] Hysteria / Hysteria2 parser
-- [ ] SOCKS4/SOCKS5 parser
-- [ ] HTTP/HTTPS proxy parser
-- [ ] URI normalization
+- [x] Base parser interface
+- [x] VLESS parser
+- [x] VMess parser
+- [x] Trojan parser
+- [x] Shadowsocks parser
+- [x] Hysteria / Hysteria2 parser
+- [x] SOCKS4/SOCKS5 parser
+- [x] HTTP/HTTPS proxy parser
+- [x] URI normalization
 
 ## Phase 4 — Deduplication
 
-- [ ] Content-hash based dedup
-- [ ] Endpoint-based dedup
-- [ ] Fuzzy matching for near-duplicates
+- [x] Content-hash based dedup
+- [x] Endpoint-based dedup
+- [x] Fuzzy matching for near-duplicates
 
 ## Phase 5 — GeoIP & IP Resolution
 
