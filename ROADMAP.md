@@ -14,11 +14,11 @@
 
 ## Phase 1 — Data Models & Database
 
-- [ ] SQLAlchemy ORM models (ProxyConfig, Source, HealthCheck)
-- [ ] Pydantic schemas for all protocols
-- [ ] Database migration with Alembic
-- [ ] CRUD operations
-- [ ] Database tests
+- [x] SQLAlchemy ORM models (ProxyConfig, Source, HealthCheck)
+- [x] Pydantic schemas for all protocols
+- [x] Database migration with Alembic
+- [x] CRUD operations
+- [x] Database tests
 
 ## Phase 2 — Source Collectors
 
