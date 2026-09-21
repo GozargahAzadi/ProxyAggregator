@@ -31,4 +31,10 @@ class Settings:
     health_check_concurrency: int = field(
         default_factory=lambda: int(_env("HEALTH_CHECK_CONCURRENCY", "50"))
     )
+    fetch_timeout: int = field(
+        default_factory=lambda: int(_env("FETCH_TIMEOUT", "30"))
+    )
+    max_response_bytes: int = field(
+        default_factory=lambda: int(_env("MAX_RESPONSE_BYTES", str(10 * 1024 * 1024)))
+    )
     log_level: str = field(default_factory=lambda: _env("LOG_LEVEL", "INFO"))

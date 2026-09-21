@@ -22,12 +22,9 @@
 
 ## Phase 2 — Source Collectors
 
-- [ ] Base collector interface
-- [ ] Telegram channel collector
-- [ ] GitHub raw file collector
-- [ ] HTTP subscription URL collector
-- [ ] RSS feed collector
-- [ ] Collector registry & plugin system
+- [x] Base collector interface
+- [x] HTTP source collector
+- [x] Collector registry & plugin system
 
 ## Phase 3 — Protocol Parsers
 
