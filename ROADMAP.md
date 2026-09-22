@@ -53,11 +53,14 @@
 
 ## Phase 6 — Health Check
 
-- [ ] TCP connectivity check
-- [ ] TLS handshake check
-- [ ] Protocol-specific health check
-- [ ] Latency measurement
-- [ ] Concurrent health checking
+- [x] TCP connectivity check
+- [x] TLS handshake check
+- [x] Protocol-specific health check (HTTP CONNECT, SOCKS5, SOCKS4/4a)
+- [x] Latency measurement (connect / TLS / proxy stages)
+- [x] Multi-IP probing with bounded concurrency
+- [x] Target security policy (rejects private/loopback/local networks)
+- [x] Sanitized stable error codes
+- [x] Health result persistence + Alembic migration
 
 ## Phase 7 — Scoring & Ranking
 

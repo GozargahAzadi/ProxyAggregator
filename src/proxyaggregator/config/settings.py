@@ -31,9 +31,19 @@ class Settings:
     health_check_concurrency: int = field(
         default_factory=lambda: int(_env("HEALTH_CHECK_CONCURRENCY", "50"))
     )
-    fetch_timeout: int = field(
-        default_factory=lambda: int(_env("FETCH_TIMEOUT", "30"))
+    health_check_max_ips_per_host: int = field(
+        default_factory=lambda: int(_env("HEALTH_CHECK_MAX_IPS_PER_HOST", "8"))
     )
+    health_check_verify_tls: bool = field(
+        default_factory=lambda: _env("HEALTH_CHECK_VERIFY_TLS", "0") in ("1", "true", "yes")
+    )
+    health_check_target_host: str = field(
+        default_factory=lambda: _env("HEALTH_CHECK_TARGET_HOST", "www.example.com")
+    )
+    health_check_target_port: int = field(
+        default_factory=lambda: int(_env("HEALTH_CHECK_TARGET_PORT", "443"))
+    )
+    fetch_timeout: int = field(default_factory=lambda: int(_env("FETCH_TIMEOUT", "30")))
     max_response_bytes: int = field(
         default_factory=lambda: int(_env("MAX_RESPONSE_BYTES", str(10 * 1024 * 1024)))
     )

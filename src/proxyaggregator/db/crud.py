@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 from datetime import UTC, datetime
 from typing import TYPE_CHECKING
 
@@ -11,6 +12,8 @@ from proxyaggregator.db.models import HealthCheckORM, ProxyConfigORM, SourceORM
 
 if TYPE_CHECKING:
     from sqlalchemy.orm import Session
+
+    from proxyaggregator.health.models import HealthCheckResult
 
 
 def _utcnow() -> datetime:
@@ -117,21 +120,67 @@ def create_health_check(
     is_alive: bool,
     latency_ms: float | None = None,
     error_message: str | None = None,
+    status: str | None = None,
+    checked_ip: str | None = None,
+    attempted_ips: list[str] | None = None,
+    connect_ms: float | None = None,
+    tls_ms: float | None = None,
+    proxy_ms: float | None = None,
+    tls_used: bool = False,
+    protocol_checked: bool = False,
 ) -> HealthCheckORM:
     check = HealthCheckORM(
         proxy_config_id=proxy_config_id,
         is_alive=is_alive,
         latency_ms=latency_ms,
         error_message=error_message,
+        status=status,
+        checked_ip=checked_ip,
+        attempted_ips=json.dumps(attempted_ips) if attempted_ips else None,
+        connect_ms=connect_ms,
+        tls_ms=tls_ms,
+        proxy_ms=proxy_ms,
+        tls_used=tls_used,
+        protocol_checked=protocol_checked,
     )
     session.add(check)
     session.commit()
     return check
 
 
-def get_health_checks_for_config(
-    session: Session, proxy_config_id: int
-) -> list[HealthCheckORM]:
+def record_health_result(session: Session, result: HealthCheckResult) -> HealthCheckORM:
+    """Persist a runner result and refresh the proxied config's denormalized state."""
+    if result.proxy_config_id is None:
+        raise ValueError("proxy_config_id is required to persist a health result")
+
+    config = session.get(ProxyConfigORM, result.proxy_config_id)
+    if config is None:
+        raise ValueError(f"proxy config {result.proxy_config_id} not found")
+
+    config.is_alive = result.is_alive
+    config.latency_ms = result.latency_ms
+    config.working_ip = result.checked_ip
+    config.updated_at = _utcnow()
+
+    check = create_health_check(
+        session,
+        proxy_config_id=result.proxy_config_id,
+        is_alive=result.is_alive,
+        latency_ms=result.latency_ms,
+        error_message=result.error,
+        status=result.status.value,
+        checked_ip=result.checked_ip,
+        attempted_ips=result.attempted_ips or None,
+        connect_ms=result.connect_ms,
+        tls_ms=result.tls_ms,
+        proxy_ms=result.proxy_ms,
+        tls_used=result.tls_used,
+        protocol_checked=result.protocol_checked,
+    )
+    return check
+
+
+def get_health_checks_for_config(session: Session, proxy_config_id: int) -> list[HealthCheckORM]:
     stmt = (
         select(HealthCheckORM)
         .where(HealthCheckORM.proxy_config_id == proxy_config_id)

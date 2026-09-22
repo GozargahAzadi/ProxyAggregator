@@ -12,6 +12,10 @@ ProxyAggregator is configured via environment variables with the `PA_` prefix.
 | `PA_GEOIP_DB_PATH` | `GeoLite2-City.mmdb` | Path to MaxMind GeoLite2 City DB |
 | `PA_HEALTH_CHECK_TIMEOUT` | `10` | Health check timeout in seconds |
 | `PA_HEALTH_CHECK_CONCURRENCY` | `50` | Max concurrent health checks |
+| `PA_HEALTH_CHECK_MAX_IPS_PER_HOST` | `8` | Max candidate IPs probed per host |
+| `PA_HEALTH_CHECK_VERIFY_TLS` | `false` | Verify TLS certificate chains. Defaults to handshake-only |
+| `PA_HEALTH_CHECK_TARGET_HOST` | `www.example.com` | CONNECT target host for protocol handshakes |
+| `PA_HEALTH_CHECK_TARGET_PORT` | `443` | CONNECT target port for protocol handshakes |
 | `PA_LOG_LEVEL` | `INFO` | Logging level |
 
 ## .env File
@@ -25,6 +29,10 @@ PA_GITHUB_REPO=your_username/ProxyAggregator
 PA_GEOIP_DB_PATH=GeoLite2-City.mmdb
 PA_HEALTH_CHECK_TIMEOUT=10
 PA_HEALTH_CHECK_CONCURRENCY=50
+PA_HEALTH_CHECK_MAX_IPS_PER_HOST=8
+PA_HEALTH_CHECK_VERIFY_TLS=false
+PA_HEALTH_CHECK_TARGET_HOST=www.example.com
+PA_HEALTH_CHECK_TARGET_PORT=443
 PA_LOG_LEVEL=INFO
 ```
 

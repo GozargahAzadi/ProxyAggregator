@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from datetime import UTC, datetime
 
-from sqlalchemy import Boolean, DateTime, Float, ForeignKey, Integer, String, Text
+from sqlalchemy import Boolean, DateTime, Float, ForeignKey, Integer, String, Text, text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from proxyaggregator.db.base import Base
@@ -23,9 +23,7 @@ class SourceORM(Base):
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     source_type: Mapped[str] = mapped_column(String(50), nullable=False)
     url: Mapped[str] = mapped_column(String(2048), nullable=False)
-    last_fetched_at: Mapped[datetime | None] = mapped_column(
-        DateTime(timezone=True), nullable=True
-    )
+    last_fetched_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     config_count: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
 
     configs: Mapped[list[ProxyConfigORM]] = relationship(
@@ -46,9 +44,7 @@ class ProxyConfigORM(Base):
     host: Mapped[str] = mapped_column(String(255), nullable=False)
     port: Mapped[int] = mapped_column(Integer, nullable=False)
     raw_uri: Mapped[str] = mapped_column(Text, nullable=False)
-    content_hash: Mapped[str] = mapped_column(
-        String(64), nullable=False, unique=True, index=True
-    )
+    content_hash: Mapped[str] = mapped_column(String(64), nullable=False, unique=True, index=True)
 
     country_code: Mapped[str | None] = mapped_column(String(2), nullable=True)
     city: Mapped[str | None] = mapped_column(String(255), nullable=True)
@@ -57,10 +53,9 @@ class ProxyConfigORM(Base):
 
     is_alive: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     latency_ms: Mapped[float | None] = mapped_column(Float, nullable=True)
+    working_ip: Mapped[str | None] = mapped_column(String(45), nullable=True)
 
-    source_id: Mapped[int | None] = mapped_column(
-        Integer, ForeignKey("sources.id"), nullable=True
-    )
+    source_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("sources.id"), nullable=True)
 
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=_utcnow, nullable=False
@@ -73,7 +68,9 @@ class ProxyConfigORM(Base):
         "SourceORM", back_populates="configs", lazy="select"
     )
     health_checks: Mapped[list[HealthCheckORM]] = relationship(
-        "HealthCheckORM", back_populates="proxy_config", lazy="select",
+        "HealthCheckORM",
+        back_populates="proxy_config",
+        lazy="select",
         order_by="HealthCheckORM.checked_at.desc()",
     )
 
@@ -99,6 +96,19 @@ class HealthCheckORM(Base):
     is_alive: Mapped[bool] = mapped_column(Boolean, nullable=False)
     latency_ms: Mapped[float | None] = mapped_column(Float, nullable=True)
     error_message: Mapped[str | None] = mapped_column(String(1024), nullable=True)
+
+    status: Mapped[str | None] = mapped_column(String(32), nullable=True)
+    checked_ip: Mapped[str | None] = mapped_column(String(45), nullable=True)
+    attempted_ips: Mapped[str | None] = mapped_column(Text, nullable=True)
+    connect_ms: Mapped[float | None] = mapped_column(Float, nullable=True)
+    tls_ms: Mapped[float | None] = mapped_column(Float, nullable=True)
+    proxy_ms: Mapped[float | None] = mapped_column(Float, nullable=True)
+    tls_used: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, default=False, server_default=text("0")
+    )
+    protocol_checked: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, default=False, server_default=text("0")
+    )
 
     proxy_config: Mapped[ProxyConfigORM] = relationship(
         "ProxyConfigORM", back_populates="health_checks", lazy="select"
