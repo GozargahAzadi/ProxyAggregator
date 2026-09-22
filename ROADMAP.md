@@ -70,10 +70,11 @@
 
 ## Phase 8 — Subscription Generation
 
-- [ ] Base64 subscription format
-- [ ] JSON subscription format
-- [ ] Clash config format
-- [ ] Sing-box config format
+- [x] Plain URI list (canonical one-per-line serialization)
+- [x] Base64 subscription format
+- [x] JSON subscription format
+- [ ] Clash config format *(deferred — fields lost by Phase 3/persistence: VMess `alterId`/`cipher`, SS `plugin`, Hysteria bandwidth; lossless conversion impossible without a schema change)*
+- [ ] Sing-box config format *(deferred — same reason)*
 
 ## Phase 9 — GitHub Publisher
 

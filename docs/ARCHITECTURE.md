@@ -75,8 +75,12 @@ ProxyAggregator/
 │       │   ├── __init__.py
 │       │   ├── models.py        # RankCandidate / ProxyScore
 │       │   └── scorer.py        # latency score + deterministic ranking
-│       └── publishing/          # Subscription publishers
-│           └── __init__.py
+│       └── publishing/          # Subscription generation (Phase 8)
+│           ├── __init__.py
+│           ├── models.py        # RankedProxy / Subscription / formats
+│           ├── errors.py        # SubscriptionError (credential-free)
+│           ├── serializer.py    # canonical per-protocol URI serialization
+│           └── feeds.py         # feed assembly (order, dedup, max_items)
 ├── tests/
 │   └── test_package.py          # Smoke tests
 ├── alembic/                     # Database migrations
