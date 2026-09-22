@@ -75,12 +75,14 @@ ProxyAggregator/
 │       │   ├── __init__.py
 │       │   ├── models.py        # RankCandidate / ProxyScore
 │       │   └── scorer.py        # latency score + deterministic ranking
-│       └── publishing/          # Subscription generation (Phase 8)
+│       └── publishing/          # Subscription generation (Phase 8) & publishing (Phase 9)
 │           ├── __init__.py
 │           ├── models.py        # RankedProxy / Subscription / formats
 │           ├── errors.py        # SubscriptionError (credential-free)
 │           ├── serializer.py    # canonical per-protocol URI serialization
-│           └── feeds.py         # feed assembly (order, dedup, max_items)
+│           ├── feeds.py         # feed assembly (order, dedup, max_items)
+│           ├── publisher.py     # deterministic artifact writer + release manifest (Phase 9)
+│           └── samples.py       # synthetic demo feeds for the local dry-run (Phase 9)
 ├── tests/
 │   └── test_package.py          # Smoke tests
 ├── alembic/                     # Database migrations
@@ -121,6 +123,13 @@ ProxyAggregator/
          |
 9. GitHub Release       Commit and publish via GitHub Actions
 ```
+
+Phase 9 implements steps 8-9: `publishing/publisher.py` writes Phase 8
+feeds byte-exactly into `output/` (deterministic filenames, atomic replace,
+sha256 release manifest), and `.github/workflows/publish.yml` commits those
+artifacts on a schedule or manual dispatch. As of Phase 9 there is no shared
+orchestrator connecting stages 1-7; the workflow's `python -m proxyaggregator
+pipeline` step is the documented integration point (see `docs/PUBLISHER.md`).
 
 ## Data Flow
 

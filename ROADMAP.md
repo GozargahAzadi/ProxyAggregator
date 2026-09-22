@@ -78,10 +78,10 @@
 
 ## Phase 9 — GitHub Publisher
 
-- [ ] Release automation
-- [ ] Commit & push workflow
-- [ ] GitHub Actions orchestration
-- [ ] Full pipeline integration
+- [x] Release automation (deterministic publisher + release manifest)
+- [x] Commit & push workflow (GitHub Actions, stable commit message)
+- [x] GitHub Actions orchestration (schedule + manual dispatch, migrations, empty-output guard)
+- [ ] Full pipeline integration *(blocked: no end-to-end orchestrator exists yet — see PHASE9_REPORT.md §B; sources/parse/dedup/geoip/health/scoring/publishing run as isolated phases with no consumer)*
 
 ## Phase 10 — API (Optional)
 
