@@ -21,6 +21,7 @@ from pydantic import ValidationError
 from sqlalchemy import create_engine, inspect
 from sqlalchemy.orm import Session
 
+from proxyaggregator.config.settings import Settings
 from proxyaggregator.db.base import Base
 from proxyaggregator.db.crud import (
     create_proxy_config,
@@ -42,7 +43,14 @@ from proxyaggregator.health.protocols import (
     check_socks4,
     check_socks5,
 )
-from proxyaggregator.health.runner import HealthEntry, HealthRunner
+from proxyaggregator.health.runner import (
+    HealthEntry,
+    HealthRunner,
+    _Attempt,
+    _select_best,
+    build_health_runner,
+    protocol_uses_tls,
+)
 from proxyaggregator.parsers.base import ParseResult
 
 # ---------------------------------------------------------------------------
@@ -294,6 +302,23 @@ async def _silent_handler(reader, writer) -> None:
         writer.close()
 
 
+async def _tls_garbage_handler(reader, writer) -> None:
+    """Plaintext responder: any TLS ClientHello is answered with garbage.
+
+    The TLS client sees a non-record first byte and raises
+    ``ssl.SSLError`` -> ``errors.TLS_HANDSHAKE`` deterministically.
+    """
+
+    try:
+        await reader.read(1)
+        writer.write(b"GET / HTTP/1.1\r\n\r\n")
+        await writer.drain()
+    except (asyncio.IncompleteReadError, ConnectionError, OSError):
+        pass
+    finally:
+        writer.close()
+
+
 class _Activity:
     def __init__(self) -> None:
         self.lock = asyncio.Lock()
@@ -323,6 +348,29 @@ async def _start(handler) -> tuple[str, int, asyncio.Server]:
     server = await asyncio.start_server(handler, "127.0.0.1", 0)
     port = server.sockets[0].getsockname()[1]
     return "127.0.0.1", port, server
+
+
+async def _start_on(handler, ip: str, port: int = 0) -> tuple[int, asyncio.Server]:
+    """Start a server on a specific loopback address."""
+    server = await asyncio.start_server(handler, ip, port)
+    port = server.sockets[0].getsockname()[1]
+    return port, server
+
+
+async def _second_loopback_same_port(handler, port: int) -> tuple[str, asyncio.Server]:
+    """Bind a server on a second loopback address sharing ``port``.
+
+    The primary server is bound to ``127.0.0.1`` only, so its port is
+    otherwise closed on every other address. Picking another ``127.x.y.z``
+    keeps the pair deterministic on Linux loopback.
+    """
+    for ip in ("127.0.0.2", "127.0.0.3", "127.0.1.1"):
+        try:
+            server = await asyncio.start_server(handler, ip, port)
+            return ip, server
+        except OSError:
+            continue
+    raise RuntimeError("no secondary loopback address available")
 
 
 async def _start_tls(handler, cert: str, key: str) -> tuple[str, int, asyncio.Server]:
@@ -487,6 +535,21 @@ class TestTargetPolicy:
         assert policy.is_target_allowed("::ffff:192.168.1.1") is False
         assert policy.is_target_allowed("::ffff:127.0.0.1") is False
         assert policy.is_target_allowed("::ffff:8.8.8.8") is True
+
+    def test_ipv6_special_use_blocked(self):
+        policy = TargetPolicy()
+        for ip in [
+            "2001::1",  # Teredo
+            "2001:db8::1",  # documentation
+            "2002:7f00:1::",  # 6to4 embedding 127.0.0.1
+            "64:ff9b::7f00:1",  # NAT64 embedding 127.0.0.1
+            "64:ff9b:1::7f00:1",  # NAT64 direct/local-use
+            "2001:2::1",  # benchmarking
+            "2001:10::1",  # ORCHID
+            "2001:20::1",  # ORCHIDv2
+            "3fff::1",  # unassigned
+        ]:
+            assert policy.is_target_allowed(ip) is False, ip
 
     def test_invalid_input_blocked(self):
         policy = TargetPolicy()
@@ -1072,6 +1135,330 @@ class TestSanitizedErrors:
             assert result.error == errors.HTTP_REJECTED
         finally:
             server.close()
+
+
+# ===========================================================================
+# PROTOCOL_CHECKED CONTRACT
+# ===========================================================================
+
+
+class TestHealthCheckContract:
+    """protocol_checked records that the wire-level protocol check ran.
+
+    - OK: protocol_checked=True, is_alive=True
+    - PROTOCOL_FAILURE: protocol_checked=True, is_alive=False
+      (the wire-level check ran; its result was a failure)
+    - UNSUPPORTED: protocol_checked=False, is_alive=False
+    is_alive stays the single health signal: is_alive ⇔ status == OK.
+    """
+
+    async def test_protocol_checked_tri_state(self):
+        ok_host, ok_port, ok_server = await _start(_http_handler(200))
+        fail_host, fail_port, fail_server = await _start(_http_handler(407))
+        sup_host, sup_port, sup_server = await _start(_tcp_accept_handler)
+        try:
+            runner = _runner()
+            ok = await runner.check(_entry(protocol="http", host=ok_host, port=ok_port))
+            fail = await runner.check(_entry(protocol="http", host=fail_host, port=fail_port))
+            unsupported = await runner.check(_entry(protocol="ss", host=sup_host, port=sup_port))
+        finally:
+            ok_server.close()
+            fail_server.close()
+            sup_server.close()
+
+        assert ok.status == HealthStatus.OK
+        assert ok.protocol_checked is True
+        assert ok.is_alive is True
+
+        assert fail.status == HealthStatus.PROTOCOL_FAILURE
+        assert fail.protocol_checked is True
+        assert fail.is_alive is False
+
+        assert unsupported.status == HealthStatus.UNSUPPORTED
+        assert unsupported.protocol_checked is False
+        assert unsupported.is_alive is False
+
+
+# ===========================================================================
+# AGGREGATION PRIORITY ACROSS MIXED IP RESULTS
+# ===========================================================================
+
+
+def _multi_ip_entry(protocol: str, host: str, port: int, ips: list[str], **kwargs) -> HealthEntry:
+    enrichment = EnrichmentResult(
+        original_host=host,
+        original_port=port,
+        original_protocol=protocol,
+        resolved_ip=ips[0],
+        all_resolved_ips=list(ips),
+    )
+    return _entry(protocol=protocol, host=host, port=port, enrichment=enrichment, **kwargs)
+
+
+class TestAggregationPriority:
+    async def test_tls_failure_beats_unreachable(self):
+        port, tls_server = await _start_on(_tls_garbage_handler, "127.0.0.1")
+        try:
+            runner = _runner(timeout=2.0)
+            result = await runner.check(
+                _multi_ip_entry("https", "mix.invalid", port, ["127.0.0.2", "127.0.0.1"])
+            )
+        finally:
+            tls_server.close()
+        assert result.status == HealthStatus.TLS_FAILURE
+        assert result.error == errors.TLS_HANDSHAKE
+        assert result.checked_ip == "127.0.0.1"
+        assert result.is_alive is False
+
+    async def test_timeout_beats_unreachable(self):
+        port, silent_server = await _start_on(_silent_handler, "127.0.0.1")
+        try:
+            runner = _runner(timeout=0.4)
+            start = asyncio.get_running_loop().time()
+            result = await runner.check(
+                _multi_ip_entry("http", "mix.invalid", port, ["127.0.0.2", "127.0.0.1"])
+            )
+            elapsed = asyncio.get_running_loop().time() - start
+        finally:
+            silent_server.close()
+        assert result.status == HealthStatus.TIMEOUT
+        assert result.error == errors.CONNECTION_TIMEOUT
+        assert result.checked_ip == "127.0.0.1"
+        assert elapsed <= 1.0
+
+    async def test_protocol_failure_beats_timeout(self):
+        port, server_407 = await _start_on(_http_handler(407), "127.0.0.1")
+        silent_ip, silent_server = await _second_loopback_same_port(_silent_handler, port)
+        try:
+            runner = _runner(timeout=0.4)
+            start = asyncio.get_running_loop().time()
+            result = await runner.check(
+                _multi_ip_entry("http", "mix.invalid", port, ["127.0.0.1", silent_ip])
+            )
+            elapsed = asyncio.get_running_loop().time() - start
+        finally:
+            server_407.close()
+            silent_server.close()
+        assert result.status == HealthStatus.PROTOCOL_FAILURE
+        assert result.error == errors.HTTP_STATUS_407
+        assert result.checked_ip == "127.0.0.1"
+        assert elapsed <= 1.0
+
+    async def test_ok_beats_protocol_failure_even_when_completed_later(self):
+        """A 407 finishes first; the slow 200 must still win (OK outranks)."""
+
+        async def _slow_ok_handler(reader, writer) -> None:
+            try:
+                await _read_http_request(reader)
+                await asyncio.sleep(0.2)
+                writer.write(b"HTTP/1.1 200 Connection established\r\n\r\n")
+                await writer.drain()
+            finally:
+                writer.close()
+
+        port, server_407 = await _start_on(_http_handler(407), "127.0.0.1")
+        ok_ip, ok_server = await _second_loopback_same_port(_slow_ok_handler, port)
+        try:
+            runner = _runner(timeout=2.0)
+            start = asyncio.get_running_loop().time()
+            result = await runner.check(
+                _multi_ip_entry("http", "mix.invalid", port, ["127.0.0.1", ok_ip])
+            )
+            elapsed = asyncio.get_running_loop().time() - start
+        finally:
+            server_407.close()
+            ok_server.close()
+        assert result.status == HealthStatus.OK
+        assert result.checked_ip == ok_ip
+        assert result.is_alive is True
+        assert elapsed >= 0.15  # proof the OK probe completed after the 407
+
+    async def test_unsupported_early_stops(self):
+        """ss needs no protocol exchange, so every TCP-successful IP is
+        UNSUPPORTED; the runner must stop early and return promptly."""
+        port, tcp_server = await _start_on(_tcp_accept_handler, "127.0.0.1")
+        silent_ip, silent_server = await _second_loopback_same_port(_silent_handler, port)
+        try:
+            runner = _runner(timeout=2.0)
+            start = asyncio.get_running_loop().time()
+            result = await runner.check(
+                _multi_ip_entry("ss", "mix.invalid", port, ["127.0.0.1", silent_ip])
+            )
+            elapsed = asyncio.get_running_loop().time() - start
+        finally:
+            tcp_server.close()
+            silent_server.close()
+        assert result.status == HealthStatus.UNSUPPORTED
+        assert result.checked_ip in ("127.0.0.1", silent_ip)
+        assert result.is_alive is False
+        assert elapsed <= 0.9
+
+    def test_priority_order_contract(self):
+        """Full documented order: OK > UNSUPPORTED > PROTOCOL_FAILURE >
+        TLS_FAILURE > TIMEOUT > UNREACHABLE > DNS_FAILURE > DECLINED > SKIPPED.
+
+        Pairs that cannot occur within one runner entry (one entry has one
+        protocol, so e.g. TLS_FAILURE + PROTOCOL_FAILURE are unreachable
+        together) are locked here at the selection level.
+        """
+        ordered = [
+            HealthStatus.OK,
+            HealthStatus.UNSUPPORTED,
+            HealthStatus.PROTOCOL_FAILURE,
+            HealthStatus.TLS_FAILURE,
+            HealthStatus.TIMEOUT,
+            HealthStatus.UNREACHABLE,
+            HealthStatus.DNS_FAILURE,
+            HealthStatus.DECLINED,
+            HealthStatus.SKIPPED,
+        ]
+        attempts = [_Attempt(ip=f"ip{i}", status=status) for i, status in enumerate(ordered)]
+        best = _select_best(attempts)
+        assert best.status == HealthStatus.OK
+
+        pairs = [
+            (HealthStatus.UNSUPPORTED, HealthStatus.PROTOCOL_FAILURE),
+            (HealthStatus.PROTOCOL_FAILURE, HealthStatus.TLS_FAILURE),
+            (HealthStatus.TLS_FAILURE, HealthStatus.TIMEOUT),
+            (HealthStatus.TIMEOUT, HealthStatus.UNREACHABLE),
+            (HealthStatus.UNREACHABLE, HealthStatus.DNS_FAILURE),
+            (HealthStatus.DNS_FAILURE, HealthStatus.DECLINED),
+            (HealthStatus.DECLINED, HealthStatus.SKIPPED),
+        ]
+        for winner, loser in pairs:
+            best = _select_best(
+                [_Attempt(ip="first", status=loser), _Attempt(ip="second", status=winner)]
+            )
+            assert best.status is winner, f"{winner} must outrank {loser}"
+            # tie-break: first completed attempt wins
+            best = _select_best(
+                [_Attempt(ip="first", status=winner), _Attempt(ip="second", status=winner)]
+            )
+            assert best.ip == "first"
+
+
+class TestEarlyStopCancellation:
+    async def test_ok_ip_cancels_hanging_probe(self):
+        """First OK stops fan-out: the hanging IP must be cancelled+drained."""
+        port, ok_server = await _start_on(_http_handler(200), "127.0.0.1")
+        silent_ip, silent_server = await _second_loopback_same_port(_silent_handler, port)
+        try:
+            runner = _runner(timeout=1.0)
+            start = asyncio.get_running_loop().time()
+            result = await runner.check(
+                _multi_ip_entry("http", "early.invalid", port, ["127.0.0.1", silent_ip])
+            )
+            elapsed = asyncio.get_running_loop().time() - start
+        finally:
+            ok_server.close()
+            silent_server.close()
+        assert result.status == HealthStatus.OK
+        assert result.checked_ip == "127.0.0.1"
+        assert result.attempted_ips == ["127.0.0.1", silent_ip]
+        # Without cancellation this would wait for the silent probe (1.0s).
+        assert elapsed <= 0.9
+
+
+# ===========================================================================
+# TLS VERIFY POLICY (IP LITERAL / NO SNI)
+# ===========================================================================
+
+
+class TestTlsVerifyIpLiteral:
+    async def test_verify_tls_with_ip_literal_is_handshake_only(self, tmp_path):
+        """verify_cert requires a hostname to verify against.
+
+        With an IP-literal host (no SNI) verification cannot run, so the
+        check intentionally degrades to handshake-only: tls_verified=False.
+        No certificate-verification claim is made.
+        """
+        assets = _write_pems(tmp_path)
+        host, port, server = await _start_tls(
+            _http_handler(200), assets["good.crt"], assets["good.key"]
+        )
+        try:
+            runner = _runner(verify_tls=True)
+            result = await runner.check(_entry(protocol="https", host=host, port=port))
+        finally:
+            server.close()
+        assert result.status == HealthStatus.OK
+        assert result.tls_used is True
+        assert result.tls_verified is False
+        assert result.protocol_checked is True
+        assert result.is_alive is True
+
+
+# ===========================================================================
+# protocol_uses_tls
+# ===========================================================================
+
+
+class TestProtocolUsesTls:
+    def test_https_and_trojan_always_use_tls(self):
+        assert protocol_uses_tls(_entry(protocol="https", host="h", port=443).parsed) is True
+        assert protocol_uses_tls(_entry(protocol="trojan", host="h", port=443).parsed) is True
+
+    def test_non_tls_protocols(self):
+        assert protocol_uses_tls(_entry(protocol="http", host="h", port=80).parsed) is False
+        assert protocol_uses_tls(_entry(protocol="ss", host="h", port=8388).parsed) is False
+        assert protocol_uses_tls(_entry(protocol="socks5", host="h", port=1080).parsed) is False
+        assert protocol_uses_tls(_entry(protocol="socks4", host="h", port=1080).parsed) is False
+
+    def test_vless_security_variants(self):
+        for tls in (None, "", "none"):
+            assert (
+                protocol_uses_tls(_entry(protocol="vless", host="h", port=443, tls=tls).parsed)
+                is False
+            )
+        for tls in ("tls", "reality", "xtls"):
+            assert (
+                protocol_uses_tls(_entry(protocol="vless", host="h", port=443, tls=tls).parsed)
+                is True
+            )
+
+    def test_vmess_security_variants(self):
+        for tls in (None, "", "none"):
+            assert (
+                protocol_uses_tls(_entry(protocol="vmess", host="h", port=443, tls=tls).parsed)
+                is False
+            )
+        for tls in ("tls", "reality", "xtls"):
+            assert (
+                protocol_uses_tls(_entry(protocol="vmess", host="h", port=443, tls=tls).parsed)
+                is True
+            )
+
+
+# ===========================================================================
+# SETTINGS -> HealthRunner WIRING
+# ===========================================================================
+
+
+class TestHealthSettingsWiring:
+    def test_build_runner_uses_settings_defaults(self):
+        settings = Settings()
+        runner = build_health_runner(settings)
+        assert runner.timeout == settings.health_check_timeout
+        assert runner.concurrency == settings.health_check_concurrency
+        assert runner.max_ips_per_host == settings.health_check_max_ips_per_host
+        assert runner.verify_tls == settings.health_check_verify_tls
+
+    def test_build_runner_reflects_env_overrides(self, monkeypatch):
+        monkeypatch.setenv("PA_HEALTH_CHECK_TIMEOUT", "3")
+        monkeypatch.setenv("PA_HEALTH_CHECK_CONCURRENCY", "7")
+        monkeypatch.setenv("PA_HEALTH_CHECK_MAX_IPS_PER_HOST", "4")
+        monkeypatch.setenv("PA_HEALTH_CHECK_VERIFY_TLS", "1")
+        settings = Settings()
+        runner = build_health_runner(settings)
+        assert runner.timeout == 3
+        assert runner.concurrency == 7
+        assert runner.max_ips_per_host == 4
+        assert runner.verify_tls is True
+
+    def test_build_runner_keeps_self_tunnel_default(self):
+        """No external health target: connect_target stays None (self-tunnel)."""
+        runner = build_health_runner(Settings())
+        assert runner.connect_target is None
 
 
 # ===========================================================================

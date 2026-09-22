@@ -14,8 +14,6 @@ ProxyAggregator is configured via environment variables with the `PA_` prefix.
 | `PA_HEALTH_CHECK_CONCURRENCY` | `50` | Max concurrent health checks |
 | `PA_HEALTH_CHECK_MAX_IPS_PER_HOST` | `8` | Max candidate IPs probed per host |
 | `PA_HEALTH_CHECK_VERIFY_TLS` | `false` | Verify TLS certificate chains. Defaults to handshake-only |
-| `PA_HEALTH_CHECK_TARGET_HOST` | `www.example.com` | CONNECT target host for protocol handshakes |
-| `PA_HEALTH_CHECK_TARGET_PORT` | `443` | CONNECT target port for protocol handshakes |
 | `PA_LOG_LEVEL` | `INFO` | Logging level |
 
 ## .env File
@@ -31,8 +29,6 @@ PA_HEALTH_CHECK_TIMEOUT=10
 PA_HEALTH_CHECK_CONCURRENCY=50
 PA_HEALTH_CHECK_MAX_IPS_PER_HOST=8
 PA_HEALTH_CHECK_VERIFY_TLS=false
-PA_HEALTH_CHECK_TARGET_HOST=www.example.com
-PA_HEALTH_CHECK_TARGET_PORT=443
 PA_LOG_LEVEL=INFO
 ```
 
@@ -57,3 +53,8 @@ The `Settings` dataclass provides type-safe configuration with defaults. Invalid
 - Use GitHub Actions secrets for CI
 - Rotate tokens regularly
 - GeoIP database requires a MaxMind license key (free tier available)
+- Health-check protocol handshakes (HTTP CONNECT / SOCKS) target the proxy's
+  own advertised endpoint (self-tunnel) by default, so no external service is
+  configured or contacted. There is intentionally no configurable external
+  health-check target; `PA_HEALTH_CHECK_*` only controls timeout, concurrency,
+  per-host IP cap, and TLS verification.

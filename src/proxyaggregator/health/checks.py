@@ -116,6 +116,11 @@ async def check_tls(
             :data:`errors.TLS_CERTIFICATE` failure on mismatch). When False,
             accept self-signed or mismatched certificates as long as the
             handshake itself completes.
+
+            Note: verification only runs when ``server_hostname`` is also
+            provided. With ``server_hostname=None`` (e.g. an IP-literal target
+            with no SNI) the check degrades to handshake-only and
+            ``tls_verified`` stays False — no verification claim is made.
         ca_file: Optional path to a PEM file whose certificates are trusted
             in addition to the system store (for self-signed / private-CA
             proxies).
@@ -179,6 +184,10 @@ async def upgrade_tls(
     The connection was already established against the validated IP; this
     performs only the handshake against that same socket. ``server_hostname``
     carries SNI and, when ``verify_cert`` is True, the verification identity.
+
+    As in :func:`check_tls`, verification only runs when ``server_hostname``
+    is provided; with ``server_hostname=None`` the upgrade is handshake-only
+    and ``tls_verified`` stays False.
 
     Args:
         ca_file: Optional path to a PEM file whose certificates are trusted

@@ -52,6 +52,15 @@ def _blocked_networks() -> list[ipaddress.IPv4Network | ipaddress.IPv6Network]:
         net("203.0.113.0/24"),  # TEST-NET-3 (documentation)
         net("240.0.0.0/4"),  # reserved
         net("2001:db8::/32"),  # documentation
+        # --- IPv6 special-use (can embed or translate to IPv4 targets) ---
+        net("2002::/16"),  # 6to4 (embeds IPv4 address)
+        net("2001::/32"),  # Teredo
+        net("64:ff9b::/96"),  # NAT64 well-known prefix
+        net("64:ff9b:1::/48"),  # NAT64 direct / local-use
+        net("2001:2::/48"),  # benchmarking
+        net("2001:10::/28"),  # ORCHID
+        net("2001:20::/28"),  # ORCHIDv2
+        net("3fff::/20"),  # unassigned / not globally reachable
     ]
 
 

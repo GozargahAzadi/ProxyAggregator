@@ -66,7 +66,13 @@ class HealthCheckResult(BaseModel):
 
     tls_used: bool = Field(default=False, description="Whether TLS stage was attempted")
     protocol_checked: bool = Field(
-        default=False, description="Whether a real protocol handshake was validated"
+        default=False,
+        description=(
+            "Whether the protocol-specific wire-level check was actually performed. "
+            "True for OK and PROTOCOL_FAILURE (the check ran and its result is "
+            "reflected in ``status``); False when no protocol client exists "
+            "(UNSUPPORTED). This does NOT mean the protocol was verified working."
+        ),
     )
     tls_verified: bool = Field(
         default=False, description="Whether the TLS certificate chain was verified"
@@ -83,7 +89,7 @@ class HealthCheckResult(BaseModel):
     @computed_field  # type: ignore[prop-decorator]
     @property
     def is_alive(self) -> bool:
-        """A proxy is only ever alive when the full applicable check succeeded."""
+        """The single health signal: ``is_alive == (status == HealthStatus.OK)``."""
         return self.status == HealthStatus.OK
 
     model_config = {"frozen": True}

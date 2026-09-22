@@ -29,7 +29,12 @@ class HealthCheckSchema(BaseModel):
     proxy_ms: float | None = Field(default=None, ge=0.0, description="Protocol handshake duration")
     tls_used: bool = Field(default=False, description="Whether TLS was attempted")
     protocol_checked: bool = Field(
-        default=False, description="Whether the protocol was truly verified"
+        default=False,
+        description=(
+            "Whether the protocol-specific wire-level check was actually performed. "
+            "True for OK and PROTOCOL_FAILURE; False when no protocol client exists "
+            "(UNSUPPORTED)."
+        ),
     )
 
     model_config = {"frozen": True}

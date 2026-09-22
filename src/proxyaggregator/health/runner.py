@@ -35,6 +35,7 @@ from proxyaggregator.health.protocols import (
 )
 
 if TYPE_CHECKING:
+    from proxyaggregator.config.settings import Settings
     from proxyaggregator.geoip.enrich import EnrichmentResult
     from proxyaggregator.health.protocols import ProtocolCheckOutcome
     from proxyaggregator.parsers.base import ParseResult
@@ -388,3 +389,20 @@ def _select_best(attempts: list[_Attempt]) -> _Attempt:
     if not attempts:
         return _Attempt(ip="", status=HealthStatus.DNS_FAILURE)
     return min(attempts, key=lambda a: _tc_priority(a.status))
+
+
+def build_health_runner(settings: Settings) -> HealthRunner:
+    """Construct a HealthRunner from application settings.
+
+    Every retained health setting maps directly onto the runner: per-proxy
+    timeout, worker concurrency, per-host IP cap, and TLS verification mode.
+    ``connect_target`` is intentionally left ``None`` so the default remains
+    the self-tunnel (the proxy is asked to tunnel back to its own advertised
+    endpoint); there is deliberately no external health target configured.
+    """
+    return HealthRunner(
+        timeout=settings.health_check_timeout,
+        concurrency=settings.health_check_concurrency,
+        max_ips_per_host=settings.health_check_max_ips_per_host,
+        verify_tls=settings.health_check_verify_tls,
+    )
