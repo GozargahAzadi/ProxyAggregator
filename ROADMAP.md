@@ -46,10 +46,10 @@
 
 ## Phase 5 — GeoIP & IP Resolution
 
-- [ ] DNS resolver (endpoint -> real IP)
-- [ ] MaxMind MMDB reader
-- [ ] GeoIP enrichment pipeline
-- [ ] IP-based dedup
+- [x] DNS resolver (endpoint -> real IP)
+- [x] MaxMind MMDB reader
+- [x] GeoIP enrichment pipeline
+- [x] IP-based dedup
 
 ## Phase 6 — Health Check
 
