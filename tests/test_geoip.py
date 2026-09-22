@@ -360,6 +360,111 @@ class TestDnsResolverHostnames:
         assert result.addresses == []
 
 
+class TestDnsResolverTimeoutEnforcement:
+    """The timeout parameter must actually bound DNS resolution.
+
+    Uses the real socket default-timeout primitives (process-global but
+    harmless in tests) and only mocks getaddrinfo, so we observe the actual
+    timeout in effect during the lookup rather than trusting mocks.
+    """
+
+    @patch("proxyaggregator.geoip.resolver.socket.getaddrinfo")
+    def test_timeout_is_set_during_resolution(self, mock_getaddrinfo):
+        observed: list[float | None] = []
+
+        def fake_getaddrinfo(*args, **kwargs):
+            observed.append(socket.getdefaulttimeout())
+            return [(socket.AF_INET, socket.SOCK_STREAM, 0, "", ("1.2.3.4", 0))]
+
+        mock_getaddrinfo.side_effect = fake_getaddrinfo
+        from proxyaggregator.geoip.resolver import resolve_host
+
+        saved = socket.getdefaulttimeout()
+        try:
+            socket.setdefaulttimeout(77.0)
+            result = resolve_host("example.com", timeout=3.0)
+            assert result.resolved is True
+            # The timeout in effect *during* the lookup must be the requested one
+            assert observed == [3.0]
+            # The previous default must be restored afterward
+            assert socket.getdefaulttimeout() == 77.0
+        finally:
+            socket.setdefaulttimeout(saved)
+
+    @patch("proxyaggregator.geoip.resolver.socket.getaddrinfo")
+    def test_previous_timeout_restored_after_success(self, mock_getaddrinfo):
+        mock_getaddrinfo.return_value = [
+            (socket.AF_INET, socket.SOCK_STREAM, 0, "", ("1.2.3.4", 0)),
+        ]
+        from proxyaggregator.geoip.resolver import resolve_host
+
+        saved = socket.getdefaulttimeout()
+        try:
+            socket.setdefaulttimeout(99.0)
+            resolve_host("example.com", timeout=2.0)
+            assert socket.getdefaulttimeout() == 99.0
+        finally:
+            socket.setdefaulttimeout(saved)
+
+    @patch("proxyaggregator.geoip.resolver.socket.getaddrinfo")
+    def test_previous_timeout_restored_on_exception(self, mock_getaddrinfo):
+        mock_getaddrinfo.side_effect = socket.gaierror("fail")
+        from proxyaggregator.geoip.resolver import resolve_host
+
+        saved = socket.getdefaulttimeout()
+        try:
+            socket.setdefaulttimeout(42.0)
+            result = resolve_host("bad.example.com", timeout=1.0)
+            assert result.resolved is False
+            assert result.error is not None
+            # Restoration must still happen despite the exception
+            assert socket.getdefaulttimeout() == 42.0
+        finally:
+            socket.setdefaulttimeout(saved)
+
+    @patch("proxyaggregator.geoip.resolver.socket.getaddrinfo")
+    @patch("proxyaggregator.geoip.resolver.socket.setdefaulttimeout")
+    @patch("proxyaggregator.geoip.resolver.socket.getdefaulttimeout")
+    def test_invalid_timeout_returns_error_without_dns(
+        self, mock_getdefaulttimeout, mock_setdefaulttimeout, mock_getaddrinfo
+    ):
+        from proxyaggregator.geoip.resolver import resolve_host
+
+        result = resolve_host("example.com", timeout=-1.0)
+        assert result.resolved is False
+        assert result.error is not None
+        mock_getaddrinfo.assert_not_called()
+        mock_setdefaulttimeout.assert_not_called()
+
+    @patch("proxyaggregator.geoip.resolver.socket.getaddrinfo")
+    @patch("proxyaggregator.geoip.resolver.socket.setdefaulttimeout")
+    @patch("proxyaggregator.geoip.resolver.socket.getdefaulttimeout")
+    def test_zero_timeout_returns_error_without_dns(
+        self, mock_getdefaulttimeout, mock_setdefaulttimeout, mock_getaddrinfo
+    ):
+        from proxyaggregator.geoip.resolver import resolve_host
+
+        result = resolve_host("example.com", timeout=0.0)
+        assert result.resolved is False
+        assert result.error is not None
+        mock_getaddrinfo.assert_not_called()
+        mock_setdefaulttimeout.assert_not_called()
+
+    @patch("proxyaggregator.geoip.resolver.socket.getaddrinfo")
+    @patch("proxyaggregator.geoip.resolver.socket.setdefaulttimeout")
+    @patch("proxyaggregator.geoip.resolver.socket.getdefaulttimeout")
+    def test_non_numeric_timeout_returns_error_without_dns(
+        self, mock_getdefaulttimeout, mock_setdefaulttimeout, mock_getaddrinfo
+    ):
+        from proxyaggregator.geoip.resolver import resolve_host
+
+        result = resolve_host("example.com", timeout="fast")  # type: ignore[arg-type]
+        assert result.resolved is False
+        assert result.error is not None
+        mock_getaddrinfo.assert_not_called()
+        mock_setdefaulttimeout.assert_not_called()
+
+
 class TestDnsResolverInvalidInputs:
     """Invalid or empty hostnames should produce clear errors."""
 
@@ -787,6 +892,90 @@ class TestIpDedup:
         results = dedup.deduplicate(items, ip_map={})
         assert results[0].match_type == DedupMatchType.NONE
         assert results[1].match_type == DedupMatchType.NONE
+
+
+class TestIpDedupNumericOrdering:
+    """Primary IP selection must use numeric ordering, not lexicographic.
+
+    Lexicographic: "10.0.0.1" < "2.2.2.2"  (string comparison)
+    Numeric:       "2.2.2.2"  < "10.0.0.1" (integer comparison)
+    """
+
+    def test_numeric_ordering_not_lexicographic(self):
+        """ip_map with lexicographically-smaller-but-numerically-larger IP."""
+        from proxyaggregator.geoip.dedup import IpDeduplicator
+
+        dedup = IpDeduplicator()
+        items = [
+            _make_result(host="multi.example.com", port=443),
+            _make_result(host="multi.example.com", port=443),
+        ]
+        # Lexicographic sort would pick "10.0.0.1" first.
+        # Numeric sort must pick "2.2.2.2" first.
+        results = dedup.deduplicate(
+            items,
+            ip_map={"multi.example.com": ["10.0.0.1", "2.2.2.2"]},
+        )
+        assert results[0].match_type == DedupMatchType.NONE
+        assert results[1].match_type == DedupMatchType.EXACT
+        # The EXACT match reason echoes the primary IP used for the dedup key.
+        assert "2.2.2.2" in results[1].match_reason
+
+    def test_numeric_ordering_matches_resolver(self):
+        """Dedup primary IP must match what resolver.py would pick."""
+        from proxyaggregator.geoip.dedup import IpDeduplicator
+        from proxyaggregator.geoip.resolver import _ip_sort_key
+
+        ip_list = ["192.168.1.1", "10.0.0.1", "2.2.2.2"]
+        sorted_expected = sorted(ip_list, key=_ip_sort_key)
+        assert sorted_expected[0] == "2.2.2.2"
+
+        dedup = IpDeduplicator()
+        items = [
+            _make_result(host="multi.example.com", port=443),
+            _make_result(host="multi.example.com", port=443),
+        ]
+        results = dedup.deduplicate(
+            items,
+            ip_map={"multi.example.com": ip_list},
+        )
+        # Dedup must select the same primary IP the resolver would sort first.
+        assert sorted_expected[0] in results[1].match_reason
+
+    def test_ipv4_before_ipv6_ordering(self):
+        """IPv4 must sort before IPv6 in dedup primary selection."""
+        from proxyaggregator.geoip.dedup import IpDeduplicator
+
+        dedup = IpDeduplicator()
+        items = [
+            _make_result(host="dual.example.com", port=443),
+            _make_result(host="dual.example.com", port=443),
+        ]
+        # IPv6 address sorts before IPv4 lexicographically in some cases,
+        # but resolver's rule is IPv4 always first.
+        results = dedup.deduplicate(
+            items,
+            ip_map={"dual.example.com": ["2001:db8::1", "1.2.3.4"]},
+        )
+        assert results[0].match_type == DedupMatchType.NONE
+        assert results[1].match_type == DedupMatchType.EXACT
+        assert "1.2.3.4" in results[1].match_reason
+
+    def test_single_ip_unchanged(self):
+        """Single IP in ip_map works regardless of ordering."""
+        from proxyaggregator.geoip.dedup import IpDeduplicator
+
+        dedup = IpDeduplicator()
+        items = [
+            _make_result(host="single.example.com", port=443),
+            _make_result(host="single.example.com", port=443),
+        ]
+        results = dedup.deduplicate(
+            items,
+            ip_map={"single.example.com": ["5.5.5.5"]},
+        )
+        assert results[0].match_type == DedupMatchType.NONE
+        assert results[1].match_type == DedupMatchType.EXACT
 
 
 # ===========================================================================

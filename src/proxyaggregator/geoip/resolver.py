@@ -9,6 +9,7 @@ All addresses are normalized and sorted deterministically.
 from __future__ import annotations
 
 import ipaddress
+import math
 import socket
 
 from pydantic import BaseModel, Field
@@ -50,7 +51,9 @@ def resolve_host(host: str | None, timeout: float = 5.0) -> ResolveResult:
 
     Args:
         host: Hostname or literal IP address. None or empty/whitespace produces an error.
-        timeout: DNS lookup timeout in seconds (used as socket timeout).
+        timeout: DNS lookup timeout in seconds. Must be a finite positive number.
+            The timeout is enforced by temporarily setting the process-wide
+            socket default timeout, then restoring the previous value.
 
     Returns:
         ResolveResult with resolved addresses or error information.
@@ -76,13 +79,28 @@ def resolve_host(host: str | None, timeout: float = 5.0) -> ResolveResult:
     except ValueError:
         pass
 
-    # Hostname: resolve via socket
+    # Validate timeout before touching DNS
+    if (
+        isinstance(timeout, bool)
+        or not isinstance(timeout, (int, float))
+        or not math.isfinite(timeout)
+        or timeout <= 0
+    ):
+        return ResolveResult(
+            host=host, resolved=False, error=f"Invalid timeout value: {timeout!r}"
+        )
+
+    # Hostname: resolve via socket with bounded timeout
+    previous_timeout = socket.getdefaulttimeout()
     try:
+        socket.setdefaulttimeout(float(timeout))
         infos = socket.getaddrinfo(
             host, None, socket.AF_UNSPEC, socket.SOCK_STREAM, 0, socket.AI_ADDRCONFIG
         )
     except (socket.gaierror, OSError, TimeoutError) as exc:
         return ResolveResult(host=host, resolved=False, error=str(exc))
+    finally:
+        socket.setdefaulttimeout(previous_timeout)
 
     if not infos:
         return ResolveResult(host=host, resolved=False, error="No addresses returned")

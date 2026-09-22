@@ -13,7 +13,7 @@ from typing import TYPE_CHECKING
 
 from proxyaggregator.dedup.endpoint import EndpointIdentity
 from proxyaggregator.dedup.models import DedupMatchType, DedupResult
-from proxyaggregator.geoip.resolver import resolve_host
+from proxyaggregator.geoip.resolver import _ip_sort_key, resolve_host
 
 if TYPE_CHECKING:
     from proxyaggregator.parsers.base import ParseResult
@@ -63,7 +63,7 @@ class IpDeduplicator:
             if host in ip_map:
                 ips = ip_map[host]
                 if ips:
-                    sorted_ips = sorted(ips)
+                    sorted_ips = sorted(ips, key=_ip_sort_key)
                     resolved_cache[host] = sorted_ips[0]
                 else:
                     resolved_cache[host] = None
