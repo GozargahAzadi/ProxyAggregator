@@ -64,9 +64,9 @@
 
 ## Phase 7 — Scoring & Ranking
 
-- [ ] Scoring algorithm
-- [ ] Country/region filtering
-- [ ] Protocol preference
+- [x] Scoring algorithm
+- [ ] Country/region filtering *(deferred: metadata only per Phase 7 design decisions)*
+- [ ] Protocol preference *(deferred: metadata only per Phase 7 design decisions)*
 
 ## Phase 8 — Subscription Generation
 

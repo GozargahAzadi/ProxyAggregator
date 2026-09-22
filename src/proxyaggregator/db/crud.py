@@ -187,3 +187,14 @@ def get_health_checks_for_config(session: Session, proxy_config_id: int) -> list
         .order_by(HealthCheckORM.checked_at.desc())
     )
     return list(session.scalars(stmt))
+
+
+def list_health_checks(session: Session) -> list[HealthCheckORM]:
+    """Return all health check rows in a single bounded query.
+
+    Bulk retrieval for Phase 7 ranking: the scorer selects the latest row per
+    proxy in memory (``scoring.scorer.latest_health_check``), so a per-proxy
+    query is unnecessary. Returns every row; callers group/order as needed.
+    """
+    stmt = select(HealthCheckORM)
+    return list(session.scalars(stmt))

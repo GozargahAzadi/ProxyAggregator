@@ -71,6 +71,10 @@ ProxyAggregator/
 │       │   └── __init__.py
 │       ├── health/              # Health checking
 │       │   └── __init__.py
+│       ├── scoring/             # Scoring & ranking (Phase 7)
+│       │   ├── __init__.py
+│       │   ├── models.py        # RankCandidate / ProxyScore
+│       │   └── scorer.py        # latency score + deterministic ranking
 │       └── publishing/          # Subscription publishers
 │           └── __init__.py
 ├── tests/
