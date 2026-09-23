@@ -62,6 +62,22 @@
 - [x] Sanitized stable error codes
 - [x] Health result persistence + Alembic migration
 
+### Phase 6.2 — Wire-level VLESS / Trojan / Shadowsocks
+
+- [x] VLESS TCP CONNECT check (plain TCP and TLS transports; version `0x00`
+      header, validated `0x54` response)
+- [x] Trojan CONNECT check over TLS (SHA-224 credential, no-ack inference)
+- [x] Shadowsocks AEAD TCP check (aes-128-gcm, aes-256-gcm,
+      chacha20-ietf-poly1305; HKDF-SHA1 + EVP_BytesToKey)
+- [x] Variant gate before dialing (unsupported variants never probed)
+- [x] Known-answer AEAD regression vectors
+- [ ] VLESS REALITY *(deferred: `tls.reality` → UNSUPPORTED)*
+- [ ] VLESS WS / gRPC / httpupgrade / xhttp overlays *(deferred:
+      `transport.ws` → UNSUPPORTED)*
+- [ ] VMess check *(deferred: no success acknowledgement)*
+- [ ] Shadowsocks 2022 (BLAKE3) ciphers *(deferred: `ss.cipher.unsupported`)*
+- [ ] Hysteria / Hysteria2 wire checks *(deferred: QUIC transport)*
+
 ## Phase 7 — Scoring & Ranking
 
 - [x] Scoring algorithm

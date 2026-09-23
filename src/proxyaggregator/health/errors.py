@@ -34,3 +34,11 @@ POLICY_DECLINED = "policy.declined"
 DNS_UNAVAILABLE = "dns.unavailable"
 UNSUPPORTED_PROTOCOL = "protocol.unsupported"
 SKIPPED_INPUT = "skipped.input"
+
+# --- VLESS / Trojan / Shadowsocks (Phase 6.2) ---
+PROTOCOL_AUTH = "protocol.auth"
+PROTOCOL_REJECTED = "protocol.rejected"
+PROTOCOL_MALFORMED = "protocol.malformed"
+TLS_REALITY = "tls.reality"
+TRANSPORT_WS = "transport.ws"
+SS_CIPHER_UNSUPPORTED = "ss.cipher.unsupported"

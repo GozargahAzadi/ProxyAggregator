@@ -10,13 +10,16 @@ only through the injected permissive test policy.
 from __future__ import annotations
 
 import asyncio
+import hashlib
 import json
 import ssl
+import uuid
 from datetime import datetime
 from pathlib import Path
 from unittest.mock import patch
 
 import pytest
+from cryptography.exceptions import InvalidTag
 from pydantic import ValidationError
 from sqlalchemy import create_engine, inspect
 from sqlalchemy.orm import Session
@@ -39,9 +42,15 @@ from proxyaggregator.health.models import (
 )
 from proxyaggregator.health.policy import TargetPolicy
 from proxyaggregator.health.protocols import (
+    _ss_chunk_cipher,
+    _ss_decrypt_chunk,
+    _ss_encrypt_chunk,
+    _ss_evp_bytes_to_key,
+    _ss_hkdf_sha1,
     check_http_connect,
     check_socks4,
     check_socks5,
+    transport_gate,
 )
 from proxyaggregator.health.runner import (
     HealthEntry,
@@ -300,6 +309,108 @@ async def _silent_handler(reader, writer) -> None:
         pass
     finally:
         writer.close()
+
+
+async def _read_vless_request(reader) -> bytes:
+    await reader.readexactly(1)  # version
+    uuid_bytes = await reader.readexactly(16)
+    addons_len = (await reader.readexactly(1))[0]
+    if addons_len:
+        await reader.readexactly(addons_len)
+    await reader.readexactly(1)  # command
+    await reader.readexactly(2)  # port
+    atyp = (await reader.readexactly(1))[0]
+    if atyp == 0x02:
+        n = (await reader.readexactly(1))[0]
+        await reader.readexactly(n)
+    elif atyp == 0x04:
+        await reader.readexactly(16)
+    else:
+        await reader.readexactly(4)
+    return uuid_bytes
+
+
+def _vless_handler(
+    expected_uuid: bytes,
+    reply: bytes = b"\x54\x01",
+    silent: bool = False,
+):
+    async def handler(reader, writer) -> None:
+        try:
+            uuid_bytes = await _read_vless_request(reader)
+            if uuid_bytes != expected_uuid:
+                return
+            if silent:
+                await reader.read()
+                return
+            writer.write(reply)
+            await writer.drain()
+            await reader.read()
+        except asyncio.IncompleteReadError:
+            pass
+        finally:
+            writer.close()
+
+    return handler
+
+
+async def _read_trojan_request(reader) -> bytes:
+    digest = await reader.readexactly(56)
+    await reader.readexactly(2)  # CRLF
+    await reader.readexactly(1)  # command
+    await reader.readexactly(2)  # port
+    atyp = (await reader.readexactly(1))[0]
+    if atyp == 0x03:
+        n = (await reader.readexactly(1))[0]
+        await reader.readexactly(n)
+    elif atyp == 0x04:
+        await reader.readexactly(16)
+    else:
+        await reader.readexactly(4)
+    await reader.readexactly(2)  # trailing CRLF
+    return digest
+
+
+def _trojan_handler(expected_password: str, reply: bytes | None = None):
+    async def handler(reader, writer) -> None:
+        try:
+            digest = await _read_trojan_request(reader)
+            key = hashlib.sha224(expected_password.encode("utf-8")).hexdigest().encode("ascii")
+            if digest != key:
+                return
+            if reply is not None:
+                writer.write(reply)
+                await writer.drain()
+                return
+            await reader.read()
+        except asyncio.IncompleteReadError:
+            pass
+        finally:
+            writer.close()
+
+    return handler
+
+
+def _ss_password_handler(method: str, password: str):
+    key_len = {"aes-128-gcm": 16, "aes-256-gcm": 32, "chacha20-ietf-poly1305": 32}[method]
+
+    async def handler(reader, writer) -> None:
+        try:
+            salt = await reader.readexactly(key_len)
+            master = _ss_evp_bytes_to_key(password.encode("utf-8"), key_len)
+            session = _ss_hkdf_sha1(salt, master, b"ss-subkey", key_len)
+            cipher = _ss_chunk_cipher(method, session)
+            length = int.from_bytes(
+                _ss_decrypt_chunk(cipher, 0, await reader.readexactly(2 + 16)), "big"
+            )
+            _ss_decrypt_chunk(cipher, 1, await reader.readexactly(length + 16))
+            await reader.read()
+        except (asyncio.IncompleteReadError, ValueError, InvalidTag):
+            return
+        finally:
+            writer.close()
+
+    return handler
 
 
 async def _tls_garbage_handler(reader, writer) -> None:
@@ -871,30 +982,42 @@ class TestHealthRunner:
         finally:
             server.close()
 
-    async def test_ss_proxy_unsupported_after_tcp(self):
+    async def test_ss_dial_rejected_by_closed_tcp_is_protocol_failure(self):
         host, port, server = await _start(_tcp_accept_handler)
         try:
             runner = _runner()
-            result = await runner.check(_entry(protocol="ss", host=host, port=port))
-            assert result.status == HealthStatus.UNSUPPORTED
+            result = await runner.check(
+                _entry(
+                    protocol="ss",
+                    host=host,
+                    port=port,
+                    method="aes-256-gcm",
+                    password="pw",
+                )
+            )
+            assert result.status == HealthStatus.PROTOCOL_FAILURE
             assert result.is_alive is False
-            assert result.protocol_checked is False
+            assert result.protocol_checked is True
             assert result.checked_ip == "127.0.0.1"
+            assert result.error == errors.PROTOCOL_AUTH
             assert result.connect_ms >= 0.0
         finally:
             server.close()
 
-    async def test_vless_unsupported_after_tcp(self):
+    async def test_vless_dial_rejected_by_closed_tcp_is_protocol_failure(self):
         host, port, server = await _start(_tcp_accept_handler)
         try:
             runner = _runner()
-            result = await runner.check(_entry(protocol="vless", host=host, port=port))
-            assert result.status == HealthStatus.UNSUPPORTED
-            assert result.protocol_checked is False
+            result = await runner.check(
+                _entry(protocol="vless", host=host, port=port, user=str(uuid.uuid4()))
+            )
+            assert result.status == HealthStatus.PROTOCOL_FAILURE
+            assert result.protocol_checked is True
+            assert result.error in (errors.PROTOCOL_MALFORMED, errors.PROTOCOL_REJECTED)
         finally:
             server.close()
 
-    async def test_trojan_tls_handshake_unsupported_after_tls(self, tmp_path):
+    async def test_trojan_tls_closed_by_server_after_request_is_protocol_failure(self, tmp_path):
         assets = _write_pems(tmp_path)
         host, port, server = await _start_tls(
             _tcp_accept_handler, assets["good.crt"], assets["good.key"]
@@ -902,14 +1025,20 @@ class TestHealthRunner:
         try:
             runner = _runner()
             result = await runner.check(
-                _entry(protocol="trojan", host=host, port=port, sni="localhost")
+                _entry(
+                    protocol="trojan",
+                    host=host,
+                    port=port,
+                    sni="localhost",
+                    password="pw",
+                )
             )
-            assert result.status == HealthStatus.UNSUPPORTED
+            assert result.status == HealthStatus.PROTOCOL_FAILURE
             assert result.is_alive is False
-            assert result.protocol_checked is False
+            assert result.protocol_checked is True
             assert result.tls_used is True
             assert result.tls_ms >= 0.0
-            assert result.stage == CheckStage.TLS
+            assert result.error == errors.PROTOCOL_AUTH
         finally:
             server.close()
 
@@ -1160,7 +1289,9 @@ class TestHealthCheckContract:
             runner = _runner()
             ok = await runner.check(_entry(protocol="http", host=ok_host, port=ok_port))
             fail = await runner.check(_entry(protocol="http", host=fail_host, port=fail_port))
-            unsupported = await runner.check(_entry(protocol="ss", host=sup_host, port=sup_port))
+            unsupported = await runner.check(
+                _entry(protocol="hysteria2", host=sup_host, port=sup_port)
+            )
         finally:
             ok_server.close()
             fail_server.close()
@@ -1274,15 +1405,16 @@ class TestAggregationPriority:
         assert elapsed >= 0.15  # proof the OK probe completed after the 407
 
     async def test_unsupported_early_stops(self):
-        """ss needs no protocol exchange, so every TCP-successful IP is
-        UNSUPPORTED; the runner must stop early and return promptly."""
+        """An unsupported protocol needs no protocol exchange, so every
+        TCP-successful IP is UNSUPPORTED; the runner must stop early and
+        return promptly."""
         port, tcp_server = await _start_on(_tcp_accept_handler, "127.0.0.1")
         silent_ip, silent_server = await _second_loopback_same_port(_silent_handler, port)
         try:
             runner = _runner(timeout=2.0)
             start = asyncio.get_running_loop().time()
             result = await runner.check(
-                _multi_ip_entry("ss", "mix.invalid", port, ["127.0.0.1", silent_ip])
+                _multi_ip_entry("hysteria2", "mix.invalid", port, ["127.0.0.1", silent_ip])
             )
             elapsed = asyncio.get_running_loop().time() - start
         finally:
@@ -1618,3 +1750,314 @@ class TestPhase6Migration:
             ).one()
         assert row[0] == "keep.example.com"
         assert row[1] == 8080
+
+
+# ===========================================================================
+# PHASE 6.2: VLESS / TROJAN / SHADOWSOCKS
+# ===========================================================================
+
+
+class TestPhase62VariantGate:
+    def _parsed(self, protocol: str, **kwargs) -> ParseResult:
+        return _entry(protocol=protocol, host="127.0.0.1", port=443, **kwargs).parsed
+
+    def test_vless_reality_unsupported(self):
+        assert transport_gate(self._parsed("vless", tls="reality")) == errors.TLS_REALITY
+
+    def test_vless_overlay_networks_unsupported(self):
+        for network in ("ws", "grpc", "httpupgrade", "xhttp"):
+            assert transport_gate(self._parsed("vless", network=network)) == errors.TRANSPORT_WS
+
+    def test_vless_tcp_networks_supported(self):
+        for network in (None, "", "tcp", "raw"):
+            assert transport_gate(self._parsed("vless", network=network)) is None
+
+    def test_trojan_overlay_unsupported(self):
+        assert transport_gate(self._parsed("trojan", network="ws")) == errors.TRANSPORT_WS
+
+    def test_trojan_tcp_supported(self):
+        for network in (None, "", "tcp"):
+            assert transport_gate(self._parsed("trojan", network=network)) is None
+
+    def test_ss_methods_gate(self):
+        for method in ("aes-128-gcm", "aes-256-gcm", "chacha20-ietf-poly1305"):
+            assert transport_gate(self._parsed("ss", method=method)) is None, method
+        for method in ("2022-blake3-aes-128-gcm", "aes-192-gcm", "rc4-md5"):
+            assert (
+                transport_gate(self._parsed("ss", method=method)) == errors.SS_CIPHER_UNSUPPORTED
+            ), method
+
+    def test_other_protocols_pass_through(self):
+        assert transport_gate(self._parsed("http")) is None
+        assert transport_gate(self._parsed("socks5")) is None
+
+
+class TestPhase62GateBeforeDialing:
+    async def test_vless_reality_never_dials(self):
+        runner = _runner()
+        result = await runner.check(
+            _entry(protocol="vless", host="127.0.0.1", port=1, tls="reality")
+        )
+        assert result.status == HealthStatus.UNSUPPORTED
+        assert result.error == errors.TLS_REALITY
+        assert result.connect_ms is None
+        assert result.protocol_checked is False
+
+    async def test_vless_ws_never_dials(self):
+        runner = _runner()
+        result = await runner.check(
+            _entry(protocol="vless", host="127.0.0.1", port=1, network="ws")
+        )
+        assert result.status == HealthStatus.UNSUPPORTED
+        assert result.error == errors.TRANSPORT_WS
+        assert result.connect_ms is None
+
+    async def test_ss_2022_never_dials(self):
+        runner = _runner()
+        result = await runner.check(
+            _entry(
+                protocol="ss",
+                host="127.0.0.1",
+                port=1,
+                method="2022-blake3-aes-128-gcm",
+            )
+        )
+        assert result.status == HealthStatus.UNSUPPORTED
+        assert result.error == errors.SS_CIPHER_UNSUPPORTED
+        assert result.connect_ms is None
+
+
+class TestPhase62VlessChecker:
+    async def test_plain_tcp_ok(self):
+        uuid_str = str(uuid.uuid4())
+        host, port, server = await _start(_vless_handler(uuid.UUID(uuid_str).bytes))
+        try:
+            runner = _runner()
+            result = await runner.check(
+                _entry(protocol="vless", host=host, port=port, user=uuid_str)
+            )
+            assert result.status == HealthStatus.OK
+            assert result.is_alive is True
+            assert result.protocol_checked is True
+            assert result.proxy_ms >= 0.0
+        finally:
+            server.close()
+
+    async def test_tls_ok(self, tmp_path):
+        assets = _write_pems(tmp_path)
+        uid = uuid.uuid4()
+        host, port, server = await _start_tls(
+            _vless_handler(uid.bytes), assets["good.crt"], assets["good.key"]
+        )
+        try:
+            runner = _runner()
+            result = await runner.check(
+                _entry(
+                    protocol="vless",
+                    host=host,
+                    port=port,
+                    user=str(uid),
+                    tls="tls",
+                    sni="localhost",
+                )
+            )
+            assert result.status == HealthStatus.OK
+            assert result.is_alive is True
+            assert result.tls_used is True
+        finally:
+            server.close()
+
+    async def test_malformed_reply_is_protocol_failure(self):
+        uid = uuid.uuid4()
+        host, port, server = await _start(_vless_handler(uid.bytes, reply=b"\x00\x01"))
+        try:
+            runner = _runner()
+            result = await runner.check(
+                _entry(protocol="vless", host=host, port=port, user=str(uid))
+            )
+            assert result.status == HealthStatus.PROTOCOL_FAILURE
+            assert result.error == errors.PROTOCOL_MALFORMED
+            assert result.protocol_checked is True
+            assert result.is_alive is False
+        finally:
+            server.close()
+
+    async def test_invalid_uuid_rejected(self):
+        host, port, server = await _start(_vless_handler(uuid.uuid4().bytes))
+        try:
+            runner = _runner()
+            result = await runner.check(
+                _entry(protocol="vless", host=host, port=port, user=str(uuid.uuid4()))
+            )
+            assert result.status == HealthStatus.PROTOCOL_FAILURE
+            assert result.error == errors.PROTOCOL_MALFORMED
+        finally:
+            server.close()
+
+    async def test_silent_server_is_timeout(self):
+        uid = uuid.uuid4()
+        host, port, server = await _start(_vless_handler(uid.bytes, silent=True))
+        try:
+            runner = _runner(timeout=0.4)
+            result = await runner.check(
+                _entry(protocol="vless", host=host, port=port, user=str(uid))
+            )
+            assert result.status == HealthStatus.TIMEOUT
+            assert result.error == errors.CONNECTION_TIMEOUT
+        finally:
+            server.close()
+
+    async def test_credential_never_leaks_into_error(self):
+        host, port, server = await _start(_vless_handler(uuid.uuid4().bytes))
+        try:
+            runner = _runner()
+            secret = str(uuid.uuid4())
+            result = await runner.check(_entry(protocol="vless", host=host, port=port, user=secret))
+            assert result.status == HealthStatus.PROTOCOL_FAILURE
+            assert secret not in (result.error or "")
+        finally:
+            server.close()
+
+
+class TestPhase62TrojanChecker:
+    async def test_tls_ok(self, tmp_path):
+        assets = _write_pems(tmp_path)
+        host, port, server = await _start_tls(
+            _trojan_handler("proxypw"), assets["good.crt"], assets["good.key"]
+        )
+        try:
+            runner = _runner()
+            result = await runner.check(
+                _entry(
+                    protocol="trojan",
+                    host=host,
+                    port=port,
+                    sni="localhost",
+                    password="proxypw",
+                )
+            )
+            assert result.status == HealthStatus.OK
+            assert result.is_alive is True
+            assert result.protocol_checked is True
+            assert result.tls_used is True
+            assert result.proxy_ms >= 0.0
+        finally:
+            server.close()
+
+    async def test_wrong_password_auth_failure(self, tmp_path):
+        assets = _write_pems(tmp_path)
+        host, port, server = await _start_tls(
+            _trojan_handler("rightpw"), assets["good.crt"], assets["good.key"]
+        )
+        try:
+            runner = _runner()
+            result = await runner.check(
+                _entry(
+                    protocol="trojan",
+                    host=host,
+                    port=port,
+                    sni="localhost",
+                    password="wrongpw",
+                )
+            )
+            assert result.status == HealthStatus.PROTOCOL_FAILURE
+            assert result.error == errors.PROTOCOL_AUTH
+            assert result.protocol_checked is True
+            assert "wrongpw" not in (result.error or "")
+        finally:
+            server.close()
+
+    async def test_error_reply_is_protocol_failure(self, tmp_path):
+        assets = _write_pems(tmp_path)
+        host, port, server = await _start_tls(
+            _trojan_handler("proxypw", reply=b"\x00"), assets["good.crt"], assets["good.key"]
+        )
+        try:
+            runner = _runner()
+            result = await runner.check(
+                _entry(
+                    protocol="trojan",
+                    host=host,
+                    port=port,
+                    sni="localhost",
+                    password="proxypw",
+                )
+            )
+            assert result.status == HealthStatus.PROTOCOL_FAILURE
+            assert result.error == errors.PROTOCOL_MALFORMED
+        finally:
+            server.close()
+
+
+class TestPhase62ShadowsocksChecker:
+    @pytest.mark.parametrize("method", ["aes-128-gcm", "aes-256-gcm", "chacha20-ietf-poly1305"])
+    async def test_ok(self, method):
+        host, port, server = await _start(_ss_password_handler(method, "secret"))
+        try:
+            runner = _runner()
+            result = await runner.check(
+                _entry(protocol="ss", host=host, port=port, method=method, password="secret")
+            )
+            assert result.status == HealthStatus.OK
+            assert result.is_alive is True
+            assert result.protocol_checked is True
+            assert result.proxy_ms >= 0.0
+        finally:
+            server.close()
+
+    async def test_wrong_password_auth_failure(self):
+        host, port, server = await _start(_ss_password_handler("aes-256-gcm", "server-secret"))
+        try:
+            runner = _runner()
+            result = await runner.check(
+                _entry(
+                    protocol="ss",
+                    host=host,
+                    port=port,
+                    method="aes-256-gcm",
+                    password="client-wrong",
+                )
+            )
+            assert result.status == HealthStatus.PROTOCOL_FAILURE
+            assert result.error == errors.PROTOCOL_AUTH
+            assert "client-wrong" not in (result.error or "")
+        finally:
+            server.close()
+
+
+class TestPhase62SsKnownAnswer:
+    def test_evp_bytes_to_key_aes128(self):
+        assert _ss_evp_bytes_to_key(b"123456", 16).hex() == "e10adc3949ba59abbe56e057f20f883e"
+
+    def test_evp_bytes_to_key_aes256(self):
+        assert (
+            _ss_evp_bytes_to_key(b"123456", 32).hex()
+            == "e10adc3949ba59abbe56e057f20f883e65b4ad270b3b98098d256ab32f5b8fba"
+        )
+
+    def test_hkdf_sha1_pinned(self):
+        master = _ss_evp_bytes_to_key(b"123456", 32)
+        salt = bytes(range(32))
+        assert (
+            _ss_hkdf_sha1(salt, master, b"ss-subkey", 32).hex()
+            == "070ae8f62685b1b45351d4e628ebcead3902408ba45cb7f045bd17e5d109efa7"
+        )
+
+    def test_chunk_round_trip_and_tag_size(self):
+        master = _ss_evp_bytes_to_key(b"123456", 32)
+        salt = bytes(range(32))
+        session = _ss_hkdf_sha1(salt, master, b"ss-subkey", 32)
+        cipher = _ss_chunk_cipher("aes-256-gcm", session)
+        ct = _ss_encrypt_chunk(cipher, 0, b"\x00\x18")
+        assert len(ct) == 18
+        assert _ss_decrypt_chunk(cipher, 0, ct) == b"\x00\x18"
+
+    def test_tampered_chunk_rejected(self):
+        master = _ss_evp_bytes_to_key(b"123456", 32)
+        salt = bytes(range(32))
+        session = _ss_hkdf_sha1(salt, master, b"ss-subkey", 32)
+        cipher = _ss_chunk_cipher("aes-256-gcm", session)
+        ct = bytearray(_ss_encrypt_chunk(cipher, 0, b"\x00\x18"))
+        ct[-1] ^= 0x01
+        with pytest.raises((InvalidTag, ValueError)):
+            _ss_decrypt_chunk(cipher, 0, bytes(ct))

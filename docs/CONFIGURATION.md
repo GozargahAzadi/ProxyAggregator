@@ -59,8 +59,12 @@ The `Settings` dataclass provides type-safe configuration with defaults. Invalid
 - Use GitHub Actions secrets for CI
 - Rotate tokens regularly
 - GeoIP database requires a MaxMind license key (free tier available)
-- Health-check protocol handshakes (HTTP CONNECT / SOCKS) target the proxy's
-  own advertised endpoint (self-tunnel) by default, so no external service is
-  configured or contacted. There is intentionally no configurable external
-  health-check target; `PA_HEALTH_CHECK_*` only controls timeout, concurrency,
-  per-host IP cap, and TLS verification.
+- Health-check protocol handshakes (HTTP CONNECT / SOCKS / VLESS /
+  Trojan / Shadowsocks) target the proxy's own advertised endpoint
+  (self-tunnel) by default, so no external service is configured or
+  contacted. VLESS is checked over its plain TCP and TLS transports only;
+  REALITY, WS/gRPC overlays, Shadowsocks 2022 (BLAKE3) ciphers, VMess, and
+  Hysteria are reported `unsupported` and are never probed. There is
+  intentionally no configurable external health-check target;
+  `PA_HEALTH_CHECK_*` only controls timeout, concurrency, per-host IP cap,
+  and TLS verification.

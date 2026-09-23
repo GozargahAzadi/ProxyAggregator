@@ -30,8 +30,12 @@ from proxyaggregator.health.models import (
 from proxyaggregator.health.policy import TargetPolicy
 from proxyaggregator.health.protocols import (
     check_http_connect,
+    check_shadowsocks,
     check_socks4,
     check_socks5,
+    check_trojan,
+    check_vless,
+    transport_gate,
 )
 
 if TYPE_CHECKING:
@@ -47,6 +51,9 @@ _PROTOCOL_CHECKERS = {
     "socks5": check_socks5,
     "socks4": check_socks4,
     "socks4a": check_socks4,
+    "vless": check_vless,
+    "trojan": check_trojan,
+    "ss": check_shadowsocks,
 }
 
 # Protocols whose transport is described by a TLS stage.
@@ -255,6 +262,16 @@ class HealthRunner:
 
         writer = None
         try:
+            # Variants this project cannot speak on the wire are rejected
+            # before any dialing, so they are never probed or misclassified.
+            unsupported_token = transport_gate(parsed)
+            if unsupported_token is not None:
+                return _Attempt(
+                    ip=ip,
+                    status=HealthStatus.UNSUPPORTED,
+                    error=unsupported_token,
+                )
+
             reader, writer, connect_ms = await check_tcp(ip, parsed.port, timeout=self.timeout)
 
             if protocol_uses_tls(parsed):
@@ -291,6 +308,7 @@ class HealthRunner:
                 user=user,
                 password=password,
                 timeout=self.timeout,
+                parsed=parsed,
             )
             proxy_ms = outcome.proxy_ms
             stage = CheckStage.PROTOCOL

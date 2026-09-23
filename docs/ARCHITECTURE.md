@@ -30,7 +30,7 @@ Each component is independent and replaceable:
 | Deduplicator | `Deduplicator` | Removes duplicate configs |
 | IP Resolver | `IPResolver` | Resolves endpoint to real IP |
 | GeoIP | `GeoIPProvider` | Enriches with geolocation |
-| Health Checker | `BaseHealthChecker` | Tests connectivity & latency |
+| Health Checker | `BaseHealthChecker` | Wire-level handshake + latency (HTTP CONNECT, SOCKS4/5, VLESS TCP/TLS, Trojan TLS, Shadowsocks AEAD) |
 | Publisher | `BasePublisher` | Outputs subscription files |
 
 ### 3. Security

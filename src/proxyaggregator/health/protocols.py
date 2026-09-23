@@ -13,10 +13,16 @@ from __future__ import annotations
 
 import asyncio
 import base64
+import hashlib
+import hmac
 import ipaddress
+import os
 import struct
+import uuid
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
+
+from cryptography.hazmat.primitives.ciphers.aead import AESGCM, ChaCha20Poly1305
 
 from proxyaggregator.health import errors
 from proxyaggregator.health.checks import CheckError, monotonic_ms
@@ -24,8 +30,51 @@ from proxyaggregator.health.checks import CheckError, monotonic_ms
 if TYPE_CHECKING:
     from asyncio import StreamReader, StreamWriter
 
+    from proxyaggregator.parsers.base import ParseResult
+
 # Upper bound on bytes read while accumulating an HTTP header block.
 _MAX_HEADER_BYTES = 16 * 1024
+
+# How long we observe an "accepted session" before declaring success for
+# protocols that lack an on-wire success acknowledgement (Trojan, SS).
+_OBSERVATION_WINDOW = 1.0
+
+# Shadowsocks AEAD ciphers this project can actually talk on the wire.
+_SS_SUPPORTED_METHODS = frozenset({"aes-128-gcm", "aes-256-gcm", "chacha20-ietf-poly1305"})
+_SS_KEY_SIZES = {
+    "aes-128-gcm": 16,
+    "aes-256-gcm": 32,
+    "chacha20-ietf-poly1305": 32,
+}
+
+# VLESS network values that map to a plain TCP stream over the checked
+# transport. Anything else (ws/grpc/httpupgrade/xhttp overlays) is unsupported.
+_VLESS_SUPPORTED_NETWORKS = frozenset({None, "", "tcp", "raw"})
+_TROJAN_SUPPORTED_NETWORKS = frozenset({None, "", "tcp"})
+
+
+def transport_gate(parsed: ParseResult) -> str | None:
+    """Return the unsupported variant token before any dialing, else ``None``.
+
+    Called before a TCP connection is even attempted so that variants this
+    project cannot speak on the wire (REALITY, WS overlays, SS-2022 ciphers)
+    are reported as unsupported rather than probed and misclassified.
+    """
+    if parsed.protocol == "vless":
+        if parsed.tls == "reality":
+            return errors.TLS_REALITY
+        if parsed.network not in _VLESS_SUPPORTED_NETWORKS:
+            return errors.TRANSPORT_WS
+        return None
+    if parsed.protocol == "trojan":
+        if parsed.network not in _TROJAN_SUPPORTED_NETWORKS:
+            return errors.TRANSPORT_WS
+        return None
+    if parsed.protocol == "ss":
+        if parsed.method not in _SS_SUPPORTED_METHODS:
+            return errors.SS_CIPHER_UNSUPPORTED
+        return None
+    return None
 
 
 @dataclass(frozen=True)
@@ -71,6 +120,7 @@ async def check_http_connect(
     user: str | None,
     password: str | None,
     timeout: float,
+    parsed: ParseResult | None = None,
 ) -> ProtocolCheckOutcome:
     """Perform an HTTP ``CONNECT`` handshake and validate the status line."""
     start = monotonic_ms()
@@ -190,6 +240,7 @@ async def check_socks5(
     user: str | None,
     password: str | None,
     timeout: float,
+    parsed: ParseResult | None = None,
 ) -> ProtocolCheckOutcome:
     """Perform a SOCKS5 handshake (negotiation, auth, CONNECT)."""
     start = monotonic_ms()
@@ -240,6 +291,7 @@ async def check_socks4(
     user: str | None,
     password: str | None = None,
     timeout: float,
+    parsed: ParseResult | None = None,
 ) -> ProtocolCheckOutcome:
     """Perform a SOCKS4 / SOCKS4a CONNECT handshake.
 
@@ -289,3 +341,251 @@ async def check_socks4(
         return ProtocolCheckOutcome(
             ok=False, proxy_ms=monotonic_ms() - start, error=errors.CONNECTION_ERROR
         )
+
+
+def _vless_address(target_host: str) -> tuple[int, bytes]:
+    """Return the VLESS address type byte and encoded address.
+
+    VLESS uses its own address types: 0x01=IPv4, 0x02=domain, 0x03=IPv6.
+    """
+    try:
+        addr = ipaddress.ip_address(target_host)
+    except ValueError:
+        host_bytes = target_host.encode("idna")
+        return 0x02, bytes([len(host_bytes)]) + host_bytes
+    if addr.version == 4:
+        return 0x01, addr.packed
+    return 0x03, addr.packed
+
+
+async def check_vless(
+    reader: StreamReader,
+    writer: StreamWriter,
+    *,
+    target_host: str,
+    target_port: int,
+    user: str | None,
+    password: str | None = None,
+    timeout: float,
+    parsed: ParseResult | None = None,
+) -> ProtocolCheckOutcome:
+    """Perform a VLESS TCP CONNECT handshake and validate the reply.
+
+    The client sends the VLESS request header (version ``0x00``, so the check
+    is compatible with xtls-rprx-vision inbound flows) asking the proxy to
+    tunnel back to its own advertised endpoint. Success is the server's
+    defined ``0x54`` version response.
+    """
+    start = monotonic_ms()
+    try:
+        uuid_str = (parsed.user if parsed is not None else user) or ""
+        try:
+            uuid_bytes = uuid.UUID(uuid_str).bytes
+        except (ValueError, AttributeError, TypeError):
+            return ProtocolCheckOutcome(
+                ok=False, proxy_ms=monotonic_ms() - start, error=errors.PROTOCOL_MALFORMED
+            )
+
+        atyp, addr = _vless_address(target_host)
+        request = (
+            b"\x00"
+            + uuid_bytes
+            + b"\x00"
+            + b"\x01"
+            + struct.pack("!H", target_port)
+            + bytes([atyp])
+            + addr
+        )
+        writer.write(request)
+        await asyncio.wait_for(writer.drain(), timeout)
+
+        try:
+            head = await asyncio.wait_for(reader.readexactly(2), timeout)
+        except asyncio.IncompleteReadError as exc:
+            raise CheckError(errors.PROTOCOL_MALFORMED) from exc
+
+        proxy_ms = monotonic_ms() - start
+        if head[0] != 0x54:
+            return ProtocolCheckOutcome(
+                ok=False, proxy_ms=proxy_ms, error=errors.PROTOCOL_MALFORMED
+            )
+        return ProtocolCheckOutcome(ok=True, proxy_ms=proxy_ms)
+    except TimeoutError:
+        return ProtocolCheckOutcome(
+            ok=False, proxy_ms=monotonic_ms() - start, error=errors.CONNECTION_TIMEOUT
+        )
+    except CheckError as exc:
+        return ProtocolCheckOutcome(ok=False, proxy_ms=monotonic_ms() - start, error=exc.code)
+    except (ConnectionError, OSError):
+        return ProtocolCheckOutcome(
+            ok=False, proxy_ms=monotonic_ms() - start, error=errors.CONNECTION_ERROR
+        )
+
+
+async def check_trojan(
+    reader: StreamReader,
+    writer: StreamWriter,
+    *,
+    target_host: str,
+    target_port: int,
+    user: str | None = None,
+    password: str | None = None,
+    timeout: float,
+    parsed: ParseResult | None = None,
+) -> ProtocolCheckOutcome:
+    """Perform a Trojan CONNECT handshake over the already-established TLS.
+
+    The TLS layer is established by the caller (``upgrade_tls``). The proxy
+    credential is sent as hex(SHA-224(password)). Trojan has no success
+    acknowledgement: acceptance is inferred when the server keeps the session
+    open and sends nothing during a bounded observation window.
+    """
+    start = monotonic_ms()
+    try:
+        secret = parsed.password if parsed is not None else password
+        if secret is None:
+            return ProtocolCheckOutcome(
+                ok=False, proxy_ms=monotonic_ms() - start, error=errors.PROTOCOL_MALFORMED
+            )
+
+        digest = hashlib.sha224(secret.encode("utf-8")).hexdigest()
+        atyp, addr = _socks5_address(target_host)
+        request = (
+            digest.encode("ascii")
+            + b"\r\n"
+            + bytes([0x01])
+            + struct.pack("!H", target_port)
+            + bytes([atyp])
+            + addr
+            + b"\r\n"
+        )
+        writer.write(request)
+        await asyncio.wait_for(writer.drain(), timeout)
+
+        proxy_ms, error = await _observe_session(reader, timeout)
+        return ProtocolCheckOutcome(ok=error is None, proxy_ms=proxy_ms, error=error)
+    except TimeoutError:
+        return ProtocolCheckOutcome(
+            ok=False, proxy_ms=monotonic_ms() - start, error=errors.CONNECTION_TIMEOUT
+        )
+    except CheckError as exc:
+        return ProtocolCheckOutcome(ok=False, proxy_ms=monotonic_ms() - start, error=exc.code)
+    except (ConnectionError, OSError):
+        return ProtocolCheckOutcome(
+            ok=False, proxy_ms=monotonic_ms() - start, error=errors.CONNECTION_ERROR
+        )
+
+
+def _ss_evp_bytes_to_key(password: bytes, key_len: int) -> bytes:
+    """Legacy EVP_BytesToKey(MD5) master key derivation used by SS-AEAD."""
+    key = b""
+    last = b""
+    while len(key) < key_len:
+        last = hashlib.md5(last + password).digest()
+        key += last
+    return key[:key_len]
+
+
+def _ss_hkdf_sha1(salt: bytes, ikm: bytes, info: bytes, length: int) -> bytes:
+    """RFC 5869 HKDF built on SHA-1, as required by the SS-AEAD spec."""
+    prk = hmac.new(salt, ikm, hashlib.sha1).digest()
+    okm = b""
+    prev = b""
+    counter = 1
+    while len(okm) < length:
+        prev = hmac.new(prk, prev + info + bytes([counter]), hashlib.sha1).digest()
+        okm += prev
+        counter += 1
+    return okm[:length]
+
+
+def _ss_chunk_cipher(method: str, session_key: bytes) -> AESGCM | ChaCha20Poly1305:
+    if method == "chacha20-ietf-poly1305":
+        return ChaCha20Poly1305(session_key)
+    return AESGCM(session_key)
+
+
+def _ss_encrypt_chunk(cipher: AESGCM | ChaCha20Poly1305, nonce_counter: int, data: bytes) -> bytes:
+    """Encrypt one SS-AEAD TCP chunk with its big-endian 96-bit nonce."""
+    nonce = nonce_counter.to_bytes(12, "big")
+    return cipher.encrypt(nonce, data, b"")
+
+
+def _ss_decrypt_chunk(
+    cipher: AESGCM | ChaCha20Poly1305, nonce_counter: int, data_plus_tag: bytes
+) -> bytes:
+    """Decrypt one SS-AEAD TCP chunk; raises on authentication failure."""
+    nonce = nonce_counter.to_bytes(12, "big")
+    return cipher.decrypt(nonce, data_plus_tag, b"")
+
+
+async def check_shadowsocks(
+    reader: StreamReader,
+    writer: StreamWriter,
+    *,
+    target_host: str,
+    target_port: int,
+    user: str | None = None,
+    password: str | None = None,
+    timeout: float,
+    parsed: ParseResult | None = None,
+) -> ProtocolCheckOutcome:
+    """Perform a Shadowsocks AEAD TCP connect for supported ciphers.
+
+    Sends a single AEAD chunk that asks the proxy to connect its own
+    advertised endpoint. As with Trojan there is no success ack: a session
+    the server keeps open silently is treated as accepted.
+    """
+    start = monotonic_ms()
+    try:
+        method = parsed.method if parsed is not None else None
+        secret = parsed.password if parsed is not None else password
+        if method is None or secret is None or method not in _SS_SUPPORTED_METHODS:
+            return ProtocolCheckOutcome(
+                ok=False, proxy_ms=monotonic_ms() - start, error=errors.SS_CIPHER_UNSUPPORTED
+            )
+
+        key_len = _SS_KEY_SIZES[method]
+        master_key = _ss_evp_bytes_to_key(secret.encode("utf-8"), key_len)
+        salt = os.urandom(key_len)
+        session_key = _ss_hkdf_sha1(salt, master_key, b"ss-subkey", key_len)
+        cipher = _ss_chunk_cipher(method, session_key)
+
+        atyp, addr = _socks5_address(target_host)
+        payload = bytes([atyp]) + addr + struct.pack("!H", target_port)
+        length_enc = _ss_encrypt_chunk(cipher, 0, struct.pack("!H", len(payload)))
+        payload_enc = _ss_encrypt_chunk(cipher, 1, payload)
+
+        writer.write(salt + length_enc + payload_enc)
+        await asyncio.wait_for(writer.drain(), timeout)
+
+        proxy_ms, error = await _observe_session(reader, timeout)
+        return ProtocolCheckOutcome(ok=error is None, proxy_ms=proxy_ms, error=error)
+    except TimeoutError:
+        return ProtocolCheckOutcome(
+            ok=False, proxy_ms=monotonic_ms() - start, error=errors.CONNECTION_TIMEOUT
+        )
+    except CheckError as exc:
+        return ProtocolCheckOutcome(ok=False, proxy_ms=monotonic_ms() - start, error=exc.code)
+    except (ConnectionError, OSError):
+        return ProtocolCheckOutcome(
+            ok=False, proxy_ms=monotonic_ms() - start, error=errors.CONNECTION_ERROR
+        )
+
+
+async def _observe_session(reader: StreamReader, timeout: float) -> tuple[float, str | None]:
+    """Observe a tunneled session and return ``(elapsed_ms, error_or_None)``.
+
+    A peer that sends nothing and keeps the connection open is accepted; a
+    peer that closes right after the credentialed request is treated as a
+    rejection; a peer that replies is malformed.
+    """
+    start = monotonic_ms()
+    window = min(timeout, _OBSERVATION_WINDOW)
+    try:
+        data = await asyncio.wait_for(reader.read(1), window)
+    except TimeoutError:
+        return monotonic_ms() - start, None
+    if not data:
+        return monotonic_ms() - start, errors.PROTOCOL_AUTH
+    return monotonic_ms() - start, errors.PROTOCOL_MALFORMED
