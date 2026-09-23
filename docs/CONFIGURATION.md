@@ -14,6 +14,9 @@ ProxyAggregator is configured via environment variables with the `PA_` prefix.
 | `PA_HEALTH_CHECK_CONCURRENCY` | `50` | Max concurrent health checks |
 | `PA_HEALTH_CHECK_MAX_IPS_PER_HOST` | `8` | Max candidate IPs probed per host |
 | `PA_HEALTH_CHECK_VERIFY_TLS` | `false` | Verify TLS certificate chains. Defaults to handshake-only |
+| `PA_FETCH_TIMEOUT` | `30` | Source fetch timeout in seconds |
+| `PA_MAX_RESPONSE_BYTES` | `10485760` | Maximum accepted source response size |
+| `PA_SOURCES_FILE` | `config/sources.json` | Path to the version-controlled source definition file for `seed-sources` (see `docs/SOURCES.md`) |
 | `PA_LOG_LEVEL` | `INFO` | Logging level |
 
 ## .env File
@@ -29,6 +32,9 @@ PA_HEALTH_CHECK_TIMEOUT=10
 PA_HEALTH_CHECK_CONCURRENCY=50
 PA_HEALTH_CHECK_MAX_IPS_PER_HOST=8
 PA_HEALTH_CHECK_VERIFY_TLS=false
+PA_FETCH_TIMEOUT=30
+PA_MAX_RESPONSE_BYTES=10485760
+PA_SOURCES_FILE=config/sources.json
 PA_LOG_LEVEL=INFO
 ```
 

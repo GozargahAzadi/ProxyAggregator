@@ -90,8 +90,8 @@ produces byte-identical output — this validates the Phase 9 chain locally.
   runs never race each other on the same branch.
 - Steps: checkout → uv/Python 3.12 → `uv sync --all-extras` → `mkdir output`
   → `alembic upgrade head` (SQLite at `output/proxyaggregator.db`, gitignored
-  via `*.db`) → **run production pipeline** → empty-output guard → commit &
-  push.
+  via `*.db`) → **seed production sources** → **run production pipeline** →
+  empty-output guard → commit & push.
 
 The empty-output guard fails the job when no artifacts were produced, so
 stale or empty subscriptions are **never** published. The commit step exits
@@ -128,9 +128,12 @@ dedup, scoring, or persistence logic. Key contracts:
   (`no_configured_sources`, `no_eligible_proxies`, scoring/subscription/
   publisher failures, or any unexpected exception).
 
-**Production readiness note (seeding).** The `sources` table is the only
-production source configuration mechanism and the workflow seeds no rows.
-Until production sources are registered there (e.g. a one-time
-`INSERT`/seeding step or upstream reducer writing the table), the pipeline
-correctly fails on `no_configured_sources` rather than fabricating feeds.
-See `PHASE91_REPORT.md` for the exact remaining seeding gap.
+**Production readiness (seeding).** The `sources` table is the only
+production source configuration mechanism. Phase 9.2 added
+`python -m proxyaggregator seed-sources`, which loads the version-controlled
+`config/sources.json` definition file into the table (validated,
+credential-free, url-keyed upsert) — see `docs/SOURCES.md`. The workflow runs
+it **before** the pipeline. The file currently ships as an empty array: real,
+trusted production source URLs are an operator input, so until one is supplied
+the pipeline correctly fails on `no_configured_sources` rather than
+fabricating feeds.

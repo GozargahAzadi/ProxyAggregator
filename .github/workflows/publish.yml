@@ -16,6 +16,8 @@ concurrency:
 env:
   # Runtime SQLite database; *.db is gitignored so it is never committed.
   PA_DATABASE_URL: sqlite:///output/proxyaggregator.db
+  # Production source definitions live in the repository (version-controlled).
+  PA_SOURCES_FILE: config/sources.json
 
 jobs:
   aggregate:
@@ -42,13 +44,21 @@ jobs:
       - name: Apply database migrations
         run: uv run alembic upgrade head
 
+      # Production source seeding (Phase 9.2). The `seed-sources` command loads
+      # the repository-controlled config/sources.json definition file into the
+      # `sources` table (validated, credential-free, url-keyed upsert). It never
+      # fetches; the pipeline below owns all network I/O. Seed *before* the
+      # pipeline so the empty-table fast-fail reflects the real definitions.
+      - name: Seed production sources
+        run: uv run python -m proxyaggregator seed-sources
+
       # Full pipeline integration point (Phase 9.1, roadmap item "Full pipeline
       # integration"). The `pipeline` command orchestrates sources -> parse ->
       # dedup -> persist -> geoip -> health -> score -> subscription in
       # docs/PUBLISHER.md's order and fails fast (non-zero) when no sources are
       # configured or no proxy is eligible, so empty/stale feeds are never
       # published. Production sources are registered in the `sources` table by
-      # `PA_DATABASE_URL`; the pipeline never invents sources.
+      # the seed step above; the pipeline never invents sources.
       - name: Run production pipeline
         run: uv run python -m proxyaggregator pipeline
 

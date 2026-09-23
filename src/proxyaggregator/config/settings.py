@@ -41,4 +41,5 @@ class Settings:
     max_response_bytes: int = field(
         default_factory=lambda: int(_env("MAX_RESPONSE_BYTES", str(10 * 1024 * 1024)))
     )
+    sources_file: str = field(default_factory=lambda: _env("SOURCES_FILE", "config/sources.json"))
     log_level: str = field(default_factory=lambda: _env("LOG_LEVEL", "INFO"))

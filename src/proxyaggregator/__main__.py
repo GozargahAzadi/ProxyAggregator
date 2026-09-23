@@ -30,6 +30,17 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     cmd_pipeline.set_defaults(handler=_cmd_pipeline)
 
+    cmd_seed_sources = subparsers.add_parser(
+        "seed-sources",
+        help="Seed the sources table from the repository-controlled definition file.",
+    )
+    cmd_seed_sources.add_argument(
+        "--sources-file",
+        default=None,
+        help="Source definition file (default: $PA_SOURCES_FILE, i.e. config/sources.json).",
+    )
+    cmd_seed_sources.set_defaults(handler=_cmd_seed_sources)
+
     sample = subparsers.add_parser(
         "sample-subscriptions",
         help="Generate demo subscription artifacts locally (no GitHub/network needed).",
@@ -75,6 +86,20 @@ def _cmd_pipeline(_args: argparse.Namespace) -> int:
     for logger_name in ("httpx", "httpcore", "h11", "http.client", "anyio"):
         logging.getLogger(logger_name).setLevel(logging.WARNING)
     return run_pipeline_cli()
+
+
+def _cmd_seed_sources(args: argparse.Namespace) -> int:
+    """Seed the sources table; non-zero exit on validation/database failures."""
+    from proxyaggregator.config.settings import Settings
+    from proxyaggregator.seeding import run_seed_cli
+
+    settings = Settings()
+    logging.basicConfig(
+        level=getattr(logging, settings.log_level, logging.INFO),
+        format="%(levelname)s %(message)s",
+        stream=sys.stderr,
+    )
+    return run_seed_cli(args.sources_file or settings.sources_file)
 
 
 def main(argv: list[str] | None = None) -> int:

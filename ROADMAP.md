@@ -82,6 +82,7 @@
 - [x] Commit & push workflow (GitHub Actions, stable commit message)
 - [x] GitHub Actions orchestration (schedule + manual dispatch, migrations, empty-output guard)
 - [x] Full pipeline integration *(end-to-end orchestrator `python -m proxyaggregator pipeline` wires sources → parse → dedup → geoip → health → scoring → subscription → publish; fails fast when no sources are configured or no proxy is eligible)*
+- [x] Production source seeding *(`seed-sources` loads the version-controlled `config/sources.json` into the `sources` table before the pipeline; validated, credential-free, url-keyed upsert, no network — see `docs/SOURCES.md`)*
 
 ## Phase 10 — API (Optional)
 

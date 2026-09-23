@@ -67,6 +67,7 @@ ProxyAggregator/
 │       │   └── __init__.py
 │       ├── sources/             # Source collectors
 │       │   └── __init__.py
+│       ├── seeding.py           # Production source seeding (Phase 9.2, see docs/SOURCES.md)
 │       ├── geoip/               # GeoIP lookup
 │       │   └── __init__.py
 │       ├── health/              # Health checking
@@ -89,8 +90,12 @@ ProxyAggregator/
 │   └── versions/
 ├── docs/
 │   ├── ARCHITECTURE.md
+│   ├── CONFIGURATION.md
 │   ├── DATABASE.md
-│   └── CONFIGURATION.md
+│   ├── PUBLISHER.md
+│   └── SOURCES.md               # Production source seeding (Phase 9.2)
+├── config/
+│   └── sources.json             # Version-controlled source definitions
 ├── .github/
 │   └── workflows/
 │       ├── ci.yml
@@ -138,6 +143,12 @@ the orchestrator adds no new parsing, scoring, or persistence logic. It fails
 fast (non-zero exit) with a stable reason token when no sources are configured
 (`no_configured_sources`) or when no proxy survives health checks
 (`no_eligible_proxies`), so the workflow never publishes empty/stale feeds.
+
+Phase 9.2 makes the `sources` table reproducible from version control:
+`seeding.py` + the `seed-sources` command load the repository-controlled
+`config/sources.json` definition file into the table (validated,
+credential-free, url-keyed upsert; no network access), and `publish.yml` runs
+seeding before the pipeline. See `docs/SOURCES.md`.
 
 ## Data Flow
 
