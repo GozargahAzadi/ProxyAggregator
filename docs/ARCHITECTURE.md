@@ -127,9 +127,17 @@ ProxyAggregator/
 Phase 9 implements steps 8-9: `publishing/publisher.py` writes Phase 8
 feeds byte-exactly into `output/` (deterministic filenames, atomic replace,
 sha256 release manifest), and `.github/workflows/publish.yml` commits those
-artifacts on a schedule or manual dispatch. As of Phase 9 there is no shared
-orchestrator connecting stages 1-7; the workflow's `python -m proxyaggregator
-pipeline` step is the documented integration point (see `docs/PUBLISHER.md`).
+artifacts on a schedule or manual dispatch.
+
+Phase 9.1 adds the shared orchestrator (`pipeline.py`) behind the single
+`python -m proxyaggregator pipeline` command. It connects every stage in one
+run — sources → fetch → parse → dedup → persist → geoip → health → score →
+rank → subscribe → publish — delegating to the existing Phase 2-9 modules and
+models. Each stage boundary is a pure function of the previous stage's output;
+the orchestrator adds no new parsing, scoring, or persistence logic. It fails
+fast (non-zero exit) with a stable reason token when no sources are configured
+(`no_configured_sources`) or when no proxy survives health checks
+(`no_eligible_proxies`), so the workflow never publishes empty/stale feeds.
 
 ## Data Flow
 

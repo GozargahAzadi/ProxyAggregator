@@ -8,14 +8,14 @@ pipeline, and artifact commit on a schedule or manual dispatch.
 
 ## Scope
 
-Phase 9 covers three ROADMAP items and **deliberately stops** on the fourth:
+Phase 9 + Phase 9.1 covers all four ROADMAP items:
 
 | ROADMAP item | Status | Location |
 |---|---|---|
 | Release automation | Done | `publishing/publisher.py` |
 | Commit & push workflow | Done | `.github/workflows/publish.yml` |
 | GitHub Actions orchestration | Done | `.github/workflows/publish.yml` |
-| Full pipeline integration | **Blocked / reported** | see below |
+| Full pipeline integration | Done | `pipeline.py` + `publish.yml` |
 
 ## Publisher library (`publishing/publisher.py`)
 
@@ -97,15 +97,40 @@ The empty-output guard fails the job when no artifacts were produced, so
 stale or empty subscriptions are **never** published. The commit step exits
 cleanly when `git diff --cached --quiet` shows no changes.
 
-### Full pipeline integration — STOP point
+### Full pipeline integration (`pipeline.py`)
 
 The step `uv run python -m proxyaggregator pipeline` is the workflow's
-production entrypoint. It does **not exist yet**: the CLI exposes only
-`sample-subscriptions`, and no orchestrator connects sources → parse →
-dedup → geoip → health → scoring → subscription. Per the Phase 9 contract the
-workflow ships this step in place and **fails at it** (as it should — a
-missing pipeline must not produce empty/stale artifacts), rather than invent
-a parallel architecture. The exact missing piece: a single command (e.g.
-`proxyaggregator pipeline`) that fetches sources, persists parsed configs,
-runs Phase 4-7 enrichment/scoring, calls `build_subscription`, and writes via
-`publish_subscriptions` into `output/`. See `PHASE9_REPORT.md`.
+production entrypoint. The `pipeline` module (Phase 9.1) orchestrates the
+existing phases in a single deterministic run:
+
+    sources -> fetch -> parse -> dedup -> persist -> geoip -> health
+             -> score -> rank -> subscribe -> publish into output/
+
+It delegates to the Phase 2-9 modules and models and adds **no** new parsing,
+dedup, scoring, or persistence logic. Key contracts:
+
+- **Configured sources** are loaded from the `sources` table (id order) via
+  `pipeline.load_configured_sources`. The pipeline never invents or hardcodes
+  sources and never touches `publishing.samples` demo content. An empty table
+  is a fatal `no_configured_sources` error.
+- **Failure isolation**: one failing source does not block the others, and a
+  per-entry parse failure is skipped (a `ParseError` is not fatal).
+- **Empty-result policy**: if no proxy is eligible after health checks the run
+  raises `PipelineError("no_eligible_proxies")`, exits non-zero, and writes
+  **nothing** — stale or empty feeds are never published. The workflow's
+  empty-output guard is a second, independent line of defense.
+- **Determinism**: feeds + manifest are byte-identical for identical inputs
+  (no timestamps, no random values); the step order is fixed.
+- **Credential hygiene**: the pipeline logs stage counts only — never URLs,
+  usernames, passwords, or raw URIs. The CLI also silences `httpx`/`httpcore`
+  so fetched URLs do not reach the log stream.
+- **Fail-fast exit codes**: fatal failures return exit code 1
+  (`no_configured_sources`, `no_eligible_proxies`, scoring/subscription/
+  publisher failures, or any unexpected exception).
+
+**Production readiness note (seeding).** The `sources` table is the only
+production source configuration mechanism and the workflow seeds no rows.
+Until production sources are registered there (e.g. a one-time
+`INSERT`/seeding step or upstream reducer writing the table), the pipeline
+correctly fails on `no_configured_sources` rather than fabricating feeds.
+See `PHASE91_REPORT.md` for the exact remaining seeding gap.

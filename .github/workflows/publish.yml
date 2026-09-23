@@ -42,15 +42,13 @@ jobs:
       - name: Apply database migrations
         run: uv run alembic upgrade head
 
-      # Full pipeline integration point (Phase 9, roadmap item "Full pipeline
-      # integration").
-      #
-      # BLOCKED: no end-to-end orchestrator exists yet -- the CLI only exposes
-      # `sample-subscriptions` and there is no command that wires sources ->
-      # parse -> dedup -> geoip -> health -> score -> subscription. Strictly per
-      # the Phase 9 contract this step fails instead of inventing a parallel
-      # architecture or publishing empty/stale feeds. See docs/PUBLISHER.md and
-      # PHASE9_REPORT.md for the exact missing integration point.
+      # Full pipeline integration point (Phase 9.1, roadmap item "Full pipeline
+      # integration"). The `pipeline` command orchestrates sources -> parse ->
+      # dedup -> persist -> geoip -> health -> score -> subscription in
+      # docs/PUBLISHER.md's order and fails fast (non-zero) when no sources are
+      # configured or no proxy is eligible, so empty/stale feeds are never
+      # published. Production sources are registered in the `sources` table by
+      # `PA_DATABASE_URL`; the pipeline never invents sources.
       - name: Run production pipeline
         run: uv run python -m proxyaggregator pipeline
 

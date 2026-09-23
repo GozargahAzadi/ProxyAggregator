@@ -58,6 +58,16 @@ def get_proxy_config(session: Session, config_id: int) -> ProxyConfigORM | None:
     return session.get(ProxyConfigORM, config_id)
 
 
+def get_proxy_config_by_hash(session: Session, content_hash: str) -> ProxyConfigORM | None:
+    stmt = select(ProxyConfigORM).where(ProxyConfigORM.content_hash == content_hash)
+    return session.scalar(stmt)
+
+
+def list_all_proxy_configs(session: Session) -> list[ProxyConfigORM]:
+    stmt = select(ProxyConfigORM)
+    return list(session.scalars(stmt))
+
+
 def list_proxy_configs(
     session: Session, *, limit: int = 100, offset: int = 0
 ) -> list[ProxyConfigORM]:
@@ -108,6 +118,16 @@ def create_source(
 
 def get_source(session: Session, source_id: int) -> SourceORM | None:
     return session.get(SourceORM, source_id)
+
+
+def get_source_by_url(session: Session, url: str) -> SourceORM | None:
+    stmt = select(SourceORM).where(SourceORM.url == url)
+    return session.scalar(stmt)
+
+
+def list_sources(session: Session) -> list[SourceORM]:
+    stmt = select(SourceORM).order_by(SourceORM.id)
+    return list(session.scalars(stmt))
 
 
 # --- HealthCheck CRUD ---
