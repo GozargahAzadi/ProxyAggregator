@@ -1,1 +1,7 @@
-[]
+[
+  {
+    "name": "0xRadikal-verified",
+    "type": "http",
+    "url": "https://raw.githubusercontent.com/0xRadikal/Free-v2ray-Configs/main/verified/configs_base64.txt"
+  }
+]

@@ -491,11 +491,28 @@ class TestCli:
 
 
 class TestRepositoryContract:
-    def test_config_sources_file_exists_and_is_empty(self):
+    def test_config_sources_file_contains_single_verified_source(self):
         path = ROOT_DIR / "config" / "sources.json"
         assert path.exists()
         payload = json.loads(path.read_text(encoding="utf-8"))
-        assert payload == []  # no invented/production URLs until operator supplies them
+        assert isinstance(payload, list)
+        assert len(payload) == 1  # exactly one production source registered so far
+        definition = payload[0]
+        assert definition == {
+            "name": "0xRadikal-verified",
+            "type": "http",
+            "url": (
+                "https://raw.githubusercontent.com/0xRadikal/Free-v2ray-Configs/"
+                "main/verified/configs_base64.txt"
+            ),
+        }
+
+    def test_config_source_passes_definition_validation(self):
+        path = ROOT_DIR / "config" / "sources.json"
+        schemas = seeding.load_defined_sources(path)
+        assert len(schemas) == 1
+        assert schemas[0].name == "0xRadikal-verified"
+        assert schemas[0].source_type == "http"
 
     def test_default_sources_file_setting_matches_workflow(self):
         from proxyaggregator.__main__ import _build_parser
