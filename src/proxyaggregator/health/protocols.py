@@ -454,9 +454,9 @@ async def check_trojan(
             digest.encode("ascii")
             + b"\r\n"
             + bytes([0x01])
-            + struct.pack("!H", target_port)
             + bytes([atyp])
             + addr
+            + struct.pack("!H", target_port)
             + b"\r\n"
         )
         writer.write(request)

@@ -50,6 +50,7 @@ from proxyaggregator.health.protocols import (
     check_http_connect,
     check_socks4,
     check_socks5,
+    check_trojan,
     transport_gate,
 )
 from proxyaggregator.health.runner import (
@@ -61,6 +62,7 @@ from proxyaggregator.health.runner import (
     protocol_uses_tls,
 )
 from proxyaggregator.parsers.base import ParseResult
+from proxyaggregator.parsers.vless import VlessParser
 
 # ---------------------------------------------------------------------------
 # Embedded TLS credentials (self-signed, test-only)
@@ -358,7 +360,6 @@ async def _read_trojan_request(reader) -> bytes:
     digest = await reader.readexactly(56)
     await reader.readexactly(2)  # CRLF
     await reader.readexactly(1)  # command
-    await reader.readexactly(2)  # port
     atyp = (await reader.readexactly(1))[0]
     if atyp == 0x03:
         n = (await reader.readexactly(1))[0]
@@ -367,6 +368,7 @@ async def _read_trojan_request(reader) -> bytes:
         await reader.readexactly(16)
     else:
         await reader.readexactly(4)
+    await reader.readexactly(2)  # DST.PORT
     await reader.readexactly(2)  # trailing CRLF
     return digest
 
@@ -1988,6 +1990,62 @@ class TestPhase62TrojanChecker:
         finally:
             server.close()
 
+    async def test_wire_request_byte_layout(self, tmp_path):
+        """Independently pin the serialized Trojan request layout.
+
+        The expected bytes are written here by hand against the documented
+        Trojan protocol order (CMD | ATYP | DST.ADDR | DST.PORT | CRLF) and use
+        a hard-coded sha224(password) value, so the assertion is independent of
+        the production serializer and of the reference-server parser.
+        """
+        assets = _write_pems(tmp_path)
+        received: list[bytes] = []
+
+        async def recording_handler(reader, writer) -> None:
+            try:
+                received.append(await reader.readexactly(68))
+            except asyncio.IncompleteReadError:
+                pass
+            finally:
+                writer.close()
+
+        host, port, server = await _start_tls(
+            recording_handler, assets["good.crt"], assets["good.key"]
+        )
+        try:
+            client_ctx = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
+            client_ctx.check_hostname = False
+            client_ctx.verify_mode = ssl.CERT_NONE
+            reader, writer = await asyncio.open_connection(
+                host, port, ssl=client_ctx, server_hostname="localhost"
+            )
+            await check_trojan(
+                reader,
+                writer,
+                target_host="1.2.3.4",
+                target_port=443,
+                password="pw123456",
+                timeout=2.0,
+            )
+            writer.close()
+        finally:
+            server.close()
+
+        assert received, "reference server received nothing"
+        first = received[0]
+        expected = (
+            # hex(SHA224("pw123456"))
+            "078ab6beac38f5b3beba8b8ad13a6fcde36da3e4653cb301798cb8f9".encode("ascii")
+            + b"\r\n"
+            + b"\x01"  # CMD CONNECT
+            + b"\x01"  # ATYP IPv4
+            + b"\x01\x02\x03\x04"  # DST.ADDR = 1.2.3.4
+            + b"\x01\xbb"  # DST.PORT = 443
+            + b"\r\n"
+        )
+        assert first == expected
+        assert expected.index(b"\x01\xbb") > expected.rfind(b"\x01\x02\x03\x04")
+
 
 class TestPhase62ShadowsocksChecker:
     @pytest.mark.parametrize("method", ["aes-128-gcm", "aes-256-gcm", "chacha20-ietf-poly1305"])
@@ -2061,3 +2119,56 @@ class TestPhase62SsKnownAnswer:
         ct[-1] ^= 0x01
         with pytest.raises((InvalidTag, ValueError)):
             _ss_decrypt_chunk(cipher, 0, bytes(ct))
+
+
+class TestPhase62VlessShareLinkGate:
+    """VLESS share-link `type` transport is read into `network` and gated.
+
+    Real-world VLESS share links represent the transport with `type=`.
+    The parser must map it into ``ParseResult.network`` so ``transport_gate``
+    rejects overlay variants before any dial.
+    """
+
+    UUID = "11111111-2222-4333-8444-555555555555"
+
+    def _parsed(self, uri: str) -> ParseResult:
+        result = VlessParser().parse(uri)
+        assert isinstance(result, ParseResult), result
+        return result
+
+    def test_type_ws_parses_into_network(self):
+        parsed = self._parsed(f"vless://{self.UUID}@example.com:443?security=tls&type=ws")
+        assert parsed.network == "ws"
+        assert transport_gate(parsed) == errors.TRANSPORT_WS
+
+    def test_type_grpc_parses_into_network(self):
+        parsed = self._parsed(
+            f"vless://{self.UUID}@example.com:443?security=tls&type=grpc&serviceName=x"
+        )
+        assert parsed.network == "grpc"
+        assert transport_gate(parsed) == errors.TRANSPORT_WS
+
+    def test_type_httpupgrade_and_xhttp_parses_into_network(self):
+        for alias in ("httpupgrade", "xhttp"):
+            parsed = self._parsed(f"vless://{self.UUID}@example.com:443?security=tls&type={alias}")
+            assert parsed.network == alias
+            assert transport_gate(parsed) == errors.TRANSPORT_WS
+
+    def test_type_tcp_is_not_gated(self):
+        parsed = self._parsed(f"vless://{self.UUID}@example.com:443?type=tcp")
+        assert parsed.network == "tcp"
+        assert transport_gate(parsed) is None
+
+    def test_legacy_network_param_still_parses(self):
+        parsed = self._parsed(f"vless://{self.UUID}@example.com:443?security=tls&network=ws")
+        assert parsed.network == "ws"
+        assert transport_gate(parsed) == errors.TRANSPORT_WS
+
+    async def test_type_ws_share_link_never_dials(self):
+        parsed = self._parsed(f"vless://{self.UUID}@127.0.0.1:1?security=tls&type=ws")
+        runner = _runner()
+        result = await runner.check(HealthEntry(parsed=parsed))
+        assert result.status == HealthStatus.UNSUPPORTED
+        assert result.error == errors.TRANSPORT_WS
+        assert result.connect_ms is None
+        assert result.protocol_checked is False

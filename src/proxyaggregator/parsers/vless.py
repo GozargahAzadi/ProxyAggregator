@@ -46,7 +46,7 @@ class VlessParser(BaseParser):
             user=parsed.username or "",
             password=parsed.password,
             sni=_first(params, "sni"),
-            network=_first(params, "network"),
+            network=_first(params, "type") or _first(params, "network"),
             tls=_first(params, "security"),
             path=_first(params, "path"),
             host_header=_first(params, "host"),
