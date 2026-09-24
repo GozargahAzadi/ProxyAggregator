@@ -319,6 +319,10 @@ def _to_ranked_proxies(
                 content_hash=score.content_hash,
                 score=score.score or 0.0,
                 rank=position,
+                country_code=config.country_code,
+                latency_ms=(
+                    score.latency_ms if score.latency_ms is not None else config.latency_ms
+                ),
             )
         )
     return result

@@ -77,6 +77,8 @@ def _ranked(
     content_hash: str | None = None,
     score: float | None = None,
     rank: int | None = None,
+    country_code: str | None = None,
+    latency_ms: float | None = None,
 ) -> RankedProxy:
     return RankedProxy(
         proxy_config_id=proxy_config_id,
@@ -87,6 +89,8 @@ def _ranked(
         content_hash=content_hash or f"{proxy_config_id:04d}" * 16,
         score=score if score is not None else 1.0 - proxy_config_id / 1000,
         rank=rank if rank is not None else proxy_config_id,
+        country_code=country_code,
+        latency_ms=latency_ms,
     )
 
 
@@ -253,9 +257,20 @@ class TestProtocolCoverage:
         assert parsed.port == port
 
     def test_socks4a_scheme_normalized_to_socks4(self):
-        candidate = _ranked(1, "socks4", SOCKS4A, "proxy.example.com", 1080)
+        candidate = _ranked(
+            1,
+            "socks4",
+            SOCKS4A,
+            "proxy.example.com",
+            1080,
+            country_code="DE",
+            latency_ms=124.5,
+        )
         feed = build_subscription([candidate])
-        assert feed.content == "socks4://proxy.example.com:1080\n"
+        line = feed.content.splitlines()[0]
+        assert line.startswith("socks4://proxy.example.com:1080")
+        assert "socks4a://" not in line
+        assert unquote(urlparse(line).fragment) == "🇩🇪 DE | SOCKS4 | 125ms | GozargahAzadi"
 
 
 # G. URI validity ------------------------------------------------------------
@@ -284,14 +299,23 @@ class TestUriValidity:
 
 
 class TestPercentEncoding:
-    def test_path_and_fragment_encoded(self):
+    def test_path_and_remark_fragment_encoded(self):
         raw = f"vless://{UUID}@vless.example.com:443?network=ws&security=tls&path=/ws#香港 节点 01"
-        candidate = _ranked(1, "vless", raw, "vless.example.com", 443)
+        candidate = _ranked(
+            1,
+            "vless",
+            raw,
+            "vless.example.com",
+            443,
+            country_code="DE",
+            latency_ms=124.5,
+        )
         line = build_subscription([candidate]).content.splitlines()[0]
         assert "%2Fws" in line
         assert "%20" in line
+        assert "香港" not in line
         fragment = unquote(urlparse(line).fragment)
-        assert fragment == "香港 节点 01"
+        assert fragment == "🇩🇪 DE | VLESS | 125ms | GozargahAzadi"
 
     def test_password_special_chars_roundtrip(self):
         candidate = _ranked(1, "socks5", SOCKS5, "proxy.example.com", 1080)
@@ -322,27 +346,41 @@ class TestQueryOrdering:
         assert list(query) == sorted(list(query))
 
 
-# J. Fragments / names -------------------------------------------------------
+# J. Remarks / public names ---------------------------------------------------
 
 
 class TestFragments:
-    def test_ss_fragment_preserved(self):
-        line = build_subscription([_ranked(1, "ss", SS, "ss.example.com", 8388)]).content
-        assert line.endswith("#SSNode\n")
+    def test_ss_fragment_is_remark(self):
+        candidate = _ranked(
+            1, "ss", SS, "ss.example.com", 8388, country_code="DE", latency_ms=124.5
+        )
+        line = build_subscription([candidate]).content.splitlines()[0]
+        assert unquote(urlparse(line).fragment) == "🇩🇪 DE | SS | 125ms | GozargahAzadi"
+        assert "SSNode" not in line
 
-    def test_trojan_fragment_preserved(self):
-        line = build_subscription([_ranked(1, "trojan", TROJAN, "trojan.example.com", 443)]).content
-        parsed = _parse(line)
-        assert parsed.fragment == "TrojanNode"
+    def test_trojan_fragment_is_remark(self):
+        candidate = _ranked(
+            1, "trojan", TROJAN, "trojan.example.com", 443, country_code="US", latency_ms=87.2
+        )
+        line = build_subscription([candidate]).content.splitlines()[0]
+        assert unquote(_parse(line).fragment) == "🇺🇸 US | TROJAN | 87ms | GozargahAzadi"
+        assert "TrojanNode" not in line
 
-    def test_vmess_ps_is_fragment(self):
-        line = build_subscription([_ranked(1, "vmess", VMESS, "vmess.example.com", 443)]).content
-        assert _parse(line).fragment == "VMessNode"
+    def test_vmess_ps_is_remark(self):
+        candidate = _ranked(
+            1, "vmess", VMESS, "vmess.example.com", 443, country_code="DE", latency_ms=200.0
+        )
+        line = build_subscription([candidate]).content.splitlines()[0]
+        assert _parse(line).fragment == "🇩🇪 DE | VMESS | 200ms | GozargahAzadi"
+        assert "VMessNode" not in line
 
-    def test_no_fragment_no_hash(self):
+    def test_no_fragment_source_still_gets_remark(self):
         raw = "https://proxy.example.com:8443"
-        line = build_subscription([_ranked(1, "https", raw, "proxy.example.com", 8443)]).content
-        assert "#" not in line
+        candidate = _ranked(
+            1, "https", raw, "proxy.example.com", 8443, country_code="GB", latency_ms=65.4
+        )
+        line = build_subscription([candidate]).content.splitlines()[0]
+        assert unquote(urlparse(line).fragment) == "🇬🇧 GB | HTTPS | 65ms | GozargahAzadi"
 
 
 # K. Credentials -------------------------------------------------------------
@@ -486,13 +524,24 @@ class TestNewlineBehavior:
 class TestJsonFeed:
     def test_deterministic_sorted_keys_no_score_or_id(self):
         raw = "https://proxy.example.com:8443"
-        candidates = [_ranked(1, "https", raw, "proxy.example.com", 8443)]
+        candidates = [
+            _ranked(
+                1,
+                "https",
+                raw,
+                "proxy.example.com",
+                8443,
+                country_code="US",
+                latency_ms=73.0,
+            )
+        ]
         content = build_subscription(candidates, format=SubscriptionFormat.JSON).content
         items = json.loads(content)
         assert len(items) == 1
         (item,) = items
         assert list(item) == sorted(item)
-        assert item["uri"] == "https://proxy.example.com:8443"
+        assert item["uri"].startswith("https://proxy.example.com:8443#")
+        assert unquote(urlparse(item["uri"]).fragment) == "🇺🇸 US | HTTPS | 73ms | GozargahAzadi"
         assert item["host"] == "proxy.example.com"
         assert item["port"] == 8443
         assert not any(key in item for key in ("score", "rank", "proxy_config_id"))

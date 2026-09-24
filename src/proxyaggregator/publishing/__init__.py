@@ -1,9 +1,10 @@
-"""Subscription generation (Phase 8) and deterministic publishing (Phase 9).
+"""Subscription generation (Phase 8), publishing (Phase 9), and naming (Phase 10).
 
 Phase 8 (`feeds`) turns ranked, eligible proxies into deterministic feeds.
 Phase 9 (`publisher`) turns those feeds into byte-exact artifact files plus a
 deterministic release manifest, and `samples` provides synthetic demo feeds
-for a local dry run. Clash and sing-box formats are deferred (see
+for a local dry run. Phase 10 (`naming`) stamps every published node with a
+deterministic public Remark. Clash and sing-box formats are deferred (see
 ``docs/SUBSCRIPTION.md``); their publishing is likewise deferred.
 """
 
@@ -14,6 +15,15 @@ from proxyaggregator.publishing.models import (
     Subscription,
     SubscriptionFormat,
     SubscriptionRequest,
+)
+from proxyaggregator.publishing.naming import (
+    PROTOCOL_DISPLAY_NAMES,
+    REMARK_AUTHOR,
+    build_remark,
+    country_flag,
+    format_latency_ms,
+    normalize_country_code,
+    protocol_display_name,
 )
 from proxyaggregator.publishing.publisher import (
     DEFAULT_FILENAMES,
@@ -37,6 +47,8 @@ __all__ = [
     "DEFAULT_OUTPUT_DIR",
     "DEFAULT_PROTOCOL_FILENAME_STEMS",
     "MANIFEST_FILENAME",
+    "PROTOCOL_DISPLAY_NAMES",
+    "REMARK_AUTHOR",
     "SUPPORTED_PROTOCOLS",
     "PublishError",
     "RankedProxy",
@@ -48,10 +60,15 @@ __all__ = [
     "build_demo_subscriptions",
     "build_protocol_subscriptions",
     "build_release_manifest",
+    "build_remark",
     "build_subscription",
     "canonical_uri",
+    "country_flag",
     "default_filename",
     "default_protocol_filename",
+    "format_latency_ms",
+    "normalize_country_code",
+    "protocol_display_name",
     "publish_subscriptions",
     "write_artifact",
     "write_release_manifest",

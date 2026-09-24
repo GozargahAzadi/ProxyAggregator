@@ -24,10 +24,13 @@ from proxyaggregator.parsers.base import ParseError
 from proxyaggregator.parsers.registry import get_registry
 from proxyaggregator.publishing.errors import SubscriptionError
 from proxyaggregator.publishing.models import RankedProxy, Subscription, SubscriptionFormat
+from proxyaggregator.publishing.naming import build_remark
 from proxyaggregator.publishing.serializer import SUPPORTED_PROTOCOLS, canonical_uri
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
+
+    from proxyaggregator.parsers.base import ParseResult
 
 
 def _validate_max_items(max_items: int | None) -> None:
@@ -50,6 +53,20 @@ def _select(candidates: Sequence[RankedProxy], max_items: int | None) -> list[Ra
     return selected
 
 
+def _with_remark(parsed: ParseResult, candidate: RankedProxy) -> ParseResult:
+    """Return a copy of ``parsed`` whose fragment is the Phase 10 Remark.
+
+    Every canonical serializer renders the fragment as the node's public name
+    (for VMess the fragment is emitted as the ``ps`` field), so swapping it in
+    at the serialization boundary stamps every published URI with the
+    deterministic Remark from :func:`build_remark`. The persisted ``raw_uri``,
+    parsed identity, and ``content_hash`` are never mutated, which keeps dedup
+    and scoring authoritative from earlier phases.
+    """
+    remark = build_remark(candidate.country_code, candidate.protocol, candidate.latency_ms)
+    return parsed.model_copy(update={"fragment": remark})
+
+
 def _serialize(candidate: RankedProxy) -> str:
     parser = get_registry().get(candidate.protocol)
     if parser is None:
@@ -66,7 +83,7 @@ def _serialize(candidate: RankedProxy) -> str:
     ):
         raise SubscriptionError(candidate.proxy_config_id, candidate.protocol, "identity_mismatch")
     try:
-        return canonical_uri(parsed)
+        return canonical_uri(_with_remark(parsed, candidate))
     except ValueError as exc:
         raise SubscriptionError(candidate.proxy_config_id, candidate.protocol, str(exc)) from exc
 

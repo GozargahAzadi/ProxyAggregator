@@ -32,6 +32,10 @@ class RankedProxy(BaseModel):
     in authoritative rank order (best first). ``raw_uri`` is the persisted
     canonical source string; it is the only carrier of fields that the database
     does not persist (UUID, password, TLS/SNI/network options, ...).
+
+    ``country_code`` and ``latency_ms`` are presentation-only Phase 10 naming
+    metadata sourced from the persisted GeoIP/health data. They never
+    participate in identity, dedup, scoring, or ranking.
     """
 
     proxy_config_id: int = Field(..., gt=0, description="Reference to ProxyConfig")
@@ -44,6 +48,15 @@ class RankedProxy(BaseModel):
     )
     score: float = Field(..., ge=0.0, description="Phase 7 latency score")
     rank: int = Field(..., ge=1, description="1-based rank position")
+    country_code: str | None = Field(
+        default=None,
+        description="ISO-3166-1 alpha-2 country (presentation only, Phase 10 naming)",
+    )
+    latency_ms: float | None = Field(
+        default=None,
+        ge=0.0,
+        description="Latest measured latency in ms (presentation only, Phase 10 naming)",
+    )
 
     model_config = {"frozen": True}
 

@@ -21,6 +21,7 @@ import sys
 from datetime import UTC, datetime
 from pathlib import Path
 from unittest import mock
+from urllib.parse import unquote, urlparse
 
 import pytest
 from sqlalchemy import create_engine
@@ -515,6 +516,73 @@ class TestSubscriptionInput:
         plain = feeds[0][1]
         assert plain.format is SubscriptionFormat.PLAIN
         assert plain.count == 2
+
+    def test_ranked_proxies_carry_country_and_latency_from_config(self, db_session):
+        config = create_proxy_config(
+            db_session,
+            protocol="http",
+            host="203.0.113.10",
+            port=8080,
+            raw_uri=URI_HTTP,
+            content_hash="e" * 64,
+            country_code="US",
+        )
+        config.latency_ms = 120.5
+        db_session.commit()
+        proxy_score = ProxyScore(
+            proxy_config_id=config.id,
+            content_hash="e" * 64,
+            status=HealthStatus.OK,
+            eligible=True,
+            score=0.5,
+            latency_ms=120.5,
+        )
+        projected = pipeline._to_ranked_proxies([proxy_score], [config])
+        assert len(projected) == 1
+        assert projected[0].country_code == "US"
+        assert projected[0].latency_ms == 120.5
+
+    def test_ranked_latency_takes_priority_over_config_latency(self, db_session):
+        config = create_proxy_config(
+            db_session,
+            protocol="http",
+            host="203.0.113.10",
+            port=8080,
+            raw_uri=URI_HTTP,
+            content_hash="f" * 64,
+        )
+        config.latency_ms = 900.0
+        db_session.commit()
+        proxy_score = ProxyScore(
+            proxy_config_id=config.id,
+            content_hash="f" * 64,
+            status=HealthStatus.OK,
+            eligible=True,
+            score=0.5,
+            latency_ms=42.0,
+        )
+        projected = pipeline._to_ranked_proxies([proxy_score], [config])
+        assert projected[0].latency_ms == 42.0
+
+    def test_end_to_end_feed_uris_carry_remark(self, db_session):
+        ranked = [
+            RankedProxy(
+                proxy_config_id=1,
+                protocol="http",
+                host="203.0.113.10",
+                port=8080,
+                raw_uri=URI_HTTP,
+                content_hash="c" * 64,
+                score=0.9,
+                rank=1,
+                country_code="US",
+                latency_ms=120.5,
+            )
+        ]
+        feeds = pipeline._build_feeds(ranked, max_items=None)
+        line = feeds[0][1].content.splitlines()[0]
+        assert unquote(urlparse(line).fragment) == "🇺🇸 US | HTTP | 121ms | GozargahAzadi"
+        assert "GozargahAzadi" in line
 
 
 # J/K/L. Fatal failures prevent publishing ------------------------------------

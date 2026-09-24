@@ -69,3 +69,16 @@ def test_migration_downgrade_works():
 
     revision = script_dir.get_revision(head_rev)
     assert revision is not None
+
+
+def test_phase10_remark_requires_no_schema_change():
+    """The Phase 10 Remark is presentation-only: no DB column, no migration."""
+    from proxyaggregator.db.base import Base
+
+    column_names = {
+        column.name for table in Base.metadata.sorted_tables for column in table.columns
+    }
+    assert "remark" not in column_names
+    versions_dir = PROJECT_ROOT / "alembic" / "versions"
+    for migration in versions_dir.glob("*.py"):
+        assert "remark" not in migration.read_text()
