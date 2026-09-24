@@ -11,9 +11,7 @@ class SourceSchema(BaseModel):
     """Domain model for a proxy data source."""
 
     name: str = Field(..., min_length=1, description="Source name")
-    source_type: str = Field(
-        ..., min_length=1, description="Type (telegram, github, http, rss)"
-    )
+    source_type: str = Field(..., min_length=1, description="Type (telegram, github, http, rss)")
     url: str = Field(..., min_length=1, description="Source URL")
 
     last_fetched_at: datetime | None = Field(

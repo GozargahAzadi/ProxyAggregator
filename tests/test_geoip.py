@@ -224,6 +224,7 @@ def _build_mmdb(ip_data: dict[str, dict]) -> bytes:
 # Helper: create a minimal ParseResult
 # ---------------------------------------------------------------------------
 
+
 def _make_result(
     host: str = "example.com",
     port: int = 443,
@@ -641,13 +642,17 @@ class TestGeoIpEnrichment:
             (socket.AF_INET, socket.SOCK_STREAM, 0, "", ("1.2.3.4", 0)),
         ]
         db_path = tmp_path / "test.mmdb"
-        db_path.write_bytes(_build_mmdb({
-            "1.2.3.4": {
-                "country": {"iso_code": "US", "names": {"en": "United States"}},
-                "city": {"names": {"en": "New York"}},
-                "location": {"latitude": 40.71, "longitude": -74.01},
-            }
-        }))
+        db_path.write_bytes(
+            _build_mmdb(
+                {
+                    "1.2.3.4": {
+                        "country": {"iso_code": "US", "names": {"en": "United States"}},
+                        "city": {"names": {"en": "New York"}},
+                        "location": {"latitude": 40.71, "longitude": -74.01},
+                    }
+                }
+            )
+        )
         reader = MmdbReader(str(db_path))
         enricher = GeoIpEnricher(reader)
 
@@ -700,13 +705,17 @@ class TestGeoIpEnrichment:
         from proxyaggregator.geoip.mmdb import MmdbReader
 
         db_path = tmp_path / "test.mmdb"
-        db_path.write_bytes(_build_mmdb({
-            "8.8.8.8": {
-                "country": {"iso_code": "US"},
-                "city": {"names": {"en": "Mountain View"}},
-                "location": {"latitude": 37.386, "longitude": -122.084},
-            }
-        }))
+        db_path.write_bytes(
+            _build_mmdb(
+                {
+                    "8.8.8.8": {
+                        "country": {"iso_code": "US"},
+                        "city": {"names": {"en": "Mountain View"}},
+                        "location": {"latitude": 37.386, "longitude": -122.084},
+                    }
+                }
+            )
+        )
         reader = MmdbReader(str(db_path))
         enricher = GeoIpEnricher(reader)
 
@@ -726,10 +735,14 @@ class TestGeoIpEnrichment:
             (socket.AF_INET, socket.SOCK_STREAM, 0, "", ("2.2.2.2", 0)),
         ]
         db_path = tmp_path / "test.mmdb"
-        db_path.write_bytes(_build_mmdb({
-            "1.1.1.1": {"country": {"iso_code": "AU"}},
-            "2.2.2.2": {"country": {"iso_code": "JP"}},
-        }))
+        db_path.write_bytes(
+            _build_mmdb(
+                {
+                    "1.1.1.1": {"country": {"iso_code": "AU"}},
+                    "2.2.2.2": {"country": {"iso_code": "JP"}},
+                }
+            )
+        )
         reader = MmdbReader(str(db_path))
         enricher = GeoIpEnricher(reader)
 
@@ -763,9 +776,13 @@ class TestGeoIpEnrichment:
             (socket.AF_INET, socket.SOCK_STREAM, 0, "", ("1.2.3.4", 0)),
         ]
         db_path = tmp_path / "test.mmdb"
-        db_path.write_bytes(_build_mmdb({
-            "1.2.3.4": {"country": {"iso_code": "US"}},
-        }))
+        db_path.write_bytes(
+            _build_mmdb(
+                {
+                    "1.2.3.4": {"country": {"iso_code": "US"}},
+                }
+            )
+        )
         reader = MmdbReader(str(db_path))
         enricher = GeoIpEnricher(reader)
 

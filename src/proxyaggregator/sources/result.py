@@ -28,14 +28,10 @@ class SourceResult(BaseModel):
     source_url: str = Field(..., description="URL that was fetched")
     status: SourceResultStatus = Field(..., description="Outcome of the fetch")
     content: str = Field(default="", description="Raw fetched content")
-    status_code: int | None = Field(
-        default=None, description="HTTP status code when applicable"
-    )
+    status_code: int | None = Field(default=None, description="HTTP status code when applicable")
     fetched_at: datetime = Field(..., description="When the fetch was performed")
     content_length: int = Field(default=-1, description="Byte length of content")
-    error: str | None = Field(
-        default=None, description="Error message when status is not SUCCESS"
-    )
+    error: str | None = Field(default=None, description="Error message when status is not SUCCESS")
 
     model_config = {"frozen": True}
 

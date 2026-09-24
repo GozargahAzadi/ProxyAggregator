@@ -1,6 +1,5 @@
 """Tests for basic CRUD operations."""
 
-
 import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session

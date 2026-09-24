@@ -99,29 +99,35 @@ class IpDeduplicator:
 
                 if ip_key in seen_by_ip_key:
                     orig_idx = seen_by_ip_key[ip_key]
-                    results.append(DedupResult(
-                        content_hash="0" * 64,
-                        endpoint=ep,
-                        match_type=DedupMatchType.EXACT,
-                        match_index=orig_idx,
-                        match_reason=f"Same resolved IP ({primary_ip}) + port + protocol + credentials",
-                    ))
+                    results.append(
+                        DedupResult(
+                            content_hash="0" * 64,
+                            endpoint=ep,
+                            match_type=DedupMatchType.EXACT,
+                            match_index=orig_idx,
+                            match_reason=f"Same resolved IP ({primary_ip}) + port + protocol + credentials",
+                        )
+                    )
                 else:
-                    results.append(DedupResult(
+                    results.append(
+                        DedupResult(
+                            content_hash="0" * 64,
+                            endpoint=ep,
+                            match_type=DedupMatchType.NONE,
+                            match_index=None,
+                            match_reason=None,
+                        )
+                    )
+                    seen_by_ip_key[ip_key] = len(results) - 1
+            else:
+                results.append(
+                    DedupResult(
                         content_hash="0" * 64,
                         endpoint=ep,
                         match_type=DedupMatchType.NONE,
                         match_index=None,
                         match_reason=None,
-                    ))
-                    seen_by_ip_key[ip_key] = len(results) - 1
-            else:
-                results.append(DedupResult(
-                    content_hash="0" * 64,
-                    endpoint=ep,
-                    match_type=DedupMatchType.NONE,
-                    match_index=None,
-                    match_reason=None,
-                ))
+                    )
+                )
 
         return results

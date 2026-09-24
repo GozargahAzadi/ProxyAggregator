@@ -1,6 +1,5 @@
 """Tests for SQLAlchemy ORM models and database initialization."""
 
-
 import pytest
 from sqlalchemy import create_engine, inspect
 from sqlalchemy.orm import Session
@@ -356,10 +355,21 @@ class TestDatabaseSchema:
         inspector = inspect(db_engine)
         columns = {col["name"] for col in inspector.get_columns("proxy_configs")}
         expected = {
-            "id", "protocol", "host", "port", "raw_uri", "content_hash",
-            "country_code", "city", "latitude", "longitude",
-            "is_alive", "latency_ms", "source_id",
-            "created_at", "updated_at",
+            "id",
+            "protocol",
+            "host",
+            "port",
+            "raw_uri",
+            "content_hash",
+            "country_code",
+            "city",
+            "latitude",
+            "longitude",
+            "is_alive",
+            "latency_ms",
+            "source_id",
+            "created_at",
+            "updated_at",
         }
         assert expected.issubset(columns)
 
@@ -373,8 +383,12 @@ class TestDatabaseSchema:
         inspector = inspect(db_engine)
         columns = {col["name"] for col in inspector.get_columns("health_checks")}
         expected = {
-            "id", "proxy_config_id", "checked_at", "is_alive",
-            "latency_ms", "error_message",
+            "id",
+            "proxy_config_id",
+            "checked_at",
+            "is_alive",
+            "latency_ms",
+            "error_message",
         }
         assert expected.issubset(columns)
 

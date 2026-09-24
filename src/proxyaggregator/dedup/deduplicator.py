@@ -67,33 +67,39 @@ class Deduplicator:
                 orig_item = seen_items[orig_idx]
                 # Same hash but non-essential fields differ -> FUZZY
                 if not _non_essential_equal(item, orig_item):
-                    results.append(DedupResult(
-                        content_hash=h,
-                        endpoint=ep,
-                        match_type=DedupMatchType.FUZZY,
-                        match_index=orig_idx,
-                        match_reason="Near-duplicate (non-essential field differences)",
-                    ))
+                    results.append(
+                        DedupResult(
+                            content_hash=h,
+                            endpoint=ep,
+                            match_type=DedupMatchType.FUZZY,
+                            match_index=orig_idx,
+                            match_reason="Near-duplicate (non-essential field differences)",
+                        )
+                    )
                 else:
-                    results.append(DedupResult(
-                        content_hash=h,
-                        endpoint=ep,
-                        match_type=DedupMatchType.EXACT,
-                        match_index=orig_idx,
-                        match_reason="Exact duplicate (identical content hash)",
-                    ))
+                    results.append(
+                        DedupResult(
+                            content_hash=h,
+                            endpoint=ep,
+                            match_type=DedupMatchType.EXACT,
+                            match_index=orig_idx,
+                            match_reason="Exact duplicate (identical content hash)",
+                        )
+                    )
                 continue
 
             # 2. Endpoint match check
             if ep in seen_by_endpoint:
                 orig_idx = seen_by_endpoint[ep]
-                results.append(DedupResult(
-                    content_hash=h,
-                    endpoint=ep,
-                    match_type=DedupMatchType.ENDPOINT,
-                    match_index=orig_idx,
-                    match_reason="Same endpoint, different configuration",
-                ))
+                results.append(
+                    DedupResult(
+                        content_hash=h,
+                        endpoint=ep,
+                        match_type=DedupMatchType.ENDPOINT,
+                        match_index=orig_idx,
+                        match_reason="Same endpoint, different configuration",
+                    )
+                )
                 # Register as survivor: hash for exact matching, item for fuzzy.
                 # Do NOT overwrite seen_by_endpoint — first occurrence stays.
                 new_idx = len(seen_items)
@@ -111,21 +117,25 @@ class Deduplicator:
                     break
 
             if fuzzy_matched and fuzzy_orig_idx is not None:
-                results.append(DedupResult(
-                    content_hash=h,
-                    endpoint=ep,
-                    match_type=DedupMatchType.FUZZY,
-                    match_index=fuzzy_orig_idx,
-                    match_reason="Near-duplicate (non-essential field differences)",
-                ))
+                results.append(
+                    DedupResult(
+                        content_hash=h,
+                        endpoint=ep,
+                        match_type=DedupMatchType.FUZZY,
+                        match_index=fuzzy_orig_idx,
+                        match_reason="Near-duplicate (non-essential field differences)",
+                    )
+                )
             else:
-                results.append(DedupResult(
-                    content_hash=h,
-                    endpoint=ep,
-                    match_type=DedupMatchType.NONE,
-                    match_index=None,
-                    match_reason=None,
-                ))
+                results.append(
+                    DedupResult(
+                        content_hash=h,
+                        endpoint=ep,
+                        match_type=DedupMatchType.NONE,
+                        match_index=None,
+                        match_reason=None,
+                    )
+                )
 
             # Register as survivor
             new_idx = len(seen_items)

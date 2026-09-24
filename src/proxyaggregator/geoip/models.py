@@ -29,7 +29,9 @@ class EnrichmentResult(BaseModel):
     original_protocol: str = Field(..., min_length=1)
 
     resolved_ip: str | None = Field(default=None, description="Primary resolved IP")
-    all_resolved_ips: list[str] = Field(default_factory=list, description="All resolved IPs, sorted")
+    all_resolved_ips: list[str] = Field(
+        default_factory=list, description="All resolved IPs, sorted"
+    )
     resolution_error: str | None = Field(default=None)
 
     country_code: str | None = Field(default=None)

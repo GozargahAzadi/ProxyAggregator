@@ -246,9 +246,7 @@ class TestHttpSourceCollector:
         )
 
         mock_client = AsyncMock()
-        mock_client.get = AsyncMock(
-            side_effect=httpx.ConnectError("Connection refused")
-        )
+        mock_client.get = AsyncMock(side_effect=httpx.ConnectError("Connection refused"))
         mock_client.__aenter__ = AsyncMock(return_value=mock_client)
         mock_client.__aexit__ = AsyncMock(return_value=False)
 
@@ -444,7 +442,11 @@ class TestSourceOrchestrator:
         return SourceSchema(name=name, source_type=source_type, url=url)
 
     def _make_result(
-        self, name: str, url: str, content: str, status: SourceResultStatus = SourceResultStatus.SUCCESS
+        self,
+        name: str,
+        url: str,
+        content: str,
+        status: SourceResultStatus = SourceResultStatus.SUCCESS,
     ) -> SourceResult:
         return SourceResult(
             source_name=name,
@@ -584,10 +586,7 @@ class TestSourceOrchestrator:
 
     @pytest.mark.asyncio
     async def test_results_preserve_order(self):
-        sources = [
-            self._make_source(f"S{i}", f"https://s{i}.com/proxies")
-            for i in range(5)
-        ]
+        sources = [self._make_source(f"S{i}", f"https://s{i}.com/proxies") for i in range(5)]
 
         class FakeCollector(BaseSourceCollector):
             @property

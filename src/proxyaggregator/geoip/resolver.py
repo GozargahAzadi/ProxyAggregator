@@ -86,9 +86,7 @@ def resolve_host(host: str | None, timeout: float = 5.0) -> ResolveResult:
         or not math.isfinite(timeout)
         or timeout <= 0
     ):
-        return ResolveResult(
-            host=host, resolved=False, error=f"Invalid timeout value: {timeout!r}"
-        )
+        return ResolveResult(host=host, resolved=False, error=f"Invalid timeout value: {timeout!r}")
 
     # Hostname: resolve via socket with bounded timeout
     previous_timeout = socket.getdefaulttimeout()

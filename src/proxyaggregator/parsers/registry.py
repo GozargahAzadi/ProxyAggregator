@@ -44,10 +44,16 @@ def get_registry() -> ParserRegistry:
         from proxyaggregator.parsers.vmess import VmessParser
 
         for cls in [
-            VlessParser, VmessParser, TrojanParser, ShadowsocksParser,
-            HysteriaParser, Hysteria2Parser,
-            Socks4Parser, Socks5Parser,
-            HttpProxyParser, HttpsProxyParser,
+            VlessParser,
+            VmessParser,
+            TrojanParser,
+            ShadowsocksParser,
+            HysteriaParser,
+            Hysteria2Parser,
+            Socks4Parser,
+            Socks5Parser,
+            HttpProxyParser,
+            HttpsProxyParser,
         ]:
             _registry.register(cls())
 

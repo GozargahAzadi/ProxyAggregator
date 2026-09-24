@@ -22,13 +22,15 @@ def normalize_uri(uri: str) -> str:
     scheme = parsed.scheme.lower()
 
     # Reconstruct with lowercase scheme, preserving everything else
-    normalized = urlunparse((
-        scheme,
-        parsed.netloc,
-        parsed.path,
-        parsed.params,
-        parsed.query,
-        parsed.fragment,
-    ))
+    normalized = urlunparse(
+        (
+            scheme,
+            parsed.netloc,
+            parsed.path,
+            parsed.params,
+            parsed.query,
+            parsed.fragment,
+        )
+    )
 
     return normalized

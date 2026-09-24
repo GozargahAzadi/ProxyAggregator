@@ -154,10 +154,17 @@ class TestParserRegistry:
     def test_default_registry_has_all(self):
         reg = get_registry()
         expected = [
-            "vless", "vmess", "trojan", "ss",
-            "hysteria", "hysteria2",
-            "socks4", "socks4a", "socks5",
-            "http", "https",
+            "vless",
+            "vmess",
+            "trojan",
+            "ss",
+            "hysteria",
+            "hysteria2",
+            "socks4",
+            "socks4a",
+            "socks5",
+            "http",
+            "https",
         ]
         for p in expected:
             assert reg.get(p) is not None, f"Missing parser for {p}"
@@ -307,6 +314,7 @@ class TestVmessParser:
     def test_valid_base64_json(self):
         import base64
         import json
+
         config = {
             "v": "2",
             "ps": "TestVMess",
@@ -340,6 +348,7 @@ class TestVmessParser:
 
     def test_invalid_json(self):
         import base64
+
         encoded = base64.b64encode(b"not json").decode()
         r = self.parser.parse(f"vmess://{encoded}")
         assert isinstance(r, ParseError)
@@ -347,6 +356,7 @@ class TestVmessParser:
     def test_missing_required_field(self):
         import base64
         import json
+
         config = {"v": "2", "ps": "Test", "add": "host.com"}
         encoded = base64.b64encode(json.dumps(config).encode()).decode()
         r = self.parser.parse(f"vmess://{encoded}")
@@ -355,10 +365,19 @@ class TestVmessParser:
     def test_invalid_port(self):
         import base64
         import json
+
         config = {
-            "v": "2", "ps": "", "add": "host.com", "port": "99999",
-            "id": "uuid", "aid": "0", "net": "tcp", "type": "none",
-            "host": "", "path": "", "tls": "",
+            "v": "2",
+            "ps": "",
+            "add": "host.com",
+            "port": "99999",
+            "id": "uuid",
+            "aid": "0",
+            "net": "tcp",
+            "type": "none",
+            "host": "",
+            "path": "",
+            "tls": "",
         }
         encoded = base64.b64encode(json.dumps(config).encode()).decode()
         r = self.parser.parse(f"vmess://{encoded}")
@@ -367,10 +386,20 @@ class TestVmessParser:
     def test_with_fragment(self):
         import base64
         import json
+
         config = {
-            "v": "2", "ps": "MyNode", "add": "host.com", "port": "443",
-            "id": "uuid", "aid": "0", "net": "ws", "type": "none",
-            "host": "", "path": "/path", "tls": "tls", "sni": "sni.com",
+            "v": "2",
+            "ps": "MyNode",
+            "add": "host.com",
+            "port": "443",
+            "id": "uuid",
+            "aid": "0",
+            "net": "ws",
+            "type": "none",
+            "host": "",
+            "path": "/path",
+            "tls": "tls",
+            "sni": "sni.com",
         }
         encoded = base64.b64encode(json.dumps(config).encode()).decode()
         r = self.parser.parse(f"vmess://{encoded}#MyNode")
@@ -429,6 +458,7 @@ class TestShadowsocksParser:
 
     def test_basic_sip002(self):
         import base64
+
         method_password = base64.b64encode(b"aes-256-gcm:password123").decode()
         uri = f"ss://{method_password}@host.example.com:8388"
         r = self.parser.parse(uri)
@@ -441,6 +471,7 @@ class TestShadowsocksParser:
 
     def test_with_fragment(self):
         import base64
+
         mp = base64.b64encode(b"chacha20-ietf-poly1305:pass").decode()
         uri = f"ss://{mp}@host:8388#MySS"
         r = self.parser.parse(uri)
@@ -453,12 +484,14 @@ class TestShadowsocksParser:
 
     def test_missing_method(self):
         import base64
+
         mp = base64.b64encode(b":password").decode()
         r = self.parser.parse(f"ss://{mp}@host:8388")
         assert isinstance(r, ParseError)
 
     def test_invalid_port(self):
         import base64
+
         mp = base64.b64encode(b"aes-128-gcm:pass").decode()
         r = self.parser.parse(f"ss://{mp}@host:99999")
         assert isinstance(r, ParseError)
@@ -650,6 +683,7 @@ vmess://encoded
 
     def test_base64_encoded_content(self):
         import base64
+
         inner = "vless://uuid@host:443\ntrojan://pass@host:443"
         encoded = base64.b64encode(inner.encode()).decode()
         uris = extract_uris(encoded)
