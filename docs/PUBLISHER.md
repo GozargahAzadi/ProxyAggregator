@@ -50,6 +50,15 @@ count). The publisher turns that into artifacts:
 | json | `output/proxyaggregator.json` |
 | manifest | `output/manifest.json` |
 
+Phase 9.3 adds protocol-separated feeds (plain + base64 per protocol) with
+deterministic filenames derived from `DEFAULT_PROTOCOL_FILENAME_STEMS`
+(`publishing/publisher.py`), e.g. `output/vless.txt`,
+`output/vless-base64.txt`, `output/shadowsocks.txt`,
+`output/shadowsocks-base64.txt`. Only the `ss` protocol renames its stem
+(`shadowsocks`); all other stems equal their protocol id. The feed content
+contracts are documented in `docs/SUBSCRIPTION.md` (filtering, no-empty,
+global selection first, canonical ordering).
+
 The default directory is `output/` (repo-relative). Error messages contain
 only a sanitized filename and a stable reason token
 (`PublishError.filename` / `PublishError.reason`); feed content is never
@@ -74,10 +83,12 @@ python -m proxyaggregator sample-subscriptions            # writes output/
 python -m proxyaggregator sample-subscriptions --output /tmp/out --max-items 5
 ```
 
-Builds the three canonical feeds from embedded **synthetic** example.com
-proxies (RFC 6761; obviously fake credentials), publishes them via the real
-publisher, writes `manifest.json`, and prints the manifest. Running it twice
-produces byte-identical output — this validates the Phase 9 chain locally.
+Builds the canonical feeds from embedded **synthetic** example.com proxies
+(RFC 6761; obviously fake credentials), publishes them via the real publisher,
+writes `manifest.json`, and prints the manifest. The demo set covers every
+serializable protocol, so the dry run exercises the combined *and*
+protocol-separated artifact paths. Running it twice produces byte-identical
+output — this validates the Phase 9 chain locally.
 
 `python -m proxyaggregator` with no arguments still prints the version.
 

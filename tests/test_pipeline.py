@@ -511,7 +511,7 @@ class TestSubscriptionInput:
             ),
         ]
         feeds = pipeline._build_feeds(ranked, max_items=None)
-        assert len(feeds) == 3
+        assert len(feeds) == 7
         plain = feeds[0][1]
         assert plain.format is SubscriptionFormat.PLAIN
         assert plain.count == 2
@@ -648,10 +648,30 @@ class TestSampleUnchanged:
         assert exit_code == 0
         files = sorted(path.name for path in out.iterdir())
         expected = [
+            "http-base64.txt",
+            "http.txt",
+            "https-base64.txt",
+            "https.txt",
+            "hysteria-base64.txt",
+            "hysteria.txt",
+            "hysteria2-base64.txt",
+            "hysteria2.txt",
             "manifest.json",
             "proxyaggregator-base64.txt",
             "proxyaggregator.json",
             "proxyaggregator.txt",
+            "shadowsocks-base64.txt",
+            "shadowsocks.txt",
+            "socks4-base64.txt",
+            "socks4.txt",
+            "socks5-base64.txt",
+            "socks5.txt",
+            "trojan-base64.txt",
+            "trojan.txt",
+            "vless-base64.txt",
+            "vless.txt",
+            "vmess-base64.txt",
+            "vmess.txt",
         ]
         assert files == expected
 
@@ -712,15 +732,21 @@ class TestEndToEndRun:
         assert stats.health_checks_completed == 3
         assert stats.healthy_proxies == 3
         assert stats.ranked_proxies == 3
-        assert stats.subscription_count == 3
-        assert stats.published_artifacts == 4
+        assert stats.subscription_count == 9
+        assert stats.published_artifacts == 10
 
         files = sorted(path.name for path in out.iterdir())
         assert files == [
+            "http-base64.txt",
+            "http.txt",
             "manifest.json",
             "proxyaggregator-base64.txt",
             "proxyaggregator.json",
             "proxyaggregator.txt",
+            "socks5-base64.txt",
+            "socks5.txt",
+            "vless-base64.txt",
+            "vless.txt",
         ]
 
         plain = (out / "proxyaggregator.txt").read_text(encoding="utf-8")
@@ -732,9 +758,15 @@ class TestEndToEndRun:
         manifest = json.loads((out / "manifest.json").read_text(encoding="utf-8"))
         by_name = {entry["filename"]: entry for entry in manifest}
         assert set(by_name) == {
+            "http-base64.txt",
+            "http.txt",
             "proxyaggregator-base64.txt",
             "proxyaggregator.json",
             "proxyaggregator.txt",
+            "socks5-base64.txt",
+            "socks5.txt",
+            "vless-base64.txt",
+            "vless.txt",
         }
         for name, entry in by_name.items():
             data = (out / name).read_bytes()

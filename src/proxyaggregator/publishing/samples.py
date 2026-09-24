@@ -13,9 +13,9 @@ from __future__ import annotations
 import base64
 import json
 
-from proxyaggregator.publishing.feeds import build_subscription
+from proxyaggregator.publishing.feeds import build_protocol_subscriptions, build_subscription
 from proxyaggregator.publishing.models import RankedProxy, Subscription, SubscriptionFormat
-from proxyaggregator.publishing.publisher import default_filename
+from proxyaggregator.publishing.publisher import default_filename, default_protocol_filename
 
 # Documented example network; see RFC 6761. Never real.
 _VLESS_HOST = "vless.example.com"
@@ -115,18 +115,23 @@ def build_demo_subscriptions(
     *,
     max_items: int | None = None,
 ) -> list[tuple[str, Subscription]]:
-    """Build the three canonical demo feeds in deterministic order.
+    """Build the demo feeds in deterministic order.
 
-    Returns ``(filename, Subscription)`` pairs for plain, base64, and JSON
-    using the canonical artifact filenames of the publisher.
+    Returns ``(filename, Subscription)`` pairs for the three combined feeds
+    (plain, base64, JSON) followed by the per-protocol plain + base64 feeds,
+    all using the canonical artifact filenames of the publisher.
     """
     candidates = _demo_candidates()
-    feeds: list[tuple[str, Subscription]] = []
-    for fmt in (SubscriptionFormat.PLAIN, SubscriptionFormat.BASE64, SubscriptionFormat.JSON):
-        feeds.append(
-            (
-                default_filename(fmt),
-                build_subscription(candidates, format=fmt, max_items=max_items),
-            )
+    feeds: list[tuple[str, Subscription]] = [
+        (
+            default_filename(fmt),
+            build_subscription(candidates, format=fmt, max_items=max_items),
         )
+        for fmt in (SubscriptionFormat.PLAIN, SubscriptionFormat.BASE64, SubscriptionFormat.JSON)
+    ]
+    for protocol, plain, base64_feed in build_protocol_subscriptions(
+        candidates, max_items=max_items
+    ):
+        feeds.append((default_protocol_filename(protocol, SubscriptionFormat.PLAIN), plain))
+        feeds.append((default_protocol_filename(protocol, SubscriptionFormat.BASE64), base64_feed))
     return feeds

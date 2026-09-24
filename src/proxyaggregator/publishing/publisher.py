@@ -32,6 +32,7 @@ from typing import TYPE_CHECKING
 from pydantic import BaseModel, Field
 
 from proxyaggregator.publishing.models import SubscriptionFormat
+from proxyaggregator.publishing.serializer import SUPPORTED_PROTOCOLS
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
@@ -46,6 +47,22 @@ DEFAULT_FILENAMES: dict[SubscriptionFormat, str] = {
     SubscriptionFormat.PLAIN: "proxyaggregator.txt",
     SubscriptionFormat.BASE64: "proxyaggregator-base64.txt",
     SubscriptionFormat.JSON: "proxyaggregator.json",
+}
+
+#: Plain (non-base64) file stem per protocol for protocol-separated feeds.
+#: Protocol keys come from the canonical serializer registry; the only stem
+#: that differs from the protocol id is ``ss`` -> ``shadowsocks``.
+DEFAULT_PROTOCOL_FILENAME_STEMS: dict[str, str] = {
+    "vless": "vless",
+    "vmess": "vmess",
+    "trojan": "trojan",
+    "ss": "shadowsocks",
+    "hysteria": "hysteria",
+    "hysteria2": "hysteria2",
+    "socks4": "socks4",
+    "socks5": "socks5",
+    "http": "http",
+    "https": "https",
 }
 
 #: Name of the deterministic release manifest written next to the feeds.
@@ -95,6 +112,23 @@ def default_filename(format: SubscriptionFormat, /) -> str:
     if isinstance(format, SubscriptionFormat):
         return DEFAULT_FILENAMES[format]
     raise ValueError(f"unsupported subscription format: {format!r}")
+
+
+def default_protocol_filename(protocol: str, format: SubscriptionFormat, /) -> str:
+    """Return the canonical artifact filename for a protocol-separated feed.
+
+    Only plain and base64 artifacts exist per protocol; JSON is combined-feed
+    only. ``format`` is validated with an ``is`` check against the canonical
+    enum members (see ``default_filename``).
+    """
+    if protocol not in SUPPORTED_PROTOCOLS:
+        raise ValueError(f"unsupported protocol feed: {protocol!r}")
+    stem = DEFAULT_PROTOCOL_FILENAME_STEMS[protocol]
+    if format is SubscriptionFormat.PLAIN:
+        return f"{stem}.txt"
+    if format is SubscriptionFormat.BASE64:
+        return f"{stem}-base64.txt"
+    raise ValueError(f"unsupported protocol feed format: {format!r}")
 
 
 def _validate_filename(filename: str) -> None:

@@ -51,7 +51,7 @@ from proxyaggregator.parsers.detect import detect_protocol
 from proxyaggregator.parsers.extract import extract_uris
 from proxyaggregator.parsers.registry import get_registry as get_parser_registry
 from proxyaggregator.publishing import DEFAULT_OUTPUT_DIR
-from proxyaggregator.publishing.feeds import build_subscription
+from proxyaggregator.publishing.feeds import build_protocol_subscriptions, build_subscription
 from proxyaggregator.publishing.models import (
     RankedProxy,
     Subscription,
@@ -61,6 +61,7 @@ from proxyaggregator.publishing.publisher import (
     SubscriptionRelease,
     build_release_manifest,
     default_filename,
+    default_protocol_filename,
     publish_subscriptions,
     write_release_manifest,
 )
@@ -326,14 +327,26 @@ def _to_ranked_proxies(
 def _build_feeds(
     ranked_proxies: Sequence[RankedProxy], max_items: int | None = None
 ) -> list[tuple[str, Subscription]]:
-    """Generate the deterministic feed set in release order."""
-    return [
+    """Generate the deterministic feed set in release order.
+
+    Order: the three combined feeds first (backward-compatible), then the
+    per-protocol plain + base64 feeds in canonical protocol order. The global
+    ``max_items`` cap and content-hash dedup are applied once, before the
+    per-protocol split, so protocol feeds always mirror the combined feed.
+    """
+    feeds: list[tuple[str, Subscription]] = [
         (
             default_filename(subscription_format),
             build_subscription(ranked_proxies, format=subscription_format, max_items=max_items),
         )
         for subscription_format in FEED_FORMATS
     ]
+    for protocol, plain, base64_feed in build_protocol_subscriptions(
+        ranked_proxies, max_items=max_items
+    ):
+        feeds.append((default_protocol_filename(protocol, SubscriptionFormat.PLAIN), plain))
+        feeds.append((default_protocol_filename(protocol, SubscriptionFormat.BASE64), base64_feed))
+    return feeds
 
 
 def _publish(

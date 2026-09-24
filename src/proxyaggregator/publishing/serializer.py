@@ -207,6 +207,11 @@ _SERIALIZERS: dict[str, Callable] = {
     "https": _simple("https"),
 }
 
+#: Canonical, deterministic order of serializable protocols. Derived from
+#: ``_SERIALIZERS`` (single source of truth) so protocol feed generation can
+#: never drift from what can actually be serialized.
+SUPPORTED_PROTOCOLS: tuple[str, ...] = tuple(_SERIALIZERS)
+
 
 def canonical_uri(result: ParseResult) -> str:
     """Return the deterministic canonical URI for a parsed proxy configuration.

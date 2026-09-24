@@ -12,6 +12,64 @@ Public V2Ray/Proxy Config Aggregator that collects, parses, normalizes, deduplic
 - **Subscription output**: Standard proxy subscription formats
 - **GitHub Actions native**: Designed to run entirely in CI/CD
 
+## Subscriptions
+
+Generated subscription feeds are published to the `output/` directory as
+plain (newline-delimited URIs), base64 (standard Base64 of the plain feed),
+and per-protocol feeds. All files are deterministic and re-generated on every
+pipeline run.
+
+### Combined feeds
+
+- https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/proxyaggregator.txt
+- https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/proxyaggregator-base64.txt
+- https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/proxyaggregator.json
+- https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/manifest.json
+
+### Protocol feeds
+
+Each protocol below ships a plain feed and its base64 variant.
+
+VLESS:
+- https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/vless.txt
+- https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/vless-base64.txt
+
+VMess:
+- https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/vmess.txt
+- https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/vmess-base64.txt
+
+Trojan:
+- https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/trojan.txt
+- https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/trojan-base64.txt
+
+Shadowsocks:
+- https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/shadowsocks.txt
+- https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/shadowsocks-base64.txt
+
+Hysteria:
+- https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/hysteria.txt
+- https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/hysteria-base64.txt
+
+Hysteria2:
+- https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/hysteria2.txt
+- https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/hysteria2-base64.txt
+
+SOCKS4:
+- https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/socks4.txt
+- https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/socks4-base64.txt
+
+SOCKS5:
+- https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/socks5.txt
+- https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/socks5-base64.txt
+
+HTTP:
+- https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/http.txt
+- https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/http-base64.txt
+
+HTTPS:
+- https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/https.txt
+- https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/https-base64.txt
+
 ## Quick Start
 
 ```bash

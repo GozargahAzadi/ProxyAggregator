@@ -14,6 +14,7 @@ import json
 import pytest
 from pydantic import ValidationError
 
+import proxyaggregator.publishing.publisher as publisher_module
 from proxyaggregator.publishing import (
     SubscriptionFormat,
     build_subscription,
@@ -25,6 +26,7 @@ from proxyaggregator.publishing.publisher import (
     SubscriptionRelease,
     build_release_manifest,
     default_filename,
+    default_protocol_filename,
     publish_subscriptions,
     release_metadata,
     write_artifact,
@@ -35,6 +37,8 @@ from proxyaggregator.publishing.samples import build_demo_subscriptions
 PLAIN_NAME = DEFAULT_FILENAMES[SubscriptionFormat.PLAIN]
 B64_NAME = DEFAULT_FILENAMES[SubscriptionFormat.BASE64]
 JSON_NAME = DEFAULT_FILENAMES[SubscriptionFormat.JSON]
+
+DEMO_FEED_COUNT = 3 + 2 * len(publisher_module.DEFAULT_PROTOCOL_FILENAME_STEMS)
 
 
 class TestWriteArtifact:
@@ -259,7 +263,18 @@ class TestDemoSamples:
 
     def test_three_feeds_in_canonical_order(self):
         feeds = build_demo_subscriptions()
-        assert [name for name, _ in feeds] == [PLAIN_NAME, B64_NAME, JSON_NAME]
+        names = [name for name, _ in feeds]
+        assert names[:3] == [PLAIN_NAME, B64_NAME, JSON_NAME]
+        protocol_names = names[3:]
+        assert len(protocol_names) == 2 * len(publisher_module.DEFAULT_PROTOCOL_FILENAME_STEMS)
+        assert protocol_names[::2] == [
+            default_protocol_filename(protocol, SubscriptionFormat.PLAIN)
+            for protocol in publisher_module.SUPPORTED_PROTOCOLS
+        ]
+        assert protocol_names[1::2] == [
+            default_protocol_filename(protocol, SubscriptionFormat.BASE64)
+            for protocol in publisher_module.SUPPORTED_PROTOCOLS
+        ]
 
     def test_deterministic_across_calls(self):
         a = build_demo_subscriptions()
@@ -281,7 +296,7 @@ class TestDemoSamples:
 
     def test_publish_demo_end_to_end(self, tmp_path):
         entries = publish_subscriptions(build_demo_subscriptions(), tmp_path)
-        assert len(entries) == 3
+        assert len(entries) == DEMO_FEED_COUNT
         manifest = build_release_manifest(entries)
         payload = json.loads(manifest)
         total = sum(item["byte_size"] for item in payload)

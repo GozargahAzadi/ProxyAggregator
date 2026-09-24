@@ -24,7 +24,7 @@ from proxyaggregator.parsers.base import ParseError
 from proxyaggregator.parsers.registry import get_registry
 from proxyaggregator.publishing.errors import SubscriptionError
 from proxyaggregator.publishing.models import RankedProxy, Subscription, SubscriptionFormat
-from proxyaggregator.publishing.serializer import canonical_uri
+from proxyaggregator.publishing.serializer import SUPPORTED_PROTOCOLS, canonical_uri
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
@@ -122,3 +122,51 @@ def build_subscription(
         raise ValueError(f"unsupported subscription format: {format!r}")
 
     return Subscription(format=format, content=content, count=len(selected))
+
+
+def build_protocol_subscriptions(
+    candidates: Sequence[RankedProxy],
+    *,
+    max_items: int | None = None,
+) -> tuple[tuple[str, Subscription, Subscription], ...]:
+    """Generate deterministic plain + base64 feeds per protocol (Phase 9.3).
+
+    A single global selection (dedup by ``content_hash``, then the
+    ``max_items`` cap) is applied **before** splitting by protocol, so every
+    protocol feed is a subset of the combined feed produced by
+    :func:`build_subscription` from the same inputs. Protocols with zero
+    selected candidates emit no feed; empty protocol artifacts are never
+    created.
+
+    Returns ``(protocol, plain, base64)`` triples in the canonical protocol
+    order (:data:`SUPPORTED_PROTOCOLS`).
+
+    Raises:
+        ValueError: ``max_items`` is not a positive integer or ``None``.
+        SubscriptionError: a candidate cannot be serialized deterministically.
+    """
+    _validate_max_items(max_items)
+    selected = _select(candidates, max_items)
+
+    grouped: dict[str, list[RankedProxy]] = {}
+    for candidate in selected:
+        grouped.setdefault(candidate.protocol, []).append(candidate)
+
+    feeds: list[tuple[str, Subscription, Subscription]] = []
+    for protocol in SUPPORTED_PROTOCOLS:
+        group = grouped.get(protocol)
+        if not group:
+            continue
+        plain_content = _plain_feed([_serialize(candidate) for candidate in group])
+        plain = Subscription(
+            format=SubscriptionFormat.PLAIN, content=plain_content, count=len(group)
+        )
+        encoded = base64.b64encode(plain_content.encode("utf-8")).decode("ascii")
+        feeds.append(
+            (
+                protocol,
+                plain,
+                Subscription(format=SubscriptionFormat.BASE64, content=encoded, count=len(group)),
+            )
+        )
+    return tuple(feeds)

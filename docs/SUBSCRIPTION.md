@@ -38,6 +38,29 @@ Hysteria, Hysteria2, SOCKS4/SOCKS4a, SOCKS5, HTTP, HTTPS.
 Clash and sing-box config formats are **deferred** (see below); they are not
 part of the Phase 8 output contract.
 
+## Protocol-separated feeds (Phase 9.3)
+
+In addition to the combined plain/base64/json feeds, the publisher emits one
+plain and one base64 feed **per protocol** (e.g. `vless.txt`,
+`vless-base64.txt`, `shadowsocks.txt`, `shadowsocks-base64.txt`). Contracts:
+
+- **Filtering** — a protocol feed contains only candidates whose parsed
+  protocol (`RankedProxy.protocol`) equals that protocol. `socks4a` URIs are
+  normalized by the Phase 3 parser and land in the `socks4` feed. No candidate
+  appears in more than one protocol feed.
+- **No empty artifacts** — protocols with zero selected candidates emit no
+  feed. Empty protocol files are never created.
+- **Global selection first** — dedup (by `content_hash`) and the `max_items`
+  cap are applied once, across all candidates, *before* the per-protocol
+  split. Every protocol feed is therefore a strict subset of the combined
+  feed produced from the same inputs under the same `max_items`.
+- **Ordering** — within a protocol feed, proxies keep their rank order;
+  across feeds, the protocol order is the canonical serializer order
+  (`SUPPORTED_PROTOCOLS`), and plain is emitted before base64.
+- **Protocol names** — come from the canonical serializer registry
+  (`src/proxyaggregator/publishing/serializer.py`). Only one output stem
+  differs from the protocol id: `ss` → `shadowsocks`.
+
 ## Ordering
 
 Output order is the input rank order: rank 1 is the first line, rank 2 the
