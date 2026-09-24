@@ -57,6 +57,17 @@ def _build_parser() -> argparse.ArgumentParser:
         help="Emit at most this many unique proxies per feed (None = all).",
     )
     sample.set_defaults(handler=_cmd_sample_subscriptions)
+
+    cmd_verify_geoip = subparsers.add_parser(
+        "verify-geoip",
+        help="Validate the GeoIP MMDB database used by the pipeline.",
+    )
+    cmd_verify_geoip.add_argument(
+        "--path",
+        default=None,
+        help="Path to the MMDB file (default: $PA_GEOIP_DB_PATH, i.e. GeoLite2-City.mmdb).",
+    )
+    cmd_verify_geoip.set_defaults(handler=_cmd_verify_geoip)
     return parser
 
 
@@ -100,6 +111,21 @@ def _cmd_seed_sources(args: argparse.Namespace) -> int:
         stream=sys.stderr,
     )
     return run_seed_cli(args.sources_file or settings.sources_file)
+
+
+def _cmd_verify_geoip(args: argparse.Namespace) -> int:
+    """Validate the GeoIP MMDB; non-zero with a clear error when unusable."""
+    from proxyaggregator.config.settings import Settings
+    from proxyaggregator.geoip.mmdb import GeoIpDatabaseError, validate_mmdb
+
+    path = args.path or Settings().geoip_db_path
+    try:
+        database_type = validate_mmdb(path)
+    except GeoIpDatabaseError as exc:
+        print(f"ERROR: {exc}", file=sys.stderr)
+        return 1
+    print(f"GeoIP database OK: {database_type} ({path})")
+    return 0
 
 
 def main(argv: list[str] | None = None) -> int:

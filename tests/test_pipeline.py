@@ -193,6 +193,14 @@ class TestCli:
         assert namespace.output == "x"
         assert namespace.max_items is None
 
+    def test_parser_recognizes_verify_geoip(self):
+        from proxyaggregator.__main__ import _build_parser
+
+        namespace = _build_parser().parse_args(["verify-geoip"])
+        assert namespace.command == "verify-geoip"
+        assert namespace.path is None
+        assert callable(namespace.handler)
+
     def test_bare_invocation_prints_version(self, capsys):
         from proxyaggregator.__main__ import main
 

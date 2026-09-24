@@ -11,14 +11,17 @@ Never from hostname, domain, TLD, SNI, remark, or server name.
 
 from proxyaggregator.geoip.dedup import IpDeduplicator
 from proxyaggregator.geoip.enrich import GeoIpEnricher
+from proxyaggregator.geoip.mmdb import GeoIpDatabaseError, validate_mmdb
 from proxyaggregator.geoip.models import EnrichmentResult, GeoIpRecord
 from proxyaggregator.geoip.resolver import ResolveResult, resolve_host
 
 __all__ = [
     "EnrichmentResult",
+    "GeoIpDatabaseError",
     "GeoIpEnricher",
     "GeoIpRecord",
     "IpDeduplicator",
     "ResolveResult",
     "resolve_host",
+    "validate_mmdb",
 ]

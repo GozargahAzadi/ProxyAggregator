@@ -7,9 +7,59 @@ returns structured records. Pure Python, no native extensions required.
 from __future__ import annotations
 
 import contextlib
+import os
 from pathlib import Path
 
 import maxminddb
+
+
+class GeoIpDatabaseError(Exception):
+    """Raised when the configured GeoIP MMDB database is unusable.
+
+    The message is deliberately credential-free: it never includes account IDs,
+    license keys, tokens, or other secrets.
+    """
+
+
+def validate_mmdb(path: str | Path, *, expected_type: str = "GeoLite2-City") -> str:
+    """Validate that an MMDB file is present, readable, and a usable GeoIP DB.
+
+    Checks, in order:
+        1. the path exists and is a regular file,
+        2. the file is readable,
+        3. it opens as a valid MaxMind DB,
+        4. its ``database_type`` matches ``expected_type``.
+
+    Raises :class:`GeoIpDatabaseError` with a clear, credential-free message on
+    any failure. Returns the database type string on success.
+    """
+    db_path = Path(path)
+
+    if not db_path.exists():
+        raise GeoIpDatabaseError(f"GeoIP database not found: {db_path}")
+    if not db_path.is_file():
+        raise GeoIpDatabaseError(f"GeoIP database path is not a file: {db_path}")
+    if not os.access(db_path, os.R_OK):
+        raise GeoIpDatabaseError(f"GeoIP database is not readable: {db_path}")
+
+    try:
+        reader = maxminddb.Reader(str(db_path))
+    except Exception as exc:
+        raise GeoIpDatabaseError(f"GeoIP database is not a valid MaxMind DB: {db_path}") from exc
+
+    try:
+        metadata = reader.metadata()
+        database_type = getattr(metadata, "database_type", "")
+        if not database_type:
+            raise GeoIpDatabaseError(f"GeoIP database has no database_type: {db_path}")
+        if expected_type is not None and database_type != expected_type:
+            raise GeoIpDatabaseError(
+                f"Unexpected GeoIP database type {database_type!r}; "
+                f"expected {expected_type!r} ({db_path})"
+            )
+        return database_type
+    finally:
+        reader.close()
 
 
 class MmdbReader:

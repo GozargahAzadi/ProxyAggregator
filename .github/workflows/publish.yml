@@ -18,6 +18,10 @@ env:
   PA_DATABASE_URL: sqlite:///output/proxyaggregator.db
   # Production source definitions live in the repository (version-controlled).
   PA_SOURCES_FILE: config/sources.json
+  # GeoIP database location. The GeoLite2-City.mmdb is downloaded fresh into
+  # `.runtime/geoip/` (inside the workspace) on every run: it is never
+  # committed (git add is scoped to `output` and *.mmdb is gitignored).
+  PA_GEOIP_DB_PATH: ${{ github.workspace }}/.runtime/geoip/GeoLite2-City.mmdb
 
 jobs:
   aggregate:
@@ -40,6 +44,49 @@ jobs:
 
       - name: Create output directory
         run: mkdir -p output
+
+      # GeoIP provisioning (Phase 11). Production never commit the MMDB file.
+      # The GeoLite2-City database is downloaded fresh on every run from
+      # MaxMind's official download endpoint into $PA_GEOIP_DB_PATH (a
+      # .runtime/ dir inside the workspace that is never staged/committed).
+      # Credentials come only from GitHub Secrets; nothing is hard-coded or
+      # logged. MaxMind limits GeoLite downloads to 30/day; the schedule runs
+      # once daily.
+      - name: Provision GeoLite2-City database
+        shell: bash
+        env:
+          MAXMIND_ACCOUNT_ID: ${{ secrets.MAXMIND_ACCOUNT_ID }}
+          MAXMIND_LICENSE_KEY: ${{ secrets.MAXMIND_LICENSE_KEY }}
+        run: |
+          set -euo pipefail
+          if [ -z "$MAXMIND_ACCOUNT_ID" ] || [ -z "$MAXMIND_LICENSE_KEY" ]; then
+            echo "ERROR: MAXMIND_ACCOUNT_ID / MAXMIND_LICENSE_KEY repository secrets are not configured." >&2
+            exit 1
+          fi
+          db_path="$PA_GEOIP_DB_PATH"
+          mkdir -p "$(dirname "$db_path")"
+          archive="$RUNNER_TEMP/geolite2-city.tar.gz"
+          curl -fsSL --retry 3 --connect-timeout 30 \
+            -u "$MAXMIND_ACCOUNT_ID:$MAXMIND_LICENSE_KEY" \
+            -o "$archive" \
+            "https://download.maxmind.com/geoip/databases/GeoLite2-City/download?suffix=tar.gz"
+          extract="$RUNNER_TEMP/geolite2-city-extract"
+          rm -rf "$extract"
+          mkdir -p "$extract"
+          tar -xzf "$archive" -C "$extract"
+          shopt -s nullglob
+          candidates=( "$extract"/GeoLite2-City_*/GeoLite2-City.mmdb )
+          if [ "${#candidates[@]}" -ne 1 ] || [ ! -f "${candidates[0]}" ]; then
+            echo "ERROR: GeoLite2-City.mmdb not found in the downloaded archive." >&2
+            exit 1
+          fi
+          mv "${candidates[0]}" "$db_path"
+          echo "GeoIP database provisioned at $db_path"
+
+      # Fails fast with a clear error if the provisioned database is missing,
+      # unreadable, invalid, or the wrong type. Never prints credentials.
+      - name: Verify GeoIP database
+        run: uv run python -m proxyaggregator verify-geoip
 
       - name: Apply database migrations
         run: uv run alembic upgrade head

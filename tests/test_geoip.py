@@ -625,6 +625,89 @@ class TestMmdbReaderFields:
         reader.close()
 
 
+class TestValidateMmdb:
+    """Production provisioning guard: fail fast when the GeoIP DB is unusable."""
+
+    def _valid_db(self, tmp_path):
+        db_path = tmp_path / "valid.mmdb"
+        db_path.write_bytes(_build_mmdb({"1.2.3.4": {"country": {"iso_code": "US"}}}))
+        return db_path
+
+    def test_valid_database_returns_type(self, tmp_path):
+        from proxyaggregator.geoip.mmdb import validate_mmdb
+
+        result = validate_mmdb(str(self._valid_db(tmp_path)))
+        assert result == "GeoLite2-City"
+
+    def test_valid_database_accepts_pathlib(self, tmp_path):
+        from proxyaggregator.geoip.mmdb import validate_mmdb
+
+        result = validate_mmdb(self._valid_db(tmp_path))
+        assert result == "GeoLite2-City"
+
+    def test_missing_file_raises(self, tmp_path):
+        from proxyaggregator.geoip.mmdb import GeoIpDatabaseError, validate_mmdb
+
+        with pytest.raises(GeoIpDatabaseError, match="not found"):
+            validate_mmdb(tmp_path / "missing.mmdb")
+
+    def test_directory_path_raises(self, tmp_path):
+        from proxyaggregator.geoip.mmdb import GeoIpDatabaseError, validate_mmdb
+
+        with pytest.raises(GeoIpDatabaseError, match="not a file"):
+            validate_mmdb(tmp_path)
+
+    @patch("proxyaggregator.geoip.mmdb.os.access", return_value=False)
+    def test_unreadable_file_raises(self, _mock_access, tmp_path):
+        from proxyaggregator.geoip.mmdb import GeoIpDatabaseError, validate_mmdb
+
+        with pytest.raises(GeoIpDatabaseError, match="not readable"):
+            validate_mmdb(self._valid_db(tmp_path))
+
+    def test_malformed_file_raises(self, tmp_path):
+        from proxyaggregator.geoip.mmdb import GeoIpDatabaseError, validate_mmdb
+
+        db_path = tmp_path / "bad.mmdb"
+        db_path.write_bytes(b"this is not an mmdb file")
+        with pytest.raises(GeoIpDatabaseError, match="not a valid MaxMind DB"):
+            validate_mmdb(db_path)
+
+    def test_wrong_database_type_raises(self, tmp_path):
+        from proxyaggregator.geoip.mmdb import GeoIpDatabaseError, validate_mmdb
+
+        with pytest.raises(GeoIpDatabaseError, match="Unexpected GeoIP database type"):
+            validate_mmdb(self._valid_db(tmp_path), expected_type="GeoLite2-Country")
+
+    def test_error_never_contains_credentials(self, tmp_path):
+        from proxyaggregator.geoip.mmdb import GeoIpDatabaseError, validate_mmdb
+
+        secret_token = "S0ME-SECRET-LICENSE-KEY"
+        db_path = tmp_path / "bad.mmdb"
+        db_path.write_bytes(secret_token.encode())
+        with pytest.raises(GeoIpDatabaseError) as exc_info:
+            validate_mmdb(db_path)
+        assert secret_token not in str(exc_info.value)
+
+
+class TestVerifyGeoIpCli:
+    """CLI verify-geoip command (the workflow's pre-pipeline guard)."""
+
+    def test_cli_verify_geoip_ok(self, tmp_path, capsys):
+        from proxyaggregator.__main__ import main
+
+        db_path = tmp_path / "valid.mmdb"
+        db_path.write_bytes(_build_mmdb({"1.2.3.4": {"country": {"iso_code": "US"}}}))
+        assert main(["verify-geoip", "--path", str(db_path)]) == 0
+        assert "GeoIP database OK" in capsys.readouterr().out
+
+    def test_cli_verify_geoip_missing_fails(self, tmp_path, capsys):
+        from proxyaggregator.__main__ import main
+
+        missing = tmp_path / "missing.mmdb"
+        assert main(["verify-geoip", "--path", str(missing)]) == 1
+        assert "ERROR:" in capsys.readouterr().err
+
+
 # ===========================================================================
 # GEOIP ENRICHMENT PIPELINE TESTS
 # ===========================================================================

@@ -521,12 +521,32 @@ class TestRepositoryContract:
         assert Settings().sources_file == "config/sources.json"
         assert parser.parse_args(["seed-sources"]).sources_file is None
 
+    def test_default_geoip_db_path_setting(self):
+        assert Settings().geoip_db_path == "GeoLite2-City.mmdb"
+
     def test_workflow_seeds_before_pipeline(self):
         text = (ROOT_DIR / ".github" / "workflows" / "publish.yml").read_text(encoding="utf-8")
         seed_pos = text.index("Seed production sources")
         pipeline_pos = text.index("Run production pipeline")
         assert seed_pos < pipeline_pos
         assert "PA_SOURCES_FILE: config/sources.json" in text
+
+    def test_workflow_provisions_and_verifies_geoip_before_pipeline(self):
+        text = (ROOT_DIR / ".github" / "workflows" / "publish.yml").read_text(encoding="utf-8")
+        provision_pos = text.index("Provision GeoLite2-City database")
+        verify_pos = text.index("Verify GeoIP database")
+        pipeline_pos = text.index("Run production pipeline")
+        assert provision_pos < verify_pos < pipeline_pos
+        assert "PA_GEOIP_DB_PATH:" in text
+        assert "verify-geoip" in text
+        assert "download.maxmind.com/geoip/databases/GeoLite2-City/download" in text
+
+    def test_workflow_uses_only_secrets_for_geoip_credentials(self):
+        text = (ROOT_DIR / ".github" / "workflows" / "publish.yml").read_text(encoding="utf-8")
+        assert "${{ secrets.MAXMIND_ACCOUNT_ID }}" in text
+        assert "${{ secrets.MAXMIND_LICENSE_KEY }}" in text
+        placeholder = "YOUR_LICENSE_KEY_HERE"
+        assert placeholder not in text
 
 
 # F. Offline integration: seed -> pipeline -------------------------------------
