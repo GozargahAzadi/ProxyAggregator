@@ -492,14 +492,14 @@ class TestCli:
 
 
 class TestRepositoryContract:
-    def test_config_sources_file_contains_single_verified_source(self):
+    def test_config_sources_file_contains_verified_independent_sources(self):
         path = ROOT_DIR / "config" / "sources.json"
         assert path.exists()
         payload = json.loads(path.read_text(encoding="utf-8"))
         assert isinstance(payload, list)
-        assert len(payload) == 1  # exactly one production source registered so far
-        definition = payload[0]
-        assert definition == {
+        assert len(payload) >= 5  # Radikal plus several independent sources
+        radikal = payload[0]
+        assert radikal == {
             "name": "0xRadikal-verified",
             "type": "http",
             "url": (
@@ -507,13 +507,22 @@ class TestRepositoryContract:
                 "main/verified/configs_base64.txt"
             ),
         }
+        urls = [entry["url"] for entry in payload]
+        assert len(set(urls)) == len(urls)  # no duplicated production sources
+        names = {entry["name"] for entry in payload}
+        assert len(names) == len(payload)
+        assert len(names - {"0xRadikal-verified"}) >= 4  # independent of Radikal
+        assert all(entry["type"] == "http" for entry in payload)
 
     def test_config_source_passes_definition_validation(self):
         path = ROOT_DIR / "config" / "sources.json"
         schemas = seeding.load_defined_sources(path)
-        assert len(schemas) == 1
-        assert schemas[0].name == "0xRadikal-verified"
-        assert schemas[0].source_type == "http"
+        assert len(schemas) >= 5
+        by_name = {schema.name: schema for schema in schemas}
+        assert by_name["0xRadikal-verified"].source_type == "http"
+        assert all(schema.source_type == "http" for schema in schemas)
+        urls = [schema.url for schema in schemas]
+        assert len(set(urls)) == len(urls)
 
     def test_default_sources_file_setting_matches_workflow(self):
         from proxyaggregator.__main__ import _build_parser
@@ -521,6 +530,15 @@ class TestRepositoryContract:
         parser = _build_parser()
         assert Settings().sources_file == "config/sources.json"
         assert parser.parse_args(["seed-sources"]).sources_file is None
+
+    def test_workflow_runs_every_15_minutes_dispatchable_and_serialized(self):
+        text = (ROOT_DIR / ".github" / "workflows" / "publish.yml").read_text(encoding="utf-8")
+        assert 'cron: "*/15 * * * *"' in text
+        assert "workflow_dispatch" in text
+        assert "concurrency:" in text
+        assert "group: publish" in text
+        assert "cancel-in-progress: false" in text
+        assert "Guard against empty output" in text
 
     def test_default_geoip_db_path_setting(self):
         assert Settings().geoip_db_path == "GeoLite2-City.mmdb"

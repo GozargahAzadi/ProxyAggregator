@@ -3,5 +3,25 @@
     "name": "0xRadikal-verified",
     "type": "http",
     "url": "https://raw.githubusercontent.com/0xRadikal/Free-v2ray-Configs/main/verified/configs_base64.txt"
+  },
+  {
+    "name": "mahdibland-ShadowsocksAggregator",
+    "type": "http",
+    "url": "https://raw.githubusercontent.com/mahdibland/ShadowsocksAggregator/master/sub/sub_merge.txt"
+  },
+  {
+    "name": "Epodonios-v2ray-configs",
+    "type": "http",
+    "url": "https://raw.githubusercontent.com/Epodonios/v2ray-configs/main/All_Configs_Sub.txt"
+  },
+  {
+    "name": "ermaozi-get_subscribe",
+    "type": "http",
+    "url": "https://raw.githubusercontent.com/ermaozi/get_subscribe/main/subscribe/v2ray.txt"
+  },
+  {
+    "name": "Pawdroid-Free-servers",
+    "type": "http",
+    "url": "https://raw.githubusercontent.com/Pawdroid/Free-servers/main/sub"
   }
 ]

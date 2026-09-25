@@ -3,8 +3,8 @@ name: Publish
 on:
   workflow_dispatch:
   schedule:
-    # Run daily at 00:00 UTC
-    - cron: "0 0 * * *"
+    # Run every 15 minutes (Phase 13 fast production cycle).
+    - cron: "*/15 * * * *"
 
 permissions:
   contents: write
