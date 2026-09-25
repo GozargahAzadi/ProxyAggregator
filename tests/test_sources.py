@@ -611,3 +611,49 @@ class TestSourceOrchestrator:
 
         for i, result in enumerate(results):
             assert result.source_name == f"S{i}"
+
+    @pytest.mark.asyncio
+    async def test_collection_concurrency_is_bounded(self):
+        """The orchestrator never exceeds the configured concurrency limit."""
+        import asyncio
+
+        class _Activity:
+            def __init__(self) -> None:
+                self.lock = asyncio.Lock()
+                self.current = 0
+                self.max_concurrent = 0
+
+        activity = _Activity()
+
+        class SlowCollector(BaseSourceCollector):
+            @property
+            def supported_type(self) -> str:
+                return "http"
+
+            async def collect(self, source: SourceSchema) -> SourceResult:
+                async with activity.lock:
+                    activity.current += 1
+                    activity.max_concurrent = max(activity.max_concurrent, activity.current)
+                await asyncio.sleep(0.05)
+                async with activity.lock:
+                    activity.current -= 1
+                return SourceResult(
+                    source_name=source.name,
+                    source_type="http",
+                    source_url=source.url,
+                    status=SourceResultStatus.SUCCESS,
+                    content="ok",
+                    fetched_at=datetime.now(tz=UTC),
+                )
+
+        registry = CollectorRegistry()
+        registry.register(SlowCollector())
+        sources = [self._make_source(f"S{i}", f"https://s{i}.com/proxies") for i in range(20)]
+
+        orchestrator = SourceOrchestrator(registry=registry, concurrency=5)
+        results = await orchestrator.collect_sources(sources)
+
+        assert len(results) == 20
+        assert activity.max_concurrent <= 5
+        names = [r.source_name for r in results]
+        assert names == [f"S{i}" for i in range(20)]

@@ -8,6 +8,7 @@ All addresses are normalized and sorted deterministically.
 
 from __future__ import annotations
 
+import asyncio
 import ipaddress
 import math
 import socket
@@ -46,6 +47,52 @@ def _ip_sort_key(addr: str) -> tuple[int, int, str]:
         return (2, 0, addr)
 
 
+def _result_from_infos(host: str, infos: list) -> ResolveResult:
+    """Build a sorted, de-duplicated ResolveResult from getaddrinfo output."""
+    if not infos:
+        return ResolveResult(host=host, resolved=False, error="No addresses returned")
+
+    addresses: list[str] = []
+    has_ipv4 = False
+    has_ipv6 = False
+
+    for family, _socktype, _proto, _canonname, sockaddr in infos:
+        ip_str = sockaddr[0]
+        normalized = _normalize_ip(ip_str)
+        addresses.append(normalized)
+        if family == socket.AF_INET:
+            has_ipv4 = True
+        elif family == socket.AF_INET6:
+            has_ipv6 = True
+
+    seen: set[str] = set()
+    unique: list[str] = []
+    for addr in addresses:
+        if addr not in seen:
+            seen.add(addr)
+            unique.append(addr)
+
+    unique.sort(key=_ip_sort_key)
+
+    return ResolveResult(
+        host=host,
+        resolved=True,
+        addresses=unique,
+        is_ipv4=has_ipv4,
+        is_ipv6=has_ipv6,
+    )
+
+
+def _valid_timeout(timeout: object) -> bool:
+    """Return True when ``timeout`` is a finite positive number."""
+    return not (
+        isinstance(timeout, bool)
+        or not isinstance(timeout, (int, float))
+        or not math.isfinite(timeout)
+        or timeout <= 0
+    )
+
+
 def resolve_host(host: str | None, timeout: float = 5.0) -> ResolveResult:
     """Resolve a hostname to IP address(es).
 
@@ -80,12 +127,7 @@ def resolve_host(host: str | None, timeout: float = 5.0) -> ResolveResult:
         pass
 
     # Validate timeout before touching DNS
-    if (
-        isinstance(timeout, bool)
-        or not isinstance(timeout, (int, float))
-        or not math.isfinite(timeout)
-        or timeout <= 0
-    ):
+    if not _valid_timeout(timeout):
         return ResolveResult(host=host, resolved=False, error=f"Invalid timeout value: {timeout!r}")
 
     # Hostname: resolve via socket with bounded timeout
@@ -100,38 +142,61 @@ def resolve_host(host: str | None, timeout: float = 5.0) -> ResolveResult:
     finally:
         socket.setdefaulttimeout(previous_timeout)
 
-    if not infos:
-        return ResolveResult(host=host, resolved=False, error="No addresses returned")
+    return _result_from_infos(host, infos)
 
-    # Extract and normalize IPs
-    addresses: list[str] = []
-    has_ipv4 = False
-    has_ipv6 = False
 
-    for family, _socktype, _proto, _canonname, sockaddr in infos:
-        ip_str = sockaddr[0]
-        normalized = _normalize_ip(ip_str)
-        addresses.append(normalized)
-        if family == socket.AF_INET:
-            has_ipv4 = True
-        elif family == socket.AF_INET6:
-            has_ipv6 = True
+async def resolve_host_async(host: str | None, timeout: float = 5.0) -> ResolveResult:
+    """Resolve a hostname concurrently without touching process-global socket state.
 
-    # Deduplicate while preserving order
-    seen: set[str] = set()
-    unique: list[str] = []
-    for addr in addresses:
-        if addr not in seen:
-            seen.add(addr)
-            unique.append(addr)
+    Identical semantics to :func:`resolve_host` (literal-IP short-circuit,
+    deterministic sort, failure handling), but the timeout is enforced per
+    lookup with ``asyncio.wait_for`` instead of the process-global
+    ``socket.setdefaulttimeout``.  This makes concurrent resolution safe: many
+    lookups can run in worker threads without racing on global socket state,
+    and each operation keeps its own timeout.
 
-    # Sort deterministically: IPv4 first, then by integer value
-    unique.sort(key=_ip_sort_key)
+    A timeout or lookup failure never raises: it returns a ``ResolveResult``
+    with ``resolved=False`` and an error message.
+    """
+    if host is None:
+        return ResolveResult(host="", resolved=False, error="None hostname")
 
-    return ResolveResult(
-        host=host,
-        resolved=True,
-        addresses=unique,
-        is_ipv4=has_ipv4,
-        is_ipv6=has_ipv6,
-    )
+    host = host.strip()
+    if not host:
+        return ResolveResult(host="", resolved=False, error="Empty hostname")
+
+    try:
+        ip = ipaddress.ip_address(host)
+        normalized = str(ip)
+        return ResolveResult(
+            host=host,
+            resolved=True,
+            addresses=[normalized],
+            is_ipv4=ip.version == 4,
+            is_ipv6=ip.version == 6,
+        )
+    except ValueError:
+        pass
+
+    if not _valid_timeout(timeout):
+        return ResolveResult(host=host, resolved=False, error=f"Invalid timeout value: {timeout!r}")
+
+    try:
+        infos = await asyncio.wait_for(
+            asyncio.to_thread(
+                socket.getaddrinfo,
+                host,
+                None,
+                socket.AF_UNSPEC,
+                socket.SOCK_STREAM,
+                0,
+                socket.AI_ADDRCONFIG,
+            ),
+            timeout=float(timeout),
+        )
+    except TimeoutError as exc:
+        return ResolveResult(host=host, resolved=False, error=f"DNS timed out: {exc}")
+    except (socket.gaierror, OSError) as exc:
+        return ResolveResult(host=host, resolved=False, error=str(exc))
+
+    return _result_from_infos(host, infos)

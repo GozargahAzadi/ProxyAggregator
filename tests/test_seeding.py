@@ -583,7 +583,7 @@ class TestRepositoryContract:
 
 class TestSeedToPipeline:
     @staticmethod
-    async def _fake_collect(sources, registry=None):
+    async def _fake_collect(sources, registry=None, **kwargs):
         results = []
         for source in sources:
             content = CONTENT_A if "one" in source.url else CONTENT_B

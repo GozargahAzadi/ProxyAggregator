@@ -11,6 +11,8 @@ from sqlalchemy import select
 from proxyaggregator.db.models import HealthCheckORM, ProxyConfigORM, SourceORM
 
 if TYPE_CHECKING:
+    from collections.abc import Sequence
+
     from sqlalchemy.orm import Session
 
     from proxyaggregator.health.models import HealthCheckResult
@@ -36,6 +38,7 @@ def create_proxy_config(
     city: str | None = None,
     latitude: float | None = None,
     longitude: float | None = None,
+    commit: bool = True,
 ) -> ProxyConfigORM:
     config = ProxyConfigORM(
         protocol=protocol,
@@ -50,7 +53,8 @@ def create_proxy_config(
         longitude=longitude,
     )
     session.add(config)
-    session.commit()
+    if commit:
+        session.commit()
     return config
 
 
@@ -61,6 +65,16 @@ def get_proxy_config(session: Session, config_id: int) -> ProxyConfigORM | None:
 def get_proxy_config_by_hash(session: Session, content_hash: str) -> ProxyConfigORM | None:
     stmt = select(ProxyConfigORM).where(ProxyConfigORM.content_hash == content_hash)
     return session.scalar(stmt)
+
+
+def get_proxy_configs_by_hashes(
+    session: Session, content_hashes: Sequence[str]
+) -> dict[str, ProxyConfigORM]:
+    """Bulk lookup keyed by content hash; used for batch persistence preload."""
+    if not content_hashes:
+        return {}
+    stmt = select(ProxyConfigORM).where(ProxyConfigORM.content_hash.in_(set(content_hashes)))
+    return {row.content_hash: row for row in session.scalars(stmt)}
 
 
 def list_all_proxy_configs(session: Session) -> list[ProxyConfigORM]:
@@ -109,10 +123,12 @@ def create_source(
     name: str,
     source_type: str,
     url: str,
+    commit: bool = True,
 ) -> SourceORM:
     source = SourceORM(name=name, source_type=source_type, url=url)
     session.add(source)
-    session.commit()
+    if commit:
+        session.commit()
     return source
 
 
@@ -123,6 +139,14 @@ def get_source(session: Session, source_id: int) -> SourceORM | None:
 def get_source_by_url(session: Session, url: str) -> SourceORM | None:
     stmt = select(SourceORM).where(SourceORM.url == url)
     return session.scalar(stmt)
+
+
+def get_sources_by_urls(session: Session, urls: Sequence[str]) -> dict[str, SourceORM]:
+    """Bulk lookup keyed by URL; used for batch get-or-create preload."""
+    if not urls:
+        return {}
+    stmt = select(SourceORM).where(SourceORM.url.in_(set(urls)))
+    return {row.url: row for row in session.scalars(stmt)}
 
 
 def list_sources(session: Session) -> list[SourceORM]:
@@ -148,6 +172,7 @@ def create_health_check(
     proxy_ms: float | None = None,
     tls_used: bool = False,
     protocol_checked: bool = False,
+    commit: bool = True,
 ) -> HealthCheckORM:
     check = HealthCheckORM(
         proxy_config_id=proxy_config_id,
@@ -164,11 +189,14 @@ def create_health_check(
         protocol_checked=protocol_checked,
     )
     session.add(check)
-    session.commit()
+    if commit:
+        session.commit()
     return check
 
 
-def record_health_result(session: Session, result: HealthCheckResult) -> HealthCheckORM:
+def record_health_result(
+    session: Session, result: HealthCheckResult, *, commit: bool = True
+) -> HealthCheckORM:
     """Persist a runner result and refresh the proxied config's denormalized state."""
     if result.proxy_config_id is None:
         raise ValueError("proxy_config_id is required to persist a health result")
@@ -182,7 +210,7 @@ def record_health_result(session: Session, result: HealthCheckResult) -> HealthC
     config.working_ip = result.checked_ip
     config.updated_at = _utcnow()
 
-    check = create_health_check(
+    return create_health_check(
         session,
         proxy_config_id=result.proxy_config_id,
         is_alive=result.is_alive,
@@ -196,8 +224,8 @@ def record_health_result(session: Session, result: HealthCheckResult) -> HealthC
         proxy_ms=result.proxy_ms,
         tls_used=result.tls_used,
         protocol_checked=result.protocol_checked,
+        commit=commit,
     )
-    return check
 
 
 def get_health_checks_for_config(session: Session, proxy_config_id: int) -> list[HealthCheckORM]:

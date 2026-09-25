@@ -24,6 +24,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import time
 from dataclasses import dataclass, replace
 from typing import TYPE_CHECKING
 
@@ -31,8 +32,8 @@ from proxyaggregator.config.settings import Settings
 from proxyaggregator.db.crud import (
     create_proxy_config,
     create_source,
-    get_proxy_config_by_hash,
-    get_source_by_url,
+    get_proxy_configs_by_hashes,
+    get_sources_by_urls,
     list_all_proxy_configs,
     list_health_checks,
     list_sources,
@@ -80,7 +81,7 @@ if TYPE_CHECKING:
 
     from sqlalchemy.orm import Session
 
-    from proxyaggregator.db.models import ProxyConfigORM, SourceORM
+    from proxyaggregator.db.models import ProxyConfigORM
     from proxyaggregator.geoip.models import EnrichmentResult
     from proxyaggregator.health.models import HealthCheckResult
     from proxyaggregator.health.runner import HealthRunner
@@ -103,6 +104,28 @@ class PipelineError(RuntimeError):
 
 
 @dataclass(frozen=True)
+class DnsStats:
+    """Aggregate DNS resolution counters for one pipeline run."""
+
+    attempts: int = 0
+    successes: int = 0
+    failures: int = 0
+
+    @classmethod
+    def from_enrichments(cls, enrichments) -> DnsStats:
+        attempts = 0
+        successes = 0
+        failures = 0
+        for enrichment in enrichments:
+            attempts += 1
+            if enrichment.resolution_error is not None:
+                failures += 1
+            elif enrichment.resolved_ip is not None:
+                successes += 1
+        return cls(attempts=attempts, successes=successes, failures=failures)
+
+
+@dataclass(frozen=True)
 class PipelineConfig:
     """Everything the orchestrator needs, all injectable for tests."""
 
@@ -113,6 +136,15 @@ class PipelineConfig:
     geoip_reader: MmdbReader | None = None
     enricher: Callable[[ParseResult], EnrichmentResult] | None = None
     health_runner: HealthRunner | None = None
+
+    @property
+    def resolved_batch_enricher(self) -> GeoIpEnricher | None:
+        """Return a shared GeoIpEnricher instance, or None when a custom
+        enricher callable is injected (tests) so its semantics stay exact."""
+        if self.enricher is not None:
+            return None
+        reader = self.geoip_reader or MmdbReader(self.settings.geoip_db_path)
+        return GeoIpEnricher(reader)
 
     @property
     def resolved_enricher(self) -> Callable[[ParseResult], EnrichmentResult]:
@@ -144,6 +176,18 @@ class PipelineStats:
     ranked_proxies: int = 0
     subscription_count: int = 0
     published_artifacts: int = 0
+    dns_attempts: int = 0
+    dns_successes: int = 0
+    dns_failures: int = 0
+    collection_seconds: float = 0.0
+    parsing_seconds: float = 0.0
+    dedup_seconds: float = 0.0
+    persist_enrich_seconds: float = 0.0
+    health_seconds: float = 0.0
+    scoring_seconds: float = 0.0
+    subscriptions_seconds: float = 0.0
+    publish_seconds: float = 0.0
+    total_seconds: float = 0.0
 
     def summarize(self) -> str:
         """Render a single credential-free summary line."""
@@ -178,12 +222,15 @@ def load_configured_sources(session: Session) -> list[SourceSchema]:
 
 
 async def _collect_sources(
-    sources: Sequence[SourceSchema], registry: CollectorRegistry | None = None
+    sources: Sequence[SourceSchema],
+    registry: CollectorRegistry | None = None,
+    *,
+    concurrency: int = SourceOrchestrator.DEFAULT_CONCURRENCY,
 ) -> list[SourceResult]:
     """Fetch raw content for every configured source (per-source isolation)."""
-    return await SourceOrchestrator(registry or get_collector_registry()).collect_sources(
-        list(sources)
-    )
+    return await SourceOrchestrator(
+        registry or get_collector_registry(), concurrency=concurrency
+    ).collect_sources(list(sources))
 
 
 def _parse_results(
@@ -227,27 +274,56 @@ def _deduplicate(
     return survivors, len(survivors)
 
 
-def _get_or_create_source(session: Session, schema: SourceSchema) -> SourceORM:
-    source = get_source_by_url(session, schema.url)
-    if source is not None:
-        return source
-    return create_source(session, name=schema.name, source_type=schema.source_type, url=schema.url)
-
-
-def _persist_and_enrich(
+async def _persist_and_enrich(
     session: Session,
     survivors: Sequence[tuple[SourceSchema, ParseResult]],
     enricher: Callable[[ParseResult], EnrichmentResult],
-) -> tuple[list[tuple[ProxyConfigORM, ParseResult, EnrichmentResult]], int]:
-    """Persist first-seen proxies (get-or-create) and enrich every survivor."""
+    *,
+    batch_enricher: GeoIpEnricher | None = None,
+    dns_concurrency: int = 50,
+) -> tuple[list[tuple[ProxyConfigORM, ParseResult, EnrichmentResult]], int, DnsStats]:
+    """Persist first-seen proxies (get-or-create) and enrich every survivor.
+
+    When a :class:`GeoIpEnricher` instance is available the DNS lookups run
+    with bounded concurrency (``enrich_many``); otherwise the injected
+    callable is used verbatim.  Persistence preserves the survivor order
+    regardless of DNS completion order.  Sources and existing configs are
+    bulk-preloaded in two queries and new rows are inserted in a single
+    staged commit.
+    """
+    if batch_enricher is not None:
+        enrichments = await batch_enricher.enrich_many(
+            [parsed for _, parsed in survivors],
+            concurrency=dns_concurrency,
+        )
+    else:
+        enrichments = [enricher(parsed) for _, parsed in survivors]
+
+    urls = list(dict.fromkeys(schema.url for schema, _ in survivors))
+    sources = get_sources_by_urls(session, urls)
+    for schema in dict.fromkeys(schema for schema, _ in survivors):
+        if schema.url in sources:
+            continue
+        sources[schema.url] = create_source(
+            session,
+            name=schema.name,
+            source_type=schema.source_type,
+            url=schema.url,
+            commit=False,
+        )
+    session.flush()
+
+    content_hashes = [compute_content_hash(parsed) for _, parsed in survivors]
+    existing = get_proxy_configs_by_hashes(session, content_hashes)
+
     triples: list[tuple[ProxyConfigORM, ParseResult, EnrichmentResult]] = []
     persisted = 0
     counts: dict[str, int] = {}
-    for schema, parsed in survivors:
-        enrichment = enricher(parsed)
-        content_hash = compute_content_hash(parsed)
-        source = _get_or_create_source(session, schema)
-        config = get_proxy_config_by_hash(session, content_hash)
+    for (schema, parsed), enrichment, content_hash in zip(
+        survivors, enrichments, content_hashes, strict=True
+    ):
+        source = sources[schema.url]
+        config = existing.get(content_hash)
         if config is None:
             config = create_proxy_config(
                 session,
@@ -261,31 +337,42 @@ def _persist_and_enrich(
                 city=enrichment.city,
                 latitude=enrichment.latitude,
                 longitude=enrichment.longitude,
+                commit=False,
             )
+            existing[content_hash] = config
             persisted += 1
         triples.append((config, parsed, enrichment))
         counts[schema.url] = counts.get(schema.url, 0) + 1
     for url, count in counts.items():
-        source = get_source_by_url(session, url)
+        source = sources.get(url)
         if source is not None:
             source.config_count = count
     session.commit()
-    return triples, persisted
+    return triples, persisted, DnsStats.from_enrichments(enrichments)
 
 
 async def _check_health(
     runner: HealthRunner,
     session: Session,
     triples: Sequence[tuple[ProxyConfigORM, ParseResult, EnrichmentResult]],
+    *,
+    persist_batch_size: int = 1000,
 ) -> tuple[list[HealthCheckResult], int]:
-    """Health-check every survivor and persist each result via health CRUD."""
+    """Health-check every survivor and persist each result via health CRUD.
+
+    Health results are committed in bounded chunks so the transaction stays
+    small while preserving row order and the proxy relationship/metadata.
+    """
     entries = [
         HealthEntry(parsed=parsed, enrichment=enrichment, proxy_config_id=config.id)
         for config, parsed, enrichment in triples
     ]
     results = await runner.check_all(entries)
-    for result in results:
-        record_health_result(session, result)
+    for index, result in enumerate(results, start=1):
+        record_health_result(session, result, commit=False)
+        if index % persist_batch_size == 0:
+            session.commit()
+    session.commit()
     healthy = sum(1 for result in results if result.status is HealthStatus.OK)
     return results, healthy
 
@@ -371,36 +458,145 @@ async def run_pipeline(session: Session, cfg: PipelineConfig) -> PipelineStats:
             eligible proxies after health checks.  Publishing never runs
             when a fatal error is raised.
     """
+    total_start = time.perf_counter()
     if not cfg.sources:
         raise PipelineError("no_configured_sources", "the sources table is empty")
     stats = PipelineStats(sources_discovered=len(cfg.sources))
 
-    results = await _collect_sources(cfg.sources)
+    stage_start = time.perf_counter()
+    results = await _collect_sources(
+        cfg.sources, concurrency=cfg.settings.source_collection_concurrency
+    )
+    collection_seconds = time.perf_counter() - stage_start
     stats = replace(stats, sources_fetched=sum(1 for result in results if result.is_success))
+    logger.info(
+        "[PIPELINE] source collection: %.2fs (discovered=%d, fetched=%d)",
+        collection_seconds,
+        len(cfg.sources),
+        stats.sources_fetched,
+    )
 
+    stage_start = time.perf_counter()
     parsed, candidates = _parse_results(results)
+    parsing_seconds = time.perf_counter() - stage_start
     stats = replace(stats, parse_candidates=candidates, parsed_proxies=len(parsed))
+    logger.info(
+        "[PIPELINE] parsing: %.2fs (raw_candidates=%d, parsed=%d)",
+        parsing_seconds,
+        candidates,
+        len(parsed),
+    )
 
+    stage_start = time.perf_counter()
     survivors, _deduplicated = _deduplicate(parsed)
+    dedup_seconds = time.perf_counter() - stage_start
     stats = replace(stats, deduplicated_proxies=len(survivors))
+    logger.info(
+        "[PIPELINE] deduplication: %.2fs (deduplicated=%d)",
+        dedup_seconds,
+        len(survivors),
+    )
 
-    triples, persisted = _persist_and_enrich(session, survivors, cfg.resolved_enricher)
-    stats = replace(stats, persisted_proxies=persisted, enriched_proxies=len(triples))
+    stage_start = time.perf_counter()
+    triples, persisted, dns_stats = await _persist_and_enrich(
+        session=session,
+        survivors=survivors,
+        enricher=cfg.resolved_enricher,
+        batch_enricher=cfg.resolved_batch_enricher,
+        dns_concurrency=cfg.settings.dns_resolution_concurrency,
+    )
+    persist_enrich_seconds = time.perf_counter() - stage_start
+    stats = replace(
+        stats,
+        persisted_proxies=persisted,
+        enriched_proxies=len(triples),
+        dns_attempts=dns_stats.attempts,
+        dns_successes=dns_stats.successes,
+        dns_failures=dns_stats.failures,
+    )
+    logger.info(
+        "[PIPELINE] persist/enrich: %.2fs (persisted=%d, enriched=%d, dns_attempts=%d, "
+        "dns_ok=%d, dns_fail=%d)",
+        persist_enrich_seconds,
+        persisted,
+        len(triples),
+        dns_stats.attempts,
+        dns_stats.successes,
+        dns_stats.failures,
+    )
 
-    _health_results, healthy = await _check_health(cfg.resolved_health_runner, session, triples)
+    stage_start = time.perf_counter()
+    _health_results, healthy = await _check_health(
+        cfg.resolved_health_runner,
+        session,
+        triples,
+        persist_batch_size=cfg.settings.health_persist_batch_size,
+    )
+    health_seconds = time.perf_counter() - stage_start
     stats = replace(stats, health_checks_completed=len(_health_results), healthy_proxies=healthy)
+    logger.info(
+        "[PIPELINE] health checks: %.2fs (checked=%d, healthy=%d)",
+        health_seconds,
+        len(_health_results),
+        healthy,
+    )
 
+    stage_start = time.perf_counter()
     configs, ranked = _score_all(session)
+    scoring_seconds = time.perf_counter() - stage_start
     if not ranked:
         raise PipelineError("no_eligible_proxies", "no healthy proxies after health checks")
     ranked_proxies = _to_ranked_proxies(ranked, configs)
     stats = replace(stats, ranked_proxies=len(ranked_proxies))
+    logger.info(
+        "[PIPELINE] scoring: %.2fs (ranked=%d)",
+        scoring_seconds,
+        len(ranked_proxies),
+    )
 
+    stage_start = time.perf_counter()
     feeds = _build_feeds(ranked_proxies, cfg.max_items)
+    subscriptions_seconds = time.perf_counter() - stage_start
     stats = replace(stats, subscription_count=len(feeds))
+    logger.info(
+        "[PIPELINE] subscriptions: %.2fs (feeds=%d)",
+        subscriptions_seconds,
+        len(feeds),
+    )
 
+    stage_start = time.perf_counter()
     releases = _publish(feeds, cfg.output_dir)
-    return replace(stats, published_artifacts=len(releases) + 1)
+    publish_seconds = time.perf_counter() - stage_start
+    total_seconds = time.perf_counter() - total_start
+    stats = replace(
+        stats,
+        published_artifacts=len(releases) + 1,
+        collection_seconds=collection_seconds,
+        parsing_seconds=parsing_seconds,
+        dedup_seconds=dedup_seconds,
+        persist_enrich_seconds=persist_enrich_seconds,
+        health_seconds=health_seconds,
+        scoring_seconds=scoring_seconds,
+        subscriptions_seconds=subscriptions_seconds,
+        publish_seconds=publish_seconds,
+        total_seconds=total_seconds,
+    )
+    logger.info(
+        "[PIPELINE] publish/output: %.2fs (artifacts=%d)", publish_seconds, len(releases) + 1
+    )
+    logger.info("[PIPELINE] total: %.2fs", total_seconds)
+    logger.info(
+        "[PIPELINE] counts: raw=%d parsed=%d dedup=%d dns=%d/%d health=%d healthy=%d feeds=%d",
+        stats.parse_candidates,
+        stats.parsed_proxies,
+        stats.deduplicated_proxies,
+        stats.dns_successes,
+        stats.dns_attempts,
+        stats.health_checks_completed,
+        stats.healthy_proxies,
+        stats.subscription_count,
+    )
+    return stats
 
 
 def run_pipeline_cli() -> int:

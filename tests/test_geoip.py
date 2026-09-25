@@ -6,6 +6,7 @@ No live network calls. No real MMDB downloads.
 
 from __future__ import annotations
 
+import asyncio
 import ipaddress
 import socket
 import struct
@@ -1249,3 +1250,140 @@ class TestRegressionPhase4StillWorks:
         assert results[0].match_type == DedupMatchType.NONE
         assert results[1].match_type == DedupMatchType.ENDPOINT
         assert results[2].match_type == DedupMatchType.NONE
+
+
+# ===========================================================================
+# ASYNC DNS CONCURRENCY (Phase 15) TESTS
+# ===========================================================================
+
+
+class TestEnrichManyConcurrency:
+    """Bounded-concurrency and determinism guarantees of ``enrich_many``."""
+
+    @pytest.mark.asyncio
+    async def test_max_active_never_exceeds_limit(self, tmp_path):
+        """The semaphore bounds simultaneous DNS lookups at the configured limit."""
+        import asyncio
+
+        from proxyaggregator.geoip.enrich import GeoIpEnricher
+        from proxyaggregator.geoip.mmdb import MmdbReader
+        from proxyaggregator.geoip.resolver import ResolveResult
+
+        db_path = tmp_path / "test.mmdb"
+        db_path.write_bytes(_build_mmdb({}))
+        reader = MmdbReader(str(db_path))
+        enricher = GeoIpEnricher(reader)
+        try:
+            active = 0
+            max_active = 0
+            lock = asyncio.Lock()
+            calls = 0
+
+            async def slow_fake(host):
+                nonlocal active, max_active, calls
+                async with lock:
+                    active += 1
+                    calls += 1
+                    max_active = max(max_active, active)
+                await asyncio.sleep(0.05)
+                async with lock:
+                    active -= 1
+                return ResolveResult(host=host, resolved=True, addresses=["1.2.3.4"])
+
+            with patch("proxyaggregator.geoip.enrich.resolve_host_async", slow_fake):
+                results = await enricher.enrich_many(
+                    [_make_result(host=f"h{i}.example.com") for i in range(20)],
+                    concurrency=5,
+                )
+            assert len(results) == 20
+            assert calls == 20
+            assert max_active <= 5
+        finally:
+            reader.close()
+
+    @pytest.mark.asyncio
+    async def test_input_order_preserved_despite_out_of_order_completion(self, tmp_path):
+        """Output order must be the input order, never completion order."""
+        import asyncio
+
+        from proxyaggregator.geoip.enrich import GeoIpEnricher
+        from proxyaggregator.geoip.mmdb import MmdbReader
+        from proxyaggregator.geoip.resolver import ResolveResult
+
+        db_path = tmp_path / "test.mmdb"
+        db_path.write_bytes(_build_mmdb({}))
+        reader = MmdbReader(str(db_path))
+        enricher = GeoIpEnricher(reader)
+        try:
+            delays = {0: 0.2, 1: 0.05, 2: 0.15, 3: 0.01, 4: 0.1}
+            completion_order: list[int] = []
+
+            async def fake(host):
+                index = int(host[len("delay") :])
+                await asyncio.sleep(delays[index])
+                completion_order.append(index)
+                return ResolveResult(host=host, resolved=True, addresses=["1.2.3.4"])
+
+            input_hosts = [f"delay{i}" for i in range(5)]
+            with patch("proxyaggregator.geoip.enrich.resolve_host_async", fake):
+                results = await enricher.enrich_many(
+                    [_make_result(host=h) for h in input_hosts],
+                    concurrency=5,
+                )
+            assert [r.original_host for r in results] == input_hosts
+            assert completion_order != [0, 1, 2, 3, 4]
+        finally:
+            reader.close()
+
+    @pytest.mark.asyncio
+    async def test_one_failure_does_not_abort_batch(self, tmp_path):
+        """A single DNS failure degrades only its entry; the batch completes."""
+        from proxyaggregator.geoip.enrich import GeoIpEnricher
+        from proxyaggregator.geoip.mmdb import MmdbReader
+        from proxyaggregator.geoip.resolver import ResolveResult
+
+        db_path = tmp_path / "test.mmdb"
+        db_path.write_bytes(_build_mmdb({}))
+        reader = MmdbReader(str(db_path))
+        enricher = GeoIpEnricher(reader)
+        try:
+
+            async def fake(host):
+                if host == "boom.example.com":
+                    return ResolveResult(
+                        host=host,
+                        resolved=False,
+                        addresses=[],
+                        error="DNS timed out: test",
+                    )
+                return ResolveResult(host=host, resolved=True, addresses=["1.2.3.4"])
+
+            with patch("proxyaggregator.geoip.enrich.resolve_host_async", fake):
+                results = await enricher.enrich_many(
+                    [
+                        _make_result(host="ok1.example.com"),
+                        _make_result(host="boom.example.com"),
+                        _make_result(host="ok2.example.com"),
+                    ],
+                    concurrency=2,
+                )
+            assert len(results) == 3
+            assert results[1].resolved_ip is None
+            assert results[1].resolution_error is not None
+            assert results[0].resolved_ip == "1.2.3.4"
+            assert results[2].resolved_ip == "1.2.3.4"
+        finally:
+            reader.close()
+
+    @pytest.mark.asyncio
+    async def test_timeout_is_per_operation(self, tmp_path):
+        """The async resolver enforces its own timeout without global socket state."""
+        from proxyaggregator.geoip.resolver import resolve_host_async
+
+        async def never_to_thread(*_args, **_kwargs):
+            await asyncio.sleep(10)
+
+        with patch("proxyaggregator.geoip.resolver.asyncio.to_thread", never_to_thread):
+            result = await resolve_host_async("slow.example.com", timeout=0.05)
+        assert result.resolved is False
+        assert "timed out" in (result.error or "")

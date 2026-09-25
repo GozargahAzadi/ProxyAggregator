@@ -6,10 +6,11 @@ No location is ever guessed from hostname, domain, TLD, or any non-IP source.
 
 from __future__ import annotations
 
+import asyncio
 from typing import TYPE_CHECKING
 
 from proxyaggregator.geoip.models import EnrichmentResult, GeoIpRecord
-from proxyaggregator.geoip.resolver import resolve_host
+from proxyaggregator.geoip.resolver import ResolveResult, resolve_host, resolve_host_async
 
 if TYPE_CHECKING:
     from proxyaggregator.geoip.mmdb import MmdbReader
@@ -31,9 +32,40 @@ class GeoIpEnricher:
 
         Does NOT mutate the original ParseResult.
         """
-        # Step 1: DNS resolution
         resolved = resolve_host(result.host)
+        return self._build_result(result, resolved)
 
+    async def enrich_many(
+        self,
+        results: list[ParseResult],
+        *,
+        concurrency: int = 50,
+    ) -> list[EnrichmentResult]:
+        """Enrich many parsed proxies with bounded DNS concurrency.
+
+        DNS lookups run in worker threads (``asyncio.to_thread``) limited to
+        ``concurrency`` simultaneous operations via an ``asyncio.Semaphore``.
+        The returned list is in the **original input order**, never in
+        completion order.  A single lookup failure never aborts the batch: it
+        degrades to a per-entry error result, and the MMDB lookup is skipped
+        for that entry.  Any mix of failures and successes across entries is
+        preserved independently.
+
+        Literal-IP entries bypass DNS entirely (identical to :meth:`enrich`).
+        """
+        semaphore = asyncio.Semaphore(concurrency)
+
+        async def _resolve_one(result: ParseResult) -> ResolveResult:
+            async with semaphore:
+                return await resolve_host_async(result.host)
+
+        resolved = await asyncio.gather(*(_resolve_one(result) for result in results))
+        return [
+            self._build_result(result, res) for result, res in zip(results, resolved, strict=True)
+        ]
+
+    def _build_result(self, result: ParseResult, resolved: ResolveResult) -> EnrichmentResult:
+        """Build an EnrichmentResult from a parsed proxy and its DNS outcome."""
         resolved_ip = None
         all_ips: list[str] = []
         resolution_error = None

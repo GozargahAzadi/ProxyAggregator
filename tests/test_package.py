@@ -30,6 +30,9 @@ def test_settings_defaults() -> None:
     assert s.database_url == "sqlite:///proxyaggregator.db"
     assert s.health_check_timeout == 10
     assert s.health_check_concurrency == 50
+    assert s.health_persist_batch_size == 1000
+    assert s.dns_resolution_concurrency == 50
+    assert s.source_collection_concurrency == 10
     assert s.log_level == "INFO"
 
 

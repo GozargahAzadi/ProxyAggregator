@@ -37,6 +37,15 @@ class Settings:
     health_check_verify_tls: bool = field(
         default_factory=lambda: _env("HEALTH_CHECK_VERIFY_TLS", "0") in ("1", "true", "yes")
     )
+    dns_resolution_concurrency: int = field(
+        default_factory=lambda: int(_env("DNS_RESOLUTION_CONCURRENCY", "50"))
+    )
+    source_collection_concurrency: int = field(
+        default_factory=lambda: int(_env("SOURCE_COLLECTION_CONCURRENCY", "10"))
+    )
+    health_persist_batch_size: int = field(
+        default_factory=lambda: int(_env("HEALTH_PERSIST_BATCH_SIZE", "1000"))
+    )
     fetch_timeout: int = field(default_factory=lambda: int(_env("FETCH_TIMEOUT", "30")))
     max_response_bytes: int = field(
         default_factory=lambda: int(_env("MAX_RESPONSE_BYTES", str(10 * 1024 * 1024)))

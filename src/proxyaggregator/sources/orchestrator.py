@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 from datetime import UTC, datetime
 from typing import TYPE_CHECKING
 
@@ -18,23 +19,33 @@ class SourceOrchestrator:
     For each source the orchestrator looks up the appropriate collector
     from the registry, calls ``collect``, and aggregates results.  A
     failure in one source does NOT prevent other sources from being
-    collected.
+    collected.  Fetches run with bounded asyncio concurrency while
+    results are always returned in input order.
     """
 
-    def __init__(self, registry: CollectorRegistry) -> None:
+    DEFAULT_CONCURRENCY = 10
+
+    def __init__(
+        self, registry: CollectorRegistry, *, concurrency: int = DEFAULT_CONCURRENCY
+    ) -> None:
         self._registry = registry
+        self._concurrency = max(1, concurrency)
 
     async def collect_sources(self, sources: list[SourceSchema]) -> list[SourceResult]:
-        """Collect raw content from every source in order.
+        """Collect raw content from every source with bounded concurrency.
 
         Returns one ``SourceResult`` per input source, preserving the
         input ordering regardless of timing or individual failures.
         """
-        results: list[SourceResult] = []
-        for source in sources:
-            result = await self._collect_one(source)
-            results.append(result)
-        return results
+        if not sources:
+            return []
+        semaphore = asyncio.Semaphore(self._concurrency)
+
+        async def _collect_bounded(source: SourceSchema) -> SourceResult:
+            async with semaphore:
+                return await self._collect_one(source)
+
+        return list(await asyncio.gather(*(_collect_bounded(source) for source in sources)))
 
     async def _collect_one(self, source: SourceSchema) -> SourceResult:
         collector = self._registry.get(source.source_type)

@@ -246,7 +246,7 @@ class TestPhaseOrder:
             content_hash=content_hash,
         )
 
-        async def fake_collect(sources, registry=None):
+        async def fake_collect(sources, registry=None, **kwargs):
             called.append("collect")
             return [_source_result(SRC_A, CONTENT_A)]
 
@@ -258,11 +258,15 @@ class TestPhaseOrder:
             called.append("dedup")
             return ([(SRC_A, parsed)], 1)
 
-        def fake_persist(session, survivors, enricher):
+        async def fake_persist(session, survivors, enricher, **kwargs):
             called.append("persist")
-            return ([(config, parsed, _enricher(parsed))], 1)
+            return (
+                [(config, parsed, _enricher(parsed))],
+                1,
+                pipeline.DnsStats(attempts=1, successes=1),
+            )
 
-        async def fake_health(runner, session, triples):
+        async def fake_health(runner, session, triples, **kwargs):
             called.append("health")
             result = HealthCheckResult(
                 proxy_config_id=config.id,
@@ -404,7 +408,9 @@ class TestDedupPersistence:
         assert survivors[0][1] == http
         assert survivors[1][1] == socks
 
-        triples, persisted = pipeline._persist_and_enrich(db_session, survivors, _enricher)
+        triples, persisted, _dns = asyncio.run(
+            pipeline._persist_and_enrich(db_session, survivors, _enricher)
+        )
         assert persisted == 2
         hashes = {config.content_hash for config, _parsed, _enrichment in triples}
         assert len(hashes) == 2
@@ -417,7 +423,9 @@ class TestDedupPersistence:
 class TestGeoEnrichment:
     def test_country_from_enrichment_is_persisted(self, db_session):
         http = _parse(URI_HTTP)
-        triples, _persisted = pipeline._persist_and_enrich(db_session, [(SRC_A, http)], _enricher)
+        triples, _persisted, _dns = asyncio.run(
+            pipeline._persist_and_enrich(db_session, [(SRC_A, http)], _enricher)
+        )
         config = triples[0][0]
         assert config.country_code == "US"
         assert config.city == "Testville"
@@ -444,7 +452,7 @@ class TestGeoEnrichment:
 
 class TestHealthPersistence:
     def test_results_are_persisted_and_denormalized(self, db_session, monkeypatch, tmp_path):
-        async def fake_collect(sources, registry=None):
+        async def fake_collect(sources, registry=None, **kwargs):
             return [_source_result(SRC_A, CONTENT_A)]
 
         monkeypatch.setattr(pipeline, "_collect_sources", fake_collect)
@@ -598,7 +606,7 @@ class TestSubscriptionInput:
 
 class TestFatalFailurePolicy:
     @staticmethod
-    async def _fake_collect(sources, registry=None):
+    async def _fake_collect(sources, registry=None, **kwargs):
         return [_source_result(SRC_A, CONTENT_A)]
 
     def test_scoring_failure_prevents_publish(self, db_session, monkeypatch, tmp_path):
@@ -657,7 +665,7 @@ class TestEmptyResultPolicy:
         assert excinfo.value.reason == "no_configured_sources"
 
     def test_zero_eligible_proxies_publishes_nothing(self, db_session, monkeypatch, tmp_path):
-        async def fake_collect(sources, registry=None):
+        async def fake_collect(sources, registry=None, **kwargs):
             return [_source_result(SRC_A, CONTENT_A)]
 
         monkeypatch.setattr(pipeline, "_collect_sources", fake_collect)
@@ -675,7 +683,7 @@ class TestEmptyResultPolicy:
 
 class TestCredentialHygiene:
     def test_credentials_never_enter_logs_or_stats(self, db_session, monkeypatch, tmp_path, caplog):
-        async def fake_collect(sources, registry=None):
+        async def fake_collect(sources, registry=None, **kwargs):
             return [_source_result(SRC_A, CONTENT_A)]
 
         monkeypatch.setattr(pipeline, "_collect_sources", fake_collect)
@@ -774,7 +782,7 @@ class TestSettingsDriven:
 
 class TestEndToEndRun:
     @staticmethod
-    async def _fake_collect(sources, registry=None):
+    async def _fake_collect(sources, registry=None, **kwargs):
         results = []
         for source in sources:
             if source.url == SRC_A.url:
@@ -957,7 +965,7 @@ class TestProtocolCompleteFeedSet:
             ]
         )
 
-    async def _fake_collect(self, sources, registry=None):
+    async def _fake_collect(self, sources, registry=None, **kwargs):
         return [_source_result(SRC_A, self._content())]
 
     def test_run_produces_protocol_feeds_only_for_alive(self, db_session, monkeypatch, tmp_path):
