@@ -9,7 +9,7 @@ ProxyAggregator is configured via environment variables with the `PA_` prefix.
 | `PA_DATABASE_URL` | `sqlite:///proxyaggregator.db` | Database connection URL |
 | `PA_GITHUB_TOKEN` | — | GitHub token for publishing |
 | `PA_GITHUB_REPO` | — | GitHub repo (owner/name) |
-| `PA_GEOIP_DB_PATH` | `GeoLite2-City.mmdb` | Path to MaxMind GeoLite2 City DB |
+| `PA_GEOIP_DB_PATH` | `GeoLite2-City.mmdb` | Path to a country-level MMDB database (`country ipvAll` or GeoLite2-City). In CI this is provisioned automatically and requires no credentials |
 | `PA_HEALTH_CHECK_TIMEOUT` | `10` | Health check timeout in seconds |
 | `PA_HEALTH_CHECK_CONCURRENCY` | `50` | Max concurrent health checks |
 | `PA_HEALTH_CHECK_MAX_IPS_PER_HOST` | `8` | Max candidate IPs probed per host |
@@ -27,7 +27,7 @@ Create a `.env` file in the project root (not committed to git):
 PA_DATABASE_URL=sqlite:///proxyaggregator.db
 PA_GITHUB_TOKEN=ghp_xxxxxxxxxxxx
 PA_GITHUB_REPO=your_username/ProxyAggregator
-PA_GEOIP_DB_PATH=GeoLite2-City.mmdb
+PA_GEOIP_DB_PATH=user-country.mmdb
 PA_HEALTH_CHECK_TIMEOUT=10
 PA_HEALTH_CHECK_CONCURRENCY=50
 PA_HEALTH_CHECK_MAX_IPS_PER_HOST=8
@@ -40,13 +40,14 @@ PA_LOG_LEVEL=INFO
 
 ## GitHub Actions Secrets
 
-When running in CI, use GitHub Actions secrets:
+CI uses no GeoIP credentials; the country-level MMDB is downloaded from the
+ip-location-db releases (no MaxMind account/license key needed). Tokens:
 
 ```yaml
 env:
   PA_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   PA_GITHUB_REPO: ${{ github.repository }}
-  PA_GEOIP_DB_PATH: /path/to/GeoLite2-City.mmdb
+  # PA_GEOIP_DB_PATH is set by the workflow (downloaded user-country.mmdb)
 ```
 
 ## Configuration Validation
@@ -58,7 +59,9 @@ The `Settings` dataclass provides type-safe configuration with defaults. Invalid
 - Never commit `.env` to version control
 - Use GitHub Actions secrets for CI
 - Rotate tokens regularly
-- GeoIP database requires a MaxMind license key (free tier available)
+- GeoIP uses a free country-level MMDB (`country ipvAll` from
+  ip-location-db); no license key is required. GeoLite2-City databases
+  remain supported but are not used by CI
 - Health-check protocol handshakes (HTTP CONNECT / SOCKS / VLESS /
   Trojan / Shadowsocks) target the proxy's own advertised endpoint
   (self-tunnel) by default, so no external service is configured or

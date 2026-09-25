@@ -1,7 +1,8 @@
-"""MaxMind MMDB reader using the maxminddb library.
+"""MMDB reader using the maxminddb library.
 
-Reads GeoLite2-City and similar MMDB databases. Handles IPv4 and IPv6 lookups,
-returns structured records. Pure Python, no native extensions required.
+Reads GeoLite2-City, ip-location-db, and other MMDB databases. Handles IPv4
+and IPv6 lookups, returns structured records. Pure Python, no native
+extensions required.
 """
 
 from __future__ import annotations
@@ -21,14 +22,24 @@ class GeoIpDatabaseError(Exception):
     """
 
 
-def validate_mmdb(path: str | Path, *, expected_type: str = "GeoLite2-City") -> str:
-    """Validate that an MMDB file is present, readable, and a usable GeoIP DB.
+def validate_mmdb(
+    path: str | Path,
+    *,
+    allowed_types: tuple[str, ...] = ("country ipvAll", "GeoLite2-City"),
+) -> str:
+    """Validate that an MMDB file is present, readable, and a supported GeoIP DB.
+
+    ``allowed_types`` is an explicit allowlist of ``database_type`` values the
+    caller considers usable. The default covers the two database schemas this
+    project supports: the production ``country ipvAll`` database
+    (ip-location-db ``user-country.mmdb``) and the legacy ``GeoLite2-City``
+    format. Pass a narrower allowlist to require a specific type.
 
     Checks, in order:
         1. the path exists and is a regular file,
         2. the file is readable,
         3. it opens as a valid MaxMind DB,
-        4. its ``database_type`` matches ``expected_type``.
+        4. its ``database_type`` is in ``allowed_types``.
 
     Raises :class:`GeoIpDatabaseError` with a clear, credential-free message on
     any failure. Returns the database type string on success.
@@ -52,10 +63,11 @@ def validate_mmdb(path: str | Path, *, expected_type: str = "GeoLite2-City") -> 
         database_type = getattr(metadata, "database_type", "")
         if not database_type:
             raise GeoIpDatabaseError(f"GeoIP database has no database_type: {db_path}")
-        if expected_type is not None and database_type != expected_type:
+        if database_type not in allowed_types:
+            allowed = ", ".join(repr(item) for item in allowed_types)
             raise GeoIpDatabaseError(
-                f"Unexpected GeoIP database type {database_type!r}; "
-                f"expected {expected_type!r} ({db_path})"
+                f"Unsupported GeoIP database type {database_type!r}; "
+                f"expected one of: {allowed} ({db_path})"
             )
         return database_type
     finally:

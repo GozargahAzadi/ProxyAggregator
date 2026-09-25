@@ -65,7 +65,7 @@ def _build_parser() -> argparse.ArgumentParser:
     cmd_verify_geoip.add_argument(
         "--path",
         default=None,
-        help="Path to the MMDB file (default: $PA_GEOIP_DB_PATH, i.e. GeoLite2-City.mmdb).",
+        help="Path to the MMDB file (default: $PA_GEOIP_DB_PATH).",
     )
     cmd_verify_geoip.set_defaults(handler=_cmd_verify_geoip)
     return parser

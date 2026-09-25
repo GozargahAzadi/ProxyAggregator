@@ -13,6 +13,7 @@ from __future__ import annotations
 import asyncio
 import json
 import os
+import re
 import subprocess
 import sys
 from datetime import UTC, datetime
@@ -533,18 +534,28 @@ class TestRepositoryContract:
 
     def test_workflow_provisions_and_verifies_geoip_before_pipeline(self):
         text = (ROOT_DIR / ".github" / "workflows" / "publish.yml").read_text(encoding="utf-8")
-        provision_pos = text.index("Provision GeoLite2-City database")
-        verify_pos = text.index("Verify GeoIP database")
+        provision_pos = text.index("Provision GeoIP database")
+        checksum_pos = text.index("Verify GeoIP database checksum")
+        verify_pos = text.index("name: Verify GeoIP database\n")
         pipeline_pos = text.index("Run production pipeline")
-        assert provision_pos < verify_pos < pipeline_pos
+        assert provision_pos < checksum_pos < verify_pos < pipeline_pos
         assert "PA_GEOIP_DB_PATH:" in text
+        assert "user-country.mmdb" in text
         assert "verify-geoip" in text
-        assert "download.maxmind.com/geoip/databases/GeoLite2-City/download" in text
+        assert "github.com/sapics/ip-location-db/releases/download/latest/user-country.mmdb" in text
 
-    def test_workflow_uses_only_secrets_for_geoip_credentials(self):
+    def test_workflow_verifies_geoip_sha256_checksum(self):
         text = (ROOT_DIR / ".github" / "workflows" / "publish.yml").read_text(encoding="utf-8")
-        assert "${{ secrets.MAXMIND_ACCOUNT_ID }}" in text
-        assert "${{ secrets.MAXMIND_LICENSE_KEY }}" in text
+        assert "Verify GeoIP database checksum" in text
+        assert "sha256sum" in text
+        assert "api.github.com/repos/sapics/ip-location-db/releases/latest" in text
+        assert re.search(r"\b[0-9a-f]{64}\b", text) is None
+
+    def test_workflow_has_no_maxmind_credentials(self):
+        text = (ROOT_DIR / ".github" / "workflows" / "publish.yml").read_text(encoding="utf-8")
+        assert "MAXMIND" not in text
+        assert "download.maxmind.com" not in text
+        assert "GeoLite2-City" not in text
         placeholder = "YOUR_LICENSE_KEY_HERE"
         assert placeholder not in text
 

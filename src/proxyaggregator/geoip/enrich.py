@@ -76,7 +76,13 @@ class GeoIpEnricher:
 def _extract_geo_record(ip: str, raw: dict) -> GeoIpRecord:
     """Extract a GeoIpRecord from raw MMDB data dict.
 
-    Only uses actual database fields. Never invents values.
+    Supports both database schemas:
+      - GeoLite2-City:      {"country": {"iso_code": "DE", ...}, ...}
+      - ip-location-db:     {"country_code": "DE", ...}
+
+    The nested GeoLite2-City field is preferred when present; the top-level
+    ``country_code`` is used as a fallback. Only actual database fields are
+    used; names/city/coordinates are never invented.
     """
     country_code = None
     country_name = None
@@ -90,6 +96,12 @@ def _extract_geo_record(ip: str, raw: dict) -> GeoIpRecord:
         names = country_data.get("names")
         if isinstance(names, dict):
             country_name = names.get("en")
+
+    # ip-location-db (user-country / user-cities) stores the code at the top
+    # level under "country_code". Fall back only when the nested field is
+    # absent, so GeoLite2-City records keep precedence.
+    if not country_code:
+        country_code = raw.get("country_code")
 
     city_data = raw.get("city")
     if isinstance(city_data, dict):

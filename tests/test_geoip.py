@@ -126,10 +126,12 @@ def _encode_map(buf: bytearray, data: dict) -> None:
         _encode_value(buf, value)
 
 
-def _build_mmdb(ip_data: dict[str, dict]) -> bytes:
+def _build_mmdb(ip_data: dict[str, dict], *, database_type: str = "GeoLite2-City") -> bytes:
     """Build a minimal MMDB binary from an {ip_string: record_dict} mapping.
 
-    Uses record_size=24, ip_version=4.
+    Uses record_size=24, ip_version=4. ``database_type`` sets the metadata
+    ``database_type`` (defaults to the legacy GeoLite2-City value; pass
+    "country ipvAll" for the production ip-location-db schema).
     Builds a correct binary search tree that routes IPs to data entries.
 
     MMDB file layout:
@@ -204,7 +206,7 @@ def _build_mmdb(ip_data: dict[str, dict]) -> bytes:
         "binary_format_major_version": 2,
         "binary_format_minor_version": 0,
         "build_epoch": 1700000000,
-        "database_type": "GeoLite2-City",
+        "database_type": database_type,
         "description": {"en": "Test DB"},
         "ip_version": 4,
         "languages": ["en"],
@@ -633,17 +635,48 @@ class TestValidateMmdb:
         db_path.write_bytes(_build_mmdb({"1.2.3.4": {"country": {"iso_code": "US"}}}))
         return db_path
 
-    def test_valid_database_returns_type(self, tmp_path):
+    def _user_country_db(self, tmp_path):
+        db_path = tmp_path / "user-country.mmdb"
+        db_path.write_bytes(
+            _build_mmdb(
+                {"1.2.3.4": {"country_code": "US"}},
+                database_type="country ipvAll",
+            )
+        )
+        return db_path
+
+    def test_valid_geolite2_database_returns_type(self, tmp_path):
         from proxyaggregator.geoip.mmdb import validate_mmdb
 
         result = validate_mmdb(str(self._valid_db(tmp_path)))
         assert result == "GeoLite2-City"
+
+    def test_valid_user_country_database_returns_type(self, tmp_path):
+        from proxyaggregator.geoip.mmdb import validate_mmdb
+
+        result = validate_mmdb(str(self._user_country_db(tmp_path)))
+        assert result == "country ipvAll"
 
     def test_valid_database_accepts_pathlib(self, tmp_path):
         from proxyaggregator.geoip.mmdb import validate_mmdb
 
         result = validate_mmdb(self._valid_db(tmp_path))
         assert result == "GeoLite2-City"
+
+    def test_explicit_strict_allowlist_user_country(self, tmp_path):
+        from proxyaggregator.geoip.mmdb import validate_mmdb
+
+        result = validate_mmdb(self._user_country_db(tmp_path), allowed_types=("country ipvAll",))
+        assert result == "country ipvAll"
+
+    def test_explicit_allowlist_accepts_both_supported_types(self, tmp_path):
+        from proxyaggregator.geoip.mmdb import validate_mmdb
+
+        both = ("country ipvAll", "GeoLite2-City")
+        assert (
+            validate_mmdb(self._user_country_db(tmp_path), allowed_types=both) == "country ipvAll"
+        )
+        assert validate_mmdb(self._valid_db(tmp_path), allowed_types=both) == "GeoLite2-City"
 
     def test_missing_file_raises(self, tmp_path):
         from proxyaggregator.geoip.mmdb import GeoIpDatabaseError, validate_mmdb
@@ -672,11 +705,17 @@ class TestValidateMmdb:
         with pytest.raises(GeoIpDatabaseError, match="not a valid MaxMind DB"):
             validate_mmdb(db_path)
 
-    def test_wrong_database_type_raises(self, tmp_path):
+    def test_unsupported_database_type_raises(self, tmp_path):
         from proxyaggregator.geoip.mmdb import GeoIpDatabaseError, validate_mmdb
 
-        with pytest.raises(GeoIpDatabaseError, match="Unexpected GeoIP database type"):
-            validate_mmdb(self._valid_db(tmp_path), expected_type="GeoLite2-Country")
+        with pytest.raises(GeoIpDatabaseError, match="Unsupported GeoIP database type"):
+            validate_mmdb(self._valid_db(tmp_path), allowed_types=("country ipvAll",))
+
+    def test_geolite2_rejected_under_strict_user_country_allowlist(self, tmp_path):
+        from proxyaggregator.geoip.mmdb import GeoIpDatabaseError, validate_mmdb
+
+        with pytest.raises(GeoIpDatabaseError, match="Unsupported GeoIP database type"):
+            validate_mmdb(self._valid_db(tmp_path), allowed_types=("country ipvAll",))
 
     def test_error_never_contains_credentials(self, tmp_path):
         from proxyaggregator.geoip.mmdb import GeoIpDatabaseError, validate_mmdb
@@ -692,13 +731,23 @@ class TestValidateMmdb:
 class TestVerifyGeoIpCli:
     """CLI verify-geoip command (the workflow's pre-pipeline guard)."""
 
-    def test_cli_verify_geoip_ok(self, tmp_path, capsys):
+    def test_cli_verify_geoip_geolite2_ok(self, tmp_path, capsys):
         from proxyaggregator.__main__ import main
 
         db_path = tmp_path / "valid.mmdb"
         db_path.write_bytes(_build_mmdb({"1.2.3.4": {"country": {"iso_code": "US"}}}))
         assert main(["verify-geoip", "--path", str(db_path)]) == 0
-        assert "GeoIP database OK" in capsys.readouterr().out
+        assert "GeoIP database OK: GeoLite2-City" in capsys.readouterr().out
+
+    def test_cli_verify_geoip_user_country_ok(self, tmp_path, capsys):
+        from proxyaggregator.__main__ import main
+
+        db_path = tmp_path / "user-country.mmdb"
+        db_path.write_bytes(
+            _build_mmdb({"1.2.3.4": {"country_code": "US"}}, database_type="country ipvAll")
+        )
+        assert main(["verify-geoip", "--path", str(db_path)]) == 0
+        assert "GeoIP database OK: country ipvAll" in capsys.readouterr().out
 
     def test_cli_verify_geoip_missing_fails(self, tmp_path, capsys):
         from proxyaggregator.__main__ import main
@@ -706,6 +755,63 @@ class TestVerifyGeoIpCli:
         missing = tmp_path / "missing.mmdb"
         assert main(["verify-geoip", "--path", str(missing)]) == 1
         assert "ERROR:" in capsys.readouterr().err
+
+
+# ===========================================================================
+# GEOIP RECORD EXTRACTION: BOTH DATABASE SCHEMAS
+# ===========================================================================
+
+
+class TestGeoIpRecordExtraction:
+    """Raw record -> GeoIpRecord for GeoLite2-City and ip-location-db schemas."""
+
+    def test_geolite2_city_schema(self):
+        from proxyaggregator.geoip.enrich import _extract_geo_record
+
+        record = _extract_geo_record(
+            "1.2.3.4",
+            {"country": {"iso_code": "DE", "names": {"en": "Germany"}}},
+        )
+        assert record.country_code == "DE"
+        assert record.country_name == "Germany"
+
+    def test_user_country_schema(self):
+        from proxyaggregator.geoip.enrich import _extract_geo_record
+
+        record = _extract_geo_record("1.2.3.4", {"country_code": "US"})
+        assert record.country_code == "US"
+        assert record.country_name is None
+        assert record.city is None
+        assert record.latitude is None
+        assert record.longitude is None
+
+    def test_both_schemas_produce_same_country_code(self):
+        from proxyaggregator.geoip.enrich import _extract_geo_record
+
+        geolite = _extract_geo_record(
+            "1.2.3.4",
+            {"country": {"iso_code": "US"}, "city": {"names": {"en": "X"}}},
+        )
+        user_country = _extract_geo_record("1.2.3.4", {"country_code": "US"})
+        assert geolite.country_code == user_country.country_code == "US"
+
+    def test_prefers_nested_iso_code_over_top_level(self):
+        from proxyaggregator.geoip.enrich import _extract_geo_record
+
+        record = _extract_geo_record(
+            "1.2.3.4", {"country": {"iso_code": "DE"}, "country_code": "US"}
+        )
+        assert record.country_code == "DE"
+
+    def test_missing_country_data_returns_none_fields(self):
+        from proxyaggregator.geoip.enrich import _extract_geo_record
+
+        record = _extract_geo_record("1.2.3.4", {})
+        assert record.country_code is None
+        assert record.country_name is None
+        assert record.city is None
+        assert record.latitude is None
+        assert record.longitude is None
 
 
 # ===========================================================================
@@ -806,6 +912,29 @@ class TestGeoIpEnrichment:
         assert result.resolved_ip == "8.8.8.8"
         assert result.country_code == "US"
         assert result.city == "Mountain View"
+        reader.close()
+
+    def test_user_country_database_enrichment(self, tmp_path):
+        from proxyaggregator.geoip.enrich import GeoIpEnricher
+        from proxyaggregator.geoip.mmdb import MmdbReader
+
+        db_path = tmp_path / "user-country.mmdb"
+        db_path.write_bytes(
+            _build_mmdb(
+                {"1.1.1.1": {"country_code": "AU"}, "8.8.8.8": {"country_code": "US"}},
+                database_type="country ipvAll",
+            )
+        )
+        reader = MmdbReader(str(db_path))
+        assert reader.database_type == "country ipvAll"
+        enricher = GeoIpEnricher(reader)
+
+        au = enricher.enrich(_make_result(host="1.1.1.1", port=53))
+        us = enricher.enrich(_make_result(host="8.8.8.8", port=53))
+        assert au.country_code == "AU"
+        assert us.country_code == "US"
+        assert au.country_name is None
+        assert au.city is None
         reader.close()
 
     @patch("proxyaggregator.geoip.resolver.socket.getaddrinfo")
