@@ -35,6 +35,7 @@ from proxyaggregator.health.protocols import (
     check_socks5,
     check_trojan,
     check_vless,
+    check_vmess,
     transport_gate,
 )
 
@@ -53,6 +54,7 @@ _PROTOCOL_CHECKERS = {
     "socks4a": check_socks4,
     "vless": check_vless,
     "trojan": check_trojan,
+    "vmess": check_vmess,
     "ss": check_shadowsocks,
 }
 

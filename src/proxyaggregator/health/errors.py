@@ -35,10 +35,14 @@ DNS_UNAVAILABLE = "dns.unavailable"
 UNSUPPORTED_PROTOCOL = "protocol.unsupported"
 SKIPPED_INPUT = "skipped.input"
 
-# --- VLESS / Trojan / Shadowsocks (Phase 6.2) ---
+# --- VLESS / Trojan / Shadowsocks / VMess transports ---
 PROTOCOL_AUTH = "protocol.auth"
 PROTOCOL_REJECTED = "protocol.rejected"
 PROTOCOL_MALFORMED = "protocol.malformed"
 TLS_REALITY = "tls.reality"
-TRANSPORT_WS = "transport.ws"
 SS_CIPHER_UNSUPPORTED = "ss.cipher.unsupported"
+
+# --- VLESS / Trojan / VMess transport overlays (Phase 14) ---
+TRANSPORT_GRPC = "transport.grpc"
+TRANSPORT_OVERLAY = "transport.overlay"
+WS_HANDSHAKE = "ws.handshake"

@@ -26,6 +26,7 @@ from cryptography.hazmat.primitives.ciphers.aead import AESGCM, ChaCha20Poly1305
 
 from proxyaggregator.health import errors
 from proxyaggregator.health.checks import CheckError, monotonic_ms
+from proxyaggregator.health.vmess import open_response, seal_request
 
 if TYPE_CHECKING:
     from asyncio import StreamReader, StreamWriter
@@ -47,34 +48,264 @@ _SS_KEY_SIZES = {
     "chacha20-ietf-poly1305": 32,
 }
 
-# VLESS network values that map to a plain TCP stream over the checked
-# transport. Anything else (ws/grpc/httpupgrade/xhttp overlays) is unsupported.
-_VLESS_SUPPORTED_NETWORKS = frozenset({None, "", "tcp", "raw"})
-_TROJAN_SUPPORTED_NETWORKS = frozenset({None, "", "tcp"})
+# Transport values that collapse onto a plain TCP stream.
+_TCP_NETWORK_ALIASES = frozenset({None, "", "tcp", "raw"})
+
+# Protocols that can carry their protocol bytes over a WebSocket tunnel.
+_WS_CAPABLE_PROTOCOLS = frozenset({"vless", "trojan", "vmess"})
+
+_WS_GUID = b"258EAFA5-E914-47DA-95CA-C5AB0DC85B11"
+_WS_MAX_MESSAGE_BYTES = 512 * 1024
+
+
+def _transport_name(network: str | None) -> str:
+    """Normalize the parsed transport/network value onto a stable name."""
+    if network in _TCP_NETWORK_ALIASES:
+        return "tcp"
+    return network or "tcp"
+
+
+def _is_ws(parsed: ParseResult | None) -> bool:
+    """True when the endpoint's transport wraps the protocol bytes in WS."""
+    return parsed is not None and _transport_name(parsed.network) == "ws"
 
 
 def transport_gate(parsed: ParseResult) -> str | None:
     """Return the unsupported variant token before any dialing, else ``None``.
 
     Called before a TCP connection is even attempted so that variants this
-    project cannot speak on the wire (REALITY, WS overlays, SS-2022 ciphers)
-    are reported as unsupported rather than probed and misclassified.
+    project cannot speak on the wire (REALITY, gRPC, other overlays, QUIC
+    hysteria, SS-2022 ciphers) are reported as unsupported rather than
+    probed and misclassified. WebSocket overlays for vless/trojan/vmess are
+    supported and therefore pass the gate.
     """
-    if parsed.protocol == "vless":
-        if parsed.tls == "reality":
-            return errors.TLS_REALITY
-        if parsed.network not in _VLESS_SUPPORTED_NETWORKS:
-            return errors.TRANSPORT_WS
-        return None
-    if parsed.protocol == "trojan":
-        if parsed.network not in _TROJAN_SUPPORTED_NETWORKS:
-            return errors.TRANSPORT_WS
-        return None
-    if parsed.protocol == "ss":
+    protocol = parsed.protocol
+    if protocol in ("hysteria", "hysteria2"):
+        return errors.UNSUPPORTED_PROTOCOL
+    if protocol in ("vless", "vmess") and parsed.tls == "reality":
+        return errors.TLS_REALITY
+    if protocol in _WS_CAPABLE_PROTOCOLS:
+        network = _transport_name(parsed.network)
+        if network in ("tcp", "ws"):
+            return None
+        if network == "grpc":
+            return errors.TRANSPORT_GRPC
+        return errors.TRANSPORT_OVERLAY
+    if protocol == "ss":
         if parsed.method not in _SS_SUPPORTED_METHODS:
             return errors.SS_CIPHER_UNSUPPORTED
         return None
     return None
+
+
+def _ws_path(parsed: ParseResult | None) -> str:
+    """The WebSocket request path, normalized to start with ``/``."""
+    path = parsed.path if parsed is not None else None
+    if not path:
+        return "/"
+    return path if path.startswith("/") else "/" + path
+
+
+def _ws_host(parsed: ParseResult | None) -> str:
+    """The WebSocket ``Host`` header, preferring the link's ``host`` value."""
+    if parsed is not None and parsed.host_header:
+        return parsed.host_header
+    if parsed is not None and parsed.host:
+        return parsed.host
+    return "localhost"
+
+
+async def _ws_read_headers(reader: StreamReader, *, timeout: float) -> bytes:
+    """Read the WS upgrade response up to the blank line, length-capped."""
+    buf = b""
+    while b"\r\n\r\n" not in buf:
+        if len(buf) >= _MAX_HEADER_BYTES:
+            raise CheckError(errors.WS_HANDSHAKE)
+        chunk = await asyncio.wait_for(reader.read(1), timeout)
+        if not chunk:
+            raise CheckError(errors.WS_HANDSHAKE)
+        buf += chunk
+    return buf
+
+
+def _ws_expected_accept(client_key: bytes) -> bytes:
+    return base64.b64encode(hashlib.sha1(client_key + _WS_GUID).digest())
+
+
+def _parse_ws_headers(raw: bytes) -> dict[str, str]:
+    headers: dict[str, str] = {}
+    for line in raw.split(b"\r\n")[1:]:
+        name, _, value = line.partition(b":")
+        if name:
+            headers[name.strip().lower().decode("latin-1")] = value.strip().decode("latin-1")
+    return headers
+
+
+async def _ws_handshake(
+    reader: StreamReader,
+    writer: StreamWriter,
+    *,
+    host: str,
+    path: str,
+    timeout: float,
+) -> None:
+    """Perform an RFC 6455 client handshake; raise ``WS_HANDSHAKE`` on any
+    deviation from a fully valid upgrade response."""
+    client_key = base64.b64encode(os.urandom(16))
+    request = (
+        "GET {path} HTTP/1.1\r\n"
+        "Host: {host}\r\n"
+        "Upgrade: websocket\r\n"
+        "Connection: Upgrade\r\n"
+        "Sec-WebSocket-Key: {key}\r\n"
+        "Sec-WebSocket-Version: 13\r\n"
+        "\r\n"
+    ).format(path=path, host=host, key=client_key.decode("ascii"))
+    writer.write(request.encode("ascii"))
+    await asyncio.wait_for(writer.drain(), timeout)
+
+    raw = await _ws_read_headers(reader, timeout=timeout)
+    first_line = raw.split(b"\r\n", 1)[0]
+    if first_line.split(b" ", 2)[:2] != [b"HTTP/1.1", b"101"]:
+        raise CheckError(errors.WS_HANDSHAKE)
+    headers = _parse_ws_headers(raw)
+    if headers.get("upgrade", "").strip().lower() != "websocket":
+        raise CheckError(errors.WS_HANDSHAKE)
+    if headers.get("sec-websocket-accept", "").strip().encode("ascii") != _ws_expected_accept(
+        client_key
+    ):
+        raise CheckError(errors.WS_HANDSHAKE)
+
+
+async def _send_ws_binary(
+    writer: StreamWriter,
+    payload: bytes,
+    *,
+    timeout: float,
+) -> None:
+    """Send one FIN+masked binary WebSocket frame (RFC 6455 5.1/5.2)."""
+    header = bytearray(b"\x82")
+    mask = os.urandom(4)
+    length = len(payload)
+    if length < 126:
+        header.append(0x80 | length)
+    elif length < 65536:
+        header.append(0x80 | 126)
+        header += struct.pack("!H", length)
+    else:
+        header.append(0x80 | 127)
+        header += struct.pack("!Q", length)
+    header += mask
+    masked = bytes(b ^ mask[index & 3] for index, b in enumerate(payload))
+    writer.write(bytes(header) + masked)
+    await asyncio.wait_for(writer.drain(), timeout)
+
+
+async def _read_ws_frame(
+    reader: StreamReader,
+    *,
+    timeout: float,
+    max_bytes: int,
+) -> tuple[int, bool, bytes]:
+    """Read one WebSocket frame and unmask it.
+
+    Returns ``(opcode, fin, payload)``. The caller classifies EOF
+    (:class:`asyncio.IncompleteReadError`) and oversized frames.
+    """
+    head = await asyncio.wait_for(reader.readexactly(2), timeout)
+    fin = bool(head[0] & 0x80)
+    opcode = head[0] & 0x0F
+    masked = bool(head[1] & 0x80)
+    length = head[1] & 0x7F
+    if length == 126:
+        length = struct.unpack("!H", await asyncio.wait_for(reader.readexactly(2), timeout))[0]
+    elif length == 127:
+        length = struct.unpack("!Q", await asyncio.wait_for(reader.readexactly(8), timeout))[0]
+    if length > max_bytes:
+        raise CheckError(errors.WS_HANDSHAKE)
+    mask = b""
+    if masked:
+        mask = await asyncio.wait_for(reader.readexactly(4), timeout)
+    payload = await asyncio.wait_for(reader.readexactly(length), timeout)
+    if masked:
+        payload = bytes(b ^ mask[index & 3] for index, b in enumerate(payload))
+    return opcode, fin, payload
+
+
+async def _read_ws_message(
+    reader: StreamReader,
+    *,
+    timeout: float,
+    max_bytes: int | None = None,
+) -> bytes:
+    """Read one complete WS message, reassembling continuation fragments.
+
+    Control frames (ping/pong) are consumed and ignored; a close frame or an
+    unsolicited non-data frame aborts with ``WS_HANDSHAKE``. EOF while reading
+    is left for the caller to classify.
+    """
+    limit = _WS_MAX_MESSAGE_BYTES if max_bytes is None else max_bytes
+    first = True
+    message = bytearray()
+    while True:
+        opcode, fin, payload = await _read_ws_frame(reader, timeout=timeout, max_bytes=limit)
+        if opcode in (0x9, 0xA):  # ping / pong
+            continue
+        if opcode == 0x8:  # close
+            raise CheckError(errors.WS_HANDSHAKE)
+        if first:
+            if opcode not in (0x1, 0x2):
+                raise CheckError(errors.WS_HANDSHAKE)
+            first = False
+        elif opcode != 0x0:
+            raise CheckError(errors.WS_HANDSHAKE)
+        message += payload
+        if len(message) > limit:
+            raise CheckError(errors.WS_HANDSHAKE)
+        if fin:
+            return bytes(message)
+
+
+async def _observe_ws_session(reader: StreamReader, timeout: float) -> tuple[float, str | None]:
+    """Observe a WS-tunneled session that has no success acknowledgement.
+
+    Mirrors :func:`_observe_session` for protocols carried over WS: silence
+    within the observation window means accepted; a WS close or an EOF means
+    rejected; any inbound data frame means malformed.
+    """
+    start = monotonic_ms()
+    window = min(timeout, _OBSERVATION_WINDOW)
+    try:
+        head = await asyncio.wait_for(reader.readexactly(2), window)
+    except TimeoutError:
+        return monotonic_ms() - start, None
+    except asyncio.IncompleteReadError:
+        return monotonic_ms() - start, errors.PROTOCOL_AUTH
+    if (head[0] & 0x0F) == 0x8:  # close frame
+        return monotonic_ms() - start, errors.PROTOCOL_AUTH
+    return monotonic_ms() - start, errors.PROTOCOL_MALFORMED
+
+
+def _parse_uuid(user: str | None) -> bytes | None:
+    """Return the raw 16 bytes of a UUID string, else ``None``."""
+    try:
+        return uuid.UUID(user or "").bytes
+    except (ValueError, AttributeError, TypeError):
+        return None
+
+
+def _build_vless_request(uuid_bytes: bytes, target_host: str, target_port: int) -> bytes:
+    """Serialize a VLESS CONNECT request header."""
+    atyp, addr = _vless_address(target_host)
+    return (
+        b"\x00"
+        + uuid_bytes
+        + b"\x00"
+        + b"\x01"
+        + struct.pack("!H", target_port)
+        + bytes([atyp])
+        + addr
+    )
 
 
 @dataclass(frozen=True)
@@ -369,43 +600,44 @@ async def check_vless(
     timeout: float,
     parsed: ParseResult | None = None,
 ) -> ProtocolCheckOutcome:
-    """Perform a VLESS TCP CONNECT handshake and validate the reply.
+    """Perform a VLESS handshake (plain TCP or WebSocket) and validate the reply.
 
     The client sends the VLESS request header (version ``0x00``, so the check
     is compatible with xtls-rprx-vision inbound flows) asking the proxy to
-    tunnel back to its own advertised endpoint. Success is the server's
-    defined ``0x54`` version response.
+    tunnel back to its own advertised endpoint. A genuine VLESS server answers
+    with a two-byte reply: the negotiated version byte (``0x00``) followed by
+    the addons length (``0x00``). Any other reply or a closed connection means
+    the server did not accept the request.
     """
     start = monotonic_ms()
     try:
-        uuid_str = (parsed.user if parsed is not None else user) or ""
-        try:
-            uuid_bytes = uuid.UUID(uuid_str).bytes
-        except (ValueError, AttributeError, TypeError):
+        uuid_bytes = _parse_uuid(parsed.user if parsed is not None else user)
+        if uuid_bytes is None:
             return ProtocolCheckOutcome(
                 ok=False, proxy_ms=monotonic_ms() - start, error=errors.PROTOCOL_MALFORMED
             )
 
-        atyp, addr = _vless_address(target_host)
-        request = (
-            b"\x00"
-            + uuid_bytes
-            + b"\x00"
-            + b"\x01"
-            + struct.pack("!H", target_port)
-            + bytes([atyp])
-            + addr
-        )
-        writer.write(request)
-        await asyncio.wait_for(writer.drain(), timeout)
+        request = _build_vless_request(uuid_bytes, target_host, target_port)
+        via_ws = _is_ws(parsed)
+        if via_ws:
+            await _ws_handshake(
+                reader, writer, host=_ws_host(parsed), path=_ws_path(parsed), timeout=timeout
+            )
+            await _send_ws_binary(writer, request, timeout=timeout)
+        else:
+            writer.write(request)
+            await asyncio.wait_for(writer.drain(), timeout)
 
         try:
-            head = await asyncio.wait_for(reader.readexactly(2), timeout)
+            if via_ws:
+                reply = await _read_ws_message(reader, timeout=timeout)
+            else:
+                reply = await asyncio.wait_for(reader.readexactly(2), timeout)
         except asyncio.IncompleteReadError as exc:
-            raise CheckError(errors.PROTOCOL_MALFORMED) from exc
+            raise CheckError(errors.WS_HANDSHAKE if via_ws else errors.PROTOCOL_MALFORMED) from exc
 
         proxy_ms = monotonic_ms() - start
-        if head[0] != 0x54:
+        if reply != b"\x00\x00":
             return ProtocolCheckOutcome(
                 ok=False, proxy_ms=proxy_ms, error=errors.PROTOCOL_MALFORMED
             )
@@ -433,9 +665,10 @@ async def check_trojan(
     timeout: float,
     parsed: ParseResult | None = None,
 ) -> ProtocolCheckOutcome:
-    """Perform a Trojan CONNECT handshake over the already-established TLS.
+    """Perform a Trojan handshake (plain TCP or WebSocket).
 
-    The TLS layer is established by the caller (``upgrade_tls``). The proxy
+    The TLS layer is established by the caller (``upgrade_tls``), and a
+    WebSocket upgrade rides on top when the link uses ``ws``. The proxy
     credential is sent as hex(SHA-224(password)). Trojan has no success
     acknowledgement: acceptance is inferred when the server keeps the session
     open and sends nothing during a bounded observation window.
@@ -459,10 +692,18 @@ async def check_trojan(
             + struct.pack("!H", target_port)
             + b"\r\n"
         )
-        writer.write(request)
-        await asyncio.wait_for(writer.drain(), timeout)
 
-        proxy_ms, error = await _observe_session(reader, timeout)
+        via_ws = _is_ws(parsed)
+        if via_ws:
+            await _ws_handshake(
+                reader, writer, host=_ws_host(parsed), path=_ws_path(parsed), timeout=timeout
+            )
+            await _send_ws_binary(writer, request, timeout=timeout)
+            proxy_ms, error = await _observe_ws_session(reader, timeout)
+        else:
+            writer.write(request)
+            await asyncio.wait_for(writer.drain(), timeout)
+            proxy_ms, error = await _observe_session(reader, timeout)
         return ProtocolCheckOutcome(ok=error is None, proxy_ms=proxy_ms, error=error)
     except TimeoutError:
         return ProtocolCheckOutcome(
@@ -567,6 +808,73 @@ async def check_shadowsocks(
         )
     except CheckError as exc:
         return ProtocolCheckOutcome(ok=False, proxy_ms=monotonic_ms() - start, error=exc.code)
+    except (ConnectionError, OSError):
+        return ProtocolCheckOutcome(
+            ok=False, proxy_ms=monotonic_ms() - start, error=errors.CONNECTION_ERROR
+        )
+
+
+async def check_vmess(
+    reader: StreamReader,
+    writer: StreamWriter,
+    *,
+    target_host: str,
+    target_port: int,
+    user: str | None = None,
+    password: str | None = None,
+    timeout: float,
+    parsed: ParseResult | None = None,
+) -> ProtocolCheckOutcome:
+    """Perform a genuine VMess v1 (AEAD) handshake, plain TCP or WebSocket.
+
+    Sends the authenticated request header and waits for the server's sealed
+    response header, proving both that this UUID is accepted and that the
+    server can route the session. The response is only meaningful if it is
+    authentic (AEAD) and echoes our random response byte; a refused user
+    yields a closed connection instead of a response.
+    """
+    start = monotonic_ms()
+    try:
+        uuid_source = (parsed.user if parsed is not None else user) or ""
+        try:
+            uuid_bytes = uuid.UUID(uuid_source).bytes
+        except (ValueError, AttributeError, TypeError):
+            return ProtocolCheckOutcome(
+                ok=False, proxy_ms=monotonic_ms() - start, error=errors.PROTOCOL_MALFORMED
+            )
+
+        sealed = seal_request(uuid_bytes, target_host, target_port)
+        via_ws = _is_ws(parsed)
+        if via_ws:
+            await _ws_handshake(
+                reader, writer, host=_ws_host(parsed), path=_ws_path(parsed), timeout=timeout
+            )
+            await _send_ws_binary(writer, sealed.stream, timeout=timeout)
+        else:
+            writer.write(sealed.stream)
+            await asyncio.wait_for(writer.drain(), timeout)
+
+        try:
+            if via_ws:
+                data = await _read_ws_message(reader, timeout=timeout)
+            else:
+                data = await asyncio.wait_for(reader.readexactly(38), timeout)
+        except asyncio.IncompleteReadError as exc:
+            raise CheckError(errors.WS_HANDSHAKE if via_ws else errors.PROTOCOL_AUTH) from exc
+
+        proxy_ms = monotonic_ms() - start
+        open_response(sealed.body_key, sealed.body_iv, sealed.v, data)
+        return ProtocolCheckOutcome(ok=True, proxy_ms=proxy_ms)
+    except TimeoutError:
+        return ProtocolCheckOutcome(
+            ok=False, proxy_ms=monotonic_ms() - start, error=errors.CONNECTION_TIMEOUT
+        )
+    except CheckError as exc:
+        return ProtocolCheckOutcome(ok=False, proxy_ms=monotonic_ms() - start, error=exc.code)
+    except ValueError:
+        return ProtocolCheckOutcome(
+            ok=False, proxy_ms=monotonic_ms() - start, error=errors.PROTOCOL_AUTH
+        )
     except (ConnectionError, OSError):
         return ProtocolCheckOutcome(
             ok=False, proxy_ms=monotonic_ms() - start, error=errors.CONNECTION_ERROR

@@ -868,3 +868,127 @@ class TestEndToEndRun:
         schemas = pipeline.load_configured_sources(db_session)
         assert [schema.name for schema in schemas] == ["one", "two"]
         assert len(list_sources(db_session)) == 2
+
+
+# Integration: protocol-complete pipeline -------------------------------------
+
+
+class _ProtocolSelectiveHealthRunner:
+    """Deterministic runner that mirrors the real pipeline gate.
+
+    Only entries that pass ``transport_gate`` (i.e. protocols this project can
+    actually speak on the wire) survive health checks; everything else is
+    dropped before ranking and never reaches a per-protocol feed.
+    """
+
+    def __init__(self, alive: set[str]) -> None:
+        self.alive = set(alive)
+
+    async def check_all(self, entries):
+        from proxyaggregator.health.protocols import transport_gate
+
+        results = []
+        for entry in entries:
+            ip = entry.parsed.host
+            alive = entry.parsed.protocol in self.alive and transport_gate(entry.parsed) is None
+            protocol = entry.parsed.protocol
+            results.append(
+                HealthCheckResult(
+                    proxy_config_id=entry.proxy_config_id,
+                    protocol=protocol,
+                    host=entry.parsed.host,
+                    port=entry.parsed.port,
+                    status=HealthStatus.OK if alive else HealthStatus.UNSUPPORTED,
+                    checked_ip=ip,
+                    attempted_ips=[ip],
+                    stage=CheckStage.TCP,
+                    connect_ms=10.0,
+                    tls_ms=0.0,
+                    proxy_ms=5.0 if alive else None,
+                    latency_ms=5.0 if alive else None,
+                    tls_used=protocol in ("https", "trojan"),
+                    protocol_checked=alive,
+                    error=None if alive else "protocol.unsupported",
+                )
+            )
+        return results
+
+
+class TestProtocolCompleteFeedSet:
+    """An end-to-end protocol-complete run emits per-protocol feeds.
+
+    VLESS, VMess, Trojan and SOCKS5 survive their wire checks (their checkers
+    exist), so each gets a plain + base64 feed. gRPC/overlay variants and
+    other unsupported protocols die in the gate and must not appear in the
+    released feed set.
+    """
+
+    def _vmess_uri(self) -> str:
+        payload = base64.b64encode(
+            json.dumps(
+                {
+                    "v": "2",
+                    "ps": "phase14",
+                    "add": "203.0.113.30",
+                    "port": "443",
+                    "id": "11111111-2222-4333-8444-555555555555",
+                    "aid": "0",
+                    "scy": "auto",
+                    "net": "tcp",
+                    "type": "none",
+                    "host": "",
+                    "path": "",
+                    "tls": "",
+                },
+                separators=(",", ":"),
+            ).encode()
+        ).decode("ascii")
+        return f"vmess://{payload}"
+
+    def _content(self) -> str:
+        return "\n".join(
+            [
+                "vless://11111111-2222-4333-8444-555555555555@203.0.113.20:443?security=none",
+                self._vmess_uri(),
+                "trojan://phase14@203.0.113.21:443",
+                "socks5://203.0.113.22:1080",
+                "vless://11111111-2222-4333-8444-555555555555@203.0.113.23:443?security=none"
+                "&type=grpc&serviceName=x",
+            ]
+        )
+
+    async def _fake_collect(self, sources, registry=None):
+        return [_source_result(SRC_A, self._content())]
+
+    def test_run_produces_protocol_feeds_only_for_alive(self, db_session, monkeypatch, tmp_path):
+        monkeypatch.setattr(pipeline, "_collect_sources", self._fake_collect)
+        runner = _ProtocolSelectiveHealthRunner({"vless", "vmess", "trojan", "socks5"})
+        out = tmp_path / "out"
+        cfg = pipeline.PipelineConfig(
+            settings=Settings(),
+            sources=(SRC_A,),
+            output_dir=out,
+            enricher=_enricher,
+            health_runner=runner,
+        )
+        asyncio.run(pipeline.run_pipeline(db_session, cfg))
+
+        files = sorted(path.name for path in out.iterdir())
+        assert files == [
+            "manifest.json",
+            "proxyaggregator-base64.txt",
+            "proxyaggregator.json",
+            "proxyaggregator.txt",
+            "socks5-base64.txt",
+            "socks5.txt",
+            "trojan-base64.txt",
+            "trojan.txt",
+            "vless-base64.txt",
+            "vless.txt",
+            "vmess-base64.txt",
+            "vmess.txt",
+        ]
+        for name in ("vless.txt", "vmess.txt", "trojan.txt", "socks5.txt"):
+            content = (out / name).read_text(encoding="utf-8").splitlines()
+            assert len(content) == 1, name
+        assert "grpc" not in "".join((out / "proxyaggregator.txt").read_text(encoding="utf-8"))

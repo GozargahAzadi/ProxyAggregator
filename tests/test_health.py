@@ -10,9 +10,11 @@ only through the injected permissive test policy.
 from __future__ import annotations
 
 import asyncio
+import base64
 import hashlib
 import json
 import ssl
+import struct
 import uuid
 from datetime import datetime
 from pathlib import Path
@@ -20,6 +22,7 @@ from unittest.mock import patch
 
 import pytest
 from cryptography.exceptions import InvalidTag
+from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 from pydantic import ValidationError
 from sqlalchemy import create_engine, inspect
 from sqlalchemy.orm import Session
@@ -34,6 +37,7 @@ from proxyaggregator.db.crud import (
 )
 from proxyaggregator.geoip.models import EnrichmentResult
 from proxyaggregator.health import errors
+from proxyaggregator.health import vmess as vmess_mod
 from proxyaggregator.health.checks import CheckError, check_tcp, upgrade_tls
 from proxyaggregator.health.models import (
     CheckStage,
@@ -334,7 +338,7 @@ async def _read_vless_request(reader) -> bytes:
 
 def _vless_handler(
     expected_uuid: bytes,
-    reply: bytes = b"\x54\x01",
+    reply: bytes = b"\x00\x00",
     silent: bool = False,
 ):
     async def handler(reader, writer) -> None:
@@ -409,6 +413,244 @@ def _ss_password_handler(method: str, password: str):
             await reader.read()
         except (asyncio.IncompleteReadError, ValueError, InvalidTag):
             return
+        finally:
+            writer.close()
+
+    return handler
+
+
+_WS_GUID = b"258EAFA5-E914-47DA-95CA-C5AB0DC85B11"
+
+
+def _ws_accept(client_key: bytes) -> bytes:
+    """RFC 6455 Sec-WebSocket-Accept for a client key."""
+    return base64.b64encode(hashlib.sha1(client_key + _WS_GUID).digest())
+
+
+async def _ws_read_handshake_request(reader) -> tuple[str, bytes]:
+    """Read the client's WS upgrade request, returning (path, client key)."""
+    buf = b""
+    while b"\r\n\r\n" not in buf:
+        chunk = await reader.read(1)
+        if not chunk:
+            raise asyncio.IncompleteReadError(buf, b"")
+        buf += chunk
+    path = buf.split(b" ", 2)[1].decode("ascii") if len(buf.split(b" ", 2)) > 1 else "/"
+    client_key = b""
+    for line in buf.split(b"\r\n")[1:]:
+        name, _, value = line.partition(b":")
+        if name.strip().lower() == b"sec-websocket-key":
+            client_key = value.strip()
+    return path, client_key
+
+
+async def _ws_answer_101(writer, client_key: bytes) -> None:
+    """Reply with a valid 101 Switching Protocols response."""
+    writer.write(
+        b"HTTP/1.1 101 Switching Protocols\r\n"
+        b"Upgrade: websocket\r\n"
+        b"Connection: Upgrade\r\n"
+        b"Sec-WebSocket-Accept: " + _ws_accept(client_key) + b"\r\n\r\n"
+    )
+    await writer.drain()
+
+
+async def _ws_send_frame(writer, payload: bytes, opcode: int = 0x2) -> None:
+    """Send one unmasked server WS frame (RFC 6455)."""
+    header = bytearray([0x80 | opcode])
+    length = len(payload)
+    if length < 126:
+        header.append(length)
+    elif length < 65536:
+        header.append(126)
+        header += struct.pack("!H", length)
+    else:
+        header.append(127)
+        header += struct.pack("!Q", length)
+    writer.write(bytes(header) + payload)
+    await writer.drain()
+
+
+async def _ws_read_message(reader) -> bytes:
+    """Read one complete masked client WS message (binary or text)."""
+    first = True
+    message = bytearray()
+    while True:
+        head = await reader.readexactly(2)
+        fin = bool(head[0] & 0x80)
+        opcode = head[0] & 0x0F
+        length = head[1] & 0x7F
+        if length == 126:
+            length = struct.unpack("!H", await reader.readexactly(2))[0]
+        elif length == 127:
+            length = struct.unpack("!Q", await reader.readexactly(8))[0]
+        mask = await reader.readexactly(4)
+        payload = await reader.readexactly(length)
+        payload = bytes(b ^ mask[index & 3] for index, b in enumerate(payload))
+        if opcode in (0x9, 0xA):
+            continue
+        if first:
+            if opcode not in (0x1, 0x2):
+                raise asyncio.IncompleteReadError(b"", b"")
+            first = False
+        elif opcode != 0x0:
+            raise asyncio.IncompleteReadError(b"", b"")
+        message += payload
+        if fin:
+            return bytes(message)
+
+
+async def _ws_accept_request(reader, writer) -> None:
+    """Perform the server side of a WS upgrade handshake."""
+    _, client_key = await _ws_read_handshake_request(reader)
+    await _ws_answer_101(writer, client_key)
+
+
+def _vless_ws_handler(
+    expected_uuid: bytes,
+    reply: bytes = b"\x00\x00",
+    silent: bool = False,
+):
+    async def handler(reader, writer) -> None:
+        try:
+            await _ws_accept_request(reader, writer)
+            request = await _ws_read_message(reader)
+            uuid_bytes = request[1:17]
+            if uuid_bytes != expected_uuid:
+                await _ws_send_frame(writer, b"", opcode=0x8)
+                return
+            if silent:
+                await reader.read()
+                return
+            await _ws_send_frame(writer, reply)
+            await reader.read()
+        except asyncio.IncompleteReadError:
+            pass
+        finally:
+            writer.close()
+
+    return handler
+
+
+def _trojan_ws_handler(expected_password: str, reply: bytes | None = None):
+    async def handler(reader, writer) -> None:
+        try:
+            await _ws_accept_request(reader, writer)
+            request = await _ws_read_message(reader)
+            digest = request[:56]
+            key = hashlib.sha224(expected_password.encode("utf-8")).hexdigest().encode("ascii")
+            if digest != key:
+                await _ws_send_frame(writer, b"", opcode=0x8)
+                return
+            if reply is not None:
+                await _ws_send_frame(writer, reply)
+                return
+            await reader.read()
+        except asyncio.IncompleteReadError:
+            pass
+        finally:
+            writer.close()
+
+    return handler
+
+
+async def _read_vmess_sealed_request(reader) -> tuple[bytes, bytes, bytes]:
+    """Read the AEAD-authID/lenblock/nonce/header layout the client sends."""
+    auth_id = await reader.readexactly(16)
+    length_block = await reader.readexactly(18)
+    nonce = await reader.readexactly(8)
+    return auth_id, length_block, nonce
+
+
+async def _vmess_response_for(
+    key: bytes, auth_id: bytes, length_block: bytes, nonce: bytes, header_block: bytes
+) -> bytes:
+    """Decrypt a sealed VMess request with ``key`` and build the sealed 38-byte
+    response header that the v2ray inbound would return."""
+    length_nonce = vmess_mod._kdf(key, vmess_mod._SALT_LEN_IV, auth_id, nonce)[:12]
+    length_key = vmess_mod._kdf16(key, vmess_mod._SALT_LEN_KEY, auth_id, nonce)
+    header_nonce = vmess_mod._kdf(key, vmess_mod._SALT_HDR_IV, auth_id, nonce)[:12]
+    header_key = vmess_mod._kdf16(key, vmess_mod._SALT_HDR_KEY, auth_id, nonce)
+    try:
+        AESGCM(length_key).decrypt(length_nonce, length_block, auth_id)
+        record = AESGCM(header_key).decrypt(header_nonce, header_block, auth_id)
+    except InvalidTag:
+        raise
+    body_iv = record[1:17]
+    body_key = record[17:33]
+    v = record[33]
+    resp_body_key = hashlib.sha256(body_key).digest()[:16]
+    resp_body_iv = hashlib.sha256(body_iv).digest()[:16]
+    resp_len_nonce = vmess_mod._kdf(resp_body_iv, vmess_mod._SALT_RESP_LEN_IV)[:12]
+    resp_len_key = vmess_mod._kdf16(resp_body_key, vmess_mod._SALT_RESP_LEN_KEY)
+    resp_hdr_nonce = vmess_mod._kdf(resp_body_iv, vmess_mod._SALT_RESP_IV)[:12]
+    resp_hdr_key = vmess_mod._kdf16(resp_body_key, vmess_mod._SALT_RESP_KEY)
+    resp_len_block = AESGCM(resp_len_key).encrypt(resp_len_nonce, struct.pack("!H", 4), None)
+    resp_hdr_block = AESGCM(resp_hdr_key).encrypt(resp_hdr_nonce, bytes([v, 0, 0, 0]), None)
+    return resp_len_block + resp_hdr_block
+
+
+def _vmess_handler(expected_uuid: bytes, silent: bool = False, bogus_response: bool = False):
+    async def handler(reader, writer) -> None:
+        try:
+            command_key = vmess_mod.cmd_key(expected_uuid)
+            auth_id, length_block, nonce = await asyncio.wait_for(
+                _read_vmess_sealed_request(reader), 2.0
+            )
+            try:
+                length_nonce = vmess_mod._kdf(command_key, vmess_mod._SALT_LEN_IV, auth_id, nonce)[
+                    :12
+                ]
+                length_key = vmess_mod._kdf16(command_key, vmess_mod._SALT_LEN_KEY, auth_id, nonce)
+                n = struct.unpack(
+                    "!H", AESGCM(length_key).decrypt(length_nonce, length_block, auth_id)
+                )[0]
+                header_block = await reader.readexactly(n + 16)
+                response = await _vmess_response_for(
+                    command_key, auth_id, length_block, nonce, header_block
+                )
+            except (asyncio.IncompleteReadError, InvalidTag, TimeoutError):
+                return
+            if silent:
+                await reader.read()
+                return
+            if bogus_response:
+                response = b"\xff" * 38
+            writer.write(response)
+            await writer.drain()
+            await reader.read()
+        except (asyncio.IncompleteReadError, TimeoutError):
+            pass
+        finally:
+            writer.close()
+
+    return handler
+
+
+def _vmess_ws_handler(expected_uuid: bytes, silent: bool = False):
+    async def handler(reader, writer) -> None:
+        try:
+            await _ws_accept_request(reader, writer)
+            request = await _ws_read_message(reader)
+            command_key = vmess_mod.cmd_key(expected_uuid)
+            auth_id = request[:16]
+            length_block = request[16:34]
+            nonce = request[34:42]
+            header_block = request[42:]
+            try:
+                response = await _vmess_response_for(
+                    command_key, auth_id, length_block, nonce, header_block
+                )
+            except InvalidTag:
+                await _ws_send_frame(writer, b"", opcode=0x8)
+                return
+            if silent:
+                await reader.read()
+                return
+            await _ws_send_frame(writer, response)
+            await reader.read()
+        except asyncio.IncompleteReadError:
+            pass
         finally:
             writer.close()
 
@@ -1767,19 +2009,34 @@ class TestPhase62VariantGate:
         assert transport_gate(self._parsed("vless", tls="reality")) == errors.TLS_REALITY
 
     def test_vless_overlay_networks_unsupported(self):
-        for network in ("ws", "grpc", "httpupgrade", "xhttp"):
-            assert transport_gate(self._parsed("vless", network=network)) == errors.TRANSPORT_WS
+        for network in ("httpupgrade", "xhttp", "kcp", "quic"):
+            assert (
+                transport_gate(self._parsed("vless", network=network)) == errors.TRANSPORT_OVERLAY
+            )
+
+    def test_vless_ws_networks_supported(self):
+        for network in ("ws",):
+            assert transport_gate(self._parsed("vless", network=network)) is None
+
+    def test_vless_grpc_network_gated(self):
+        assert transport_gate(self._parsed("vless", network="grpc")) == errors.TRANSPORT_GRPC
 
     def test_vless_tcp_networks_supported(self):
         for network in (None, "", "tcp", "raw"):
             assert transport_gate(self._parsed("vless", network=network)) is None
 
     def test_trojan_overlay_unsupported(self):
-        assert transport_gate(self._parsed("trojan", network="ws")) == errors.TRANSPORT_WS
+        for network in ("httpupgrade", "xhttp", "kcp", "quic"):
+            assert (
+                transport_gate(self._parsed("trojan", network=network)) == errors.TRANSPORT_OVERLAY
+            )
 
-    def test_trojan_tcp_supported(self):
-        for network in (None, "", "tcp"):
+    def test_trojan_ws_supported(self):
+        for network in ("ws", None, "", "tcp"):
             assert transport_gate(self._parsed("trojan", network=network)) is None
+
+    def test_trojan_grpc_network_gated(self):
+        assert transport_gate(self._parsed("trojan", network="grpc")) == errors.TRANSPORT_GRPC
 
     def test_ss_methods_gate(self):
         for method in ("aes-128-gcm", "aes-256-gcm", "chacha20-ietf-poly1305"):
@@ -1793,6 +2050,26 @@ class TestPhase62VariantGate:
         assert transport_gate(self._parsed("http")) is None
         assert transport_gate(self._parsed("socks5")) is None
 
+    def test_vmess_reality_unsupported(self):
+        assert transport_gate(self._parsed("vmess", tls="reality")) == errors.TLS_REALITY
+
+    def test_vmess_ws_and_tcp_supported(self):
+        for network in ("ws", None, "", "tcp"):
+            assert transport_gate(self._parsed("vmess", network=network)) is None
+
+    def test_vmess_overlay_networks_unsupported(self):
+        for network in ("httpupgrade", "xhttp", "kcp", "quic"):
+            assert (
+                transport_gate(self._parsed("vmess", network=network)) == errors.TRANSPORT_OVERLAY
+            )
+
+    def test_vmess_grpc_network_gated(self):
+        assert transport_gate(self._parsed("vmess", network="grpc")) == errors.TRANSPORT_GRPC
+
+    def test_hysteria_protocols_unsupported(self):
+        for protocol in ("hysteria", "hysteria2"):
+            assert transport_gate(self._parsed(protocol)) == errors.UNSUPPORTED_PROTOCOL
+
 
 class TestPhase62GateBeforeDialing:
     async def test_vless_reality_never_dials(self):
@@ -1805,14 +2082,16 @@ class TestPhase62GateBeforeDialing:
         assert result.connect_ms is None
         assert result.protocol_checked is False
 
-    async def test_vless_ws_never_dials(self):
-        runner = _runner()
+    async def test_vless_ws_reaches_wire(self):
+        """WS news now dials: a refused port must surface as unreachable, not
+        as a pre-dial unsupported transport."""
+        runner = _runner(timeout=0.4)
         result = await runner.check(
             _entry(protocol="vless", host="127.0.0.1", port=1, network="ws")
         )
-        assert result.status == HealthStatus.UNSUPPORTED
-        assert result.error == errors.TRANSPORT_WS
-        assert result.connect_ms is None
+        assert result.status == HealthStatus.UNREACHABLE
+        assert result.error == errors.CONNECTION_REFUSED
+        assert result.protocol_checked is False
 
     async def test_ss_2022_never_dials(self):
         runner = _runner()
@@ -2083,6 +2362,322 @@ class TestPhase62ShadowsocksChecker:
             server.close()
 
 
+class TestPhase14VlessWsChecker:
+    UUID = "11111111-2222-4333-8444-555555555555"
+
+    async def test_ws_ok(self):
+        uid = uuid.UUID(self.UUID)
+        host, port, server = await _start(_vless_ws_handler(uid.bytes))
+        try:
+            runner = _runner()
+            result = await runner.check(
+                _entry(protocol="vless", host=host, port=port, user=self.UUID, network="ws")
+            )
+            assert result.status == HealthStatus.OK
+            assert result.is_alive is True
+            assert result.protocol_checked is True
+            assert result.proxy_ms >= 0.0
+        finally:
+            server.close()
+
+    async def test_ws_over_tls_ok(self, tmp_path):
+        assets = _write_pems(tmp_path)
+        uid = uuid.UUID(self.UUID)
+        host, port, server = await _start_tls(
+            _vless_ws_handler(uid.bytes), assets["good.crt"], assets["good.key"]
+        )
+        try:
+            runner = _runner()
+            result = await runner.check(
+                _entry(
+                    protocol="vless",
+                    host=host,
+                    port=port,
+                    user=self.UUID,
+                    network="ws",
+                    tls="tls",
+                    sni="localhost",
+                )
+            )
+            assert result.status == HealthStatus.OK
+            assert result.tls_used is True
+        finally:
+            server.close()
+
+    async def test_malformed_reply_is_protocol_failure(self):
+        uid = uuid.UUID(self.UUID)
+        host, port, server = await _start(_vless_ws_handler(uid.bytes, reply=b"\x00\x01"))
+        try:
+            runner = _runner()
+            result = await runner.check(
+                _entry(protocol="vless", host=host, port=port, user=self.UUID, network="ws")
+            )
+            assert result.status == HealthStatus.PROTOCOL_FAILURE
+            assert result.error == errors.PROTOCOL_MALFORMED
+            assert result.protocol_checked is True
+        finally:
+            server.close()
+
+    async def test_wrong_uuid_close_is_ws_handshake(self):
+        host, port, server = await _start(_vless_ws_handler(uuid.uuid4().bytes))
+        try:
+            runner = _runner()
+            result = await runner.check(
+                _entry(protocol="vless", host=host, port=port, user=self.UUID, network="ws")
+            )
+            assert result.status == HealthStatus.PROTOCOL_FAILURE
+            assert result.error == errors.WS_HANDSHAKE
+        finally:
+            server.close()
+
+    async def test_silent_ws_server_is_timeout(self):
+        uid = uuid.UUID(self.UUID)
+        host, port, server = await _start(_vless_ws_handler(uid.bytes, silent=True))
+        try:
+            runner = _runner(timeout=0.4)
+            result = await runner.check(
+                _entry(protocol="vless", host=host, port=port, user=self.UUID, network="ws")
+            )
+            assert result.status == HealthStatus.TIMEOUT
+            assert result.error == errors.CONNECTION_TIMEOUT
+        finally:
+            server.close()
+
+    async def test_plain_server_is_not_ws(self):
+        host, port, server = await _start(_http_handler(200))
+        try:
+            runner = _runner()
+            result = await runner.check(
+                _entry(protocol="vless", host=host, port=port, user=self.UUID, network="ws")
+            )
+            assert result.status == HealthStatus.PROTOCOL_FAILURE
+            assert result.error == errors.WS_HANDSHAKE
+        finally:
+            server.close()
+
+    async def test_credential_never_leaks(self):
+        host, port, server = await _start(_vless_ws_handler(uuid.uuid4().bytes))
+        try:
+            runner = _runner()
+            secret = str(uuid.uuid4())
+            result = await runner.check(
+                _entry(protocol="vless", host=host, port=port, user=secret, network="ws")
+            )
+            assert result.status == HealthStatus.PROTOCOL_FAILURE
+            assert secret not in (result.error or "")
+        finally:
+            server.close()
+
+
+class TestPhase14TrojanWsChecker:
+    async def test_wss_ok(self, tmp_path):
+        assets = _write_pems(tmp_path)
+        host, port, server = await _start_tls(
+            _trojan_ws_handler("proxypw"), assets["good.crt"], assets["good.key"]
+        )
+        try:
+            runner = _runner()
+            result = await runner.check(
+                _entry(
+                    protocol="trojan",
+                    host=host,
+                    port=port,
+                    sni="localhost",
+                    password="proxypw",
+                    network="ws",
+                )
+            )
+            assert result.status == HealthStatus.OK
+            assert result.is_alive is True
+            assert result.protocol_checked is True
+            assert result.tls_used is True
+        finally:
+            server.close()
+
+    async def test_wrong_password_close_is_auth(self, tmp_path):
+        assets = _write_pems(tmp_path)
+        host, port, server = await _start_tls(
+            _trojan_ws_handler("rightpw"), assets["good.crt"], assets["good.key"]
+        )
+        try:
+            runner = _runner()
+            result = await runner.check(
+                _entry(
+                    protocol="trojan",
+                    host=host,
+                    port=port,
+                    sni="localhost",
+                    password="wrongpw",
+                    network="ws",
+                )
+            )
+            assert result.status == HealthStatus.PROTOCOL_FAILURE
+            assert result.error == errors.PROTOCOL_AUTH
+            assert "wrongpw" not in (result.error or "")
+        finally:
+            server.close()
+
+    async def test_ws_data_is_malformed(self, tmp_path):
+        assets = _write_pems(tmp_path)
+        host, port, server = await _start_tls(
+            _trojan_ws_handler("proxypw", reply=b"\x01"), assets["good.crt"], assets["good.key"]
+        )
+        try:
+            runner = _runner()
+            result = await runner.check(
+                _entry(
+                    protocol="trojan",
+                    host=host,
+                    port=port,
+                    sni="localhost",
+                    password="proxypw",
+                    network="ws",
+                )
+            )
+            assert result.status == HealthStatus.PROTOCOL_FAILURE
+            assert result.error == errors.PROTOCOL_MALFORMED
+        finally:
+            server.close()
+
+    async def test_plain_server_is_not_ws(self, tmp_path):
+        assets = _write_pems(tmp_path)
+        host, port, server = await _start_tls(
+            _http_handler(200), assets["good.crt"], assets["good.key"]
+        )
+        try:
+            runner = _runner()
+            result = await runner.check(
+                _entry(
+                    protocol="trojan",
+                    host=host,
+                    port=port,
+                    sni="localhost",
+                    password="proxypw",
+                    network="ws",
+                )
+            )
+            assert result.status == HealthStatus.PROTOCOL_FAILURE
+            assert result.error == errors.WS_HANDSHAKE
+        finally:
+            server.close()
+
+
+class TestPhase14VmessChecker:
+    UUID = "aaaaaaaa-bbbb-4ccc-8ddd-eeeeffff0000"
+
+    async def test_tcp_ok(self):
+        host, port, server = await _start(_vmess_handler(uuid.UUID(self.UUID).bytes))
+        try:
+            runner = _runner()
+            result = await runner.check(
+                _entry(protocol="vmess", host=host, port=port, user=self.UUID)
+            )
+            assert result.status == HealthStatus.OK
+            assert result.is_alive is True
+            assert result.protocol_checked is True
+            assert result.proxy_ms >= 0.0
+        finally:
+            server.close()
+
+    async def test_ws_ok(self, tmp_path):
+        host, port, server = await _start(_vmess_ws_handler(uuid.UUID(self.UUID).bytes))
+        try:
+            runner = _runner()
+            result = await runner.check(
+                _entry(protocol="vmess", host=host, port=port, user=self.UUID, network="ws")
+            )
+            assert result.status == HealthStatus.OK
+            assert result.tls_used is False
+        finally:
+            server.close()
+
+    async def test_wss_ok(self, tmp_path):
+        assets = _write_pems(tmp_path)
+        host, port, server = await _start_tls(
+            _vmess_ws_handler(uuid.UUID(self.UUID).bytes), assets["good.crt"], assets["good.key"]
+        )
+        try:
+            runner = _runner()
+            result = await runner.check(
+                _entry(
+                    protocol="vmess",
+                    host=host,
+                    port=port,
+                    user=self.UUID,
+                    network="ws",
+                    tls="tls",
+                    sni="localhost",
+                )
+            )
+            assert result.status == HealthStatus.OK
+            assert result.tls_used is True
+        finally:
+            server.close()
+
+    async def test_wrong_uuid_is_auth_failure(self):
+        host, port, server = await _start(_vmess_handler(uuid.uuid4().bytes))
+        try:
+            runner = _runner()
+            result = await runner.check(
+                _entry(protocol="vmess", host=host, port=port, user=self.UUID)
+            )
+            assert result.status == HealthStatus.PROTOCOL_FAILURE
+            assert result.error == errors.PROTOCOL_AUTH
+            assert self.UUID not in (result.error or "")
+        finally:
+            server.close()
+
+    async def test_wrong_uuid_ws_close_is_ws_handshake(self):
+        host, port, server = await _start(_vmess_ws_handler(uuid.uuid4().bytes))
+        try:
+            runner = _runner()
+            result = await runner.check(
+                _entry(protocol="vmess", host=host, port=port, user=self.UUID, network="ws")
+            )
+            assert result.status == HealthStatus.PROTOCOL_FAILURE
+            assert result.error == errors.WS_HANDSHAKE
+        finally:
+            server.close()
+
+    async def test_invalid_uuid_is_malformed(self):
+        host, port, server = await _start(_vmess_handler(uuid.UUID(self.UUID).bytes))
+        try:
+            runner = _runner()
+            result = await runner.check(
+                _entry(protocol="vmess", host=host, port=port, user="not-a-uuid")
+            )
+            assert result.status == HealthStatus.PROTOCOL_FAILURE
+            assert result.error == errors.PROTOCOL_MALFORMED
+        finally:
+            server.close()
+
+    async def test_bogus_response_is_auth_failure(self):
+        host, port, server = await _start(
+            _vmess_handler(uuid.UUID(self.UUID).bytes, bogus_response=True)
+        )
+        try:
+            runner = _runner()
+            result = await runner.check(
+                _entry(protocol="vmess", host=host, port=port, user=self.UUID)
+            )
+            assert result.status == HealthStatus.PROTOCOL_FAILURE
+            assert result.error == errors.PROTOCOL_AUTH
+        finally:
+            server.close()
+
+    async def test_silent_server_is_timeout(self):
+        host, port, server = await _start(_vmess_handler(uuid.UUID(self.UUID).bytes, silent=True))
+        try:
+            runner = _runner(timeout=0.4)
+            result = await runner.check(
+                _entry(protocol="vmess", host=host, port=port, user=self.UUID)
+            )
+            assert result.status == HealthStatus.TIMEOUT
+            assert result.error == errors.CONNECTION_TIMEOUT
+        finally:
+            server.close()
+
+
 class TestPhase62SsKnownAnswer:
     def test_evp_bytes_to_key_aes128(self):
         assert _ss_evp_bytes_to_key(b"123456", 16).hex() == "e10adc3949ba59abbe56e057f20f883e"
@@ -2121,13 +2716,101 @@ class TestPhase62SsKnownAnswer:
             _ss_decrypt_chunk(cipher, 0, bytes(ct))
 
 
-class TestPhase62VlessShareLinkGate:
-    """VLESS share-link `type` transport is read into `network` and gated.
+class TestPhase14VmessKnownAnswer:
+    """Pin the serialized VMess AEAD wire layout and KDF outputs by hand.
 
-    Real-world VLESS share links represent the transport with `type=`.
-    The parser must map it into ``ParseResult.network`` so ``transport_gate``
-    rejects overlay variants before any dial.
+    The length/header blocks are random (session keys and nonces come from
+    ``os.urandom``), so the layout is asserted structurally while the KDF and
+    the seal/open round trip are asserted against independently chosen values.
     """
+
+    UUID = "11111111-2222-4333-8444-555555555555"
+
+    def test_kdf_golden_vector(self):
+        got = vmess_mod._kdf(
+            b"Demo Key for KDF Value Test",
+            b"Demo Path for KDF Value Test",
+            b"Demo Path for KDF Value Test2",
+            b"Demo Path for KDF Value Test3",
+        )
+        assert got.hex() == "53e9d7e1bd7bd25022b71ead07d8a596efc8a845c7888652fd684b4903dc8892"
+
+    def test_cmd_key_known(self):
+        assert vmess_mod.cmd_key("11111111-2222-4333-8444-555555555555").hex() == (
+            "21fb68641c5a02b1cf67dd3b6bd1e58d"
+        )
+
+    def test_fnv1a32_known_vectors(self):
+        assert vmess_mod.fnv1a32(b"") == 0x811C9DC5
+        assert vmess_mod.fnv1a32(b"a") == 0xE40C292C
+        assert vmess_mod.fnv1a32(b"foobar") == 0xBF9CF968
+
+    def test_sealed_request_layout(self):
+        uid = uuid.UUID(self.UUID)
+        sealed = vmess_mod.seal_request(uid.bytes, "www.example.com", 443)
+        stream = sealed.stream
+        # authID(16) + lenblk(18) + connNonce(8) + record(n=61) + GCM tag(16)
+        assert len(stream) == 16 + 18 + 8 + 61 + 16
+        assert stream[34:42]  # connNonce sits between len block and header block
+
+    def test_seal_open_round_trip(self):
+        uid = uuid.UUID(self.UUID)
+        body_key = bytes(range(0xA0, 0xB0))
+        body_iv = bytes(range(0xB0, 0xC0))
+        sealed = vmess_mod.seal_request(
+            uid.bytes,
+            "www.example.com",
+            443,
+            timestamp=1628342914,
+            rand4=bytes.fromhex("11223344"),
+            conn_nonce=bytes.fromhex("0011223344556677"),
+            body_key=body_key,
+            body_iv=body_iv,
+            v=0x01,
+        )
+        assert sealed.v == 0x01
+        resp_body_key = hashlib.sha256(body_key).digest()[:16]
+        resp_body_iv = hashlib.sha256(body_iv).digest()[:16]
+        len_nonce = vmess_mod._kdf(resp_body_iv, vmess_mod._SALT_RESP_LEN_IV)[:12]
+        len_key = vmess_mod._kdf16(resp_body_key, vmess_mod._SALT_RESP_LEN_KEY)
+        hdr_nonce = vmess_mod._kdf(resp_body_iv, vmess_mod._SALT_RESP_IV)[:12]
+        hdr_key = vmess_mod._kdf16(resp_body_key, vmess_mod._SALT_RESP_KEY)
+        resp = AESGCM(len_key).encrypt(len_nonce, struct.pack("!H", 4), None)
+        resp += AESGCM(hdr_key).encrypt(hdr_nonce, b"\x01\x00\x00\x00", None)
+        assert vmess_mod.open_response(body_key, body_iv, 0x01, resp) == b"\x01\x00\x00\x00"
+
+    def test_open_response_rejects_tamper(self):
+        uid = uuid.UUID(self.UUID)
+        body_key = bytes(range(0x20, 0x30))
+        body_iv = bytes(range(0x30, 0x40))
+        sealed = vmess_mod.seal_request(uid.bytes, "x.test", 80, body_key=body_key, body_iv=body_iv)
+        resp_body_key = hashlib.sha256(body_key).digest()[:16]
+        resp_body_iv = hashlib.sha256(body_iv).digest()[:16]
+        len_nonce = vmess_mod._kdf(resp_body_iv, vmess_mod._SALT_RESP_LEN_IV)[:12]
+        len_key = vmess_mod._kdf16(resp_body_key, vmess_mod._SALT_RESP_LEN_KEY)
+        hdr_nonce = vmess_mod._kdf(resp_body_iv, vmess_mod._SALT_RESP_IV)[:12]
+        hdr_key = vmess_mod._kdf16(resp_body_key, vmess_mod._SALT_RESP_KEY)
+        resp = bytearray(AESGCM(len_key).encrypt(len_nonce, struct.pack("!H", 4), None))
+        resp += AESGCM(hdr_key).encrypt(hdr_nonce, bytes([sealed.v, 0, 0, 0]), None)
+        resp[-1] ^= 0x01
+        with pytest.raises(ValueError):
+            vmess_mod.open_response(body_key, body_iv, sealed.v, bytes(resp))
+
+    def test_open_response_rejects_version_mismatch(self):
+        uid = uuid.UUID(self.UUID)
+        body_key = bytes(range(0x40, 0x50))
+        body_iv = bytes(range(0x50, 0x60))
+        vmess_mod.seal_request(uid.bytes, "y.test", 80, body_key=body_key, body_iv=body_iv)
+        resp_body_key = hashlib.sha256(body_key).digest()[:16]
+        resp_body_iv = hashlib.sha256(body_iv).digest()[:16]
+        len_nonce = vmess_mod._kdf(resp_body_iv, vmess_mod._SALT_RESP_LEN_IV)[:12]
+        len_key = vmess_mod._kdf16(resp_body_key, vmess_mod._SALT_RESP_LEN_KEY)
+        hdr_nonce = vmess_mod._kdf(resp_body_iv, vmess_mod._SALT_RESP_IV)[:12]
+        hdr_key = vmess_mod._kdf16(resp_body_key, vmess_mod._SALT_RESP_KEY)
+        resp = AESGCM(len_key).encrypt(len_nonce, struct.pack("!H", 4), None)
+        resp += AESGCM(hdr_key).encrypt(hdr_nonce, b"\x02\x00\x00\x00", None)
+        with pytest.raises(ValueError):
+            vmess_mod.open_response(body_key, body_iv, 0x01, resp)
 
     UUID = "11111111-2222-4333-8444-555555555555"
 
@@ -2139,20 +2822,20 @@ class TestPhase62VlessShareLinkGate:
     def test_type_ws_parses_into_network(self):
         parsed = self._parsed(f"vless://{self.UUID}@example.com:443?security=tls&type=ws")
         assert parsed.network == "ws"
-        assert transport_gate(parsed) == errors.TRANSPORT_WS
+        assert transport_gate(parsed) is None
 
     def test_type_grpc_parses_into_network(self):
         parsed = self._parsed(
             f"vless://{self.UUID}@example.com:443?security=tls&type=grpc&serviceName=x"
         )
         assert parsed.network == "grpc"
-        assert transport_gate(parsed) == errors.TRANSPORT_WS
+        assert transport_gate(parsed) == errors.TRANSPORT_GRPC
 
     def test_type_httpupgrade_and_xhttp_parses_into_network(self):
         for alias in ("httpupgrade", "xhttp"):
             parsed = self._parsed(f"vless://{self.UUID}@example.com:443?security=tls&type={alias}")
             assert parsed.network == alias
-            assert transport_gate(parsed) == errors.TRANSPORT_WS
+            assert transport_gate(parsed) == errors.TRANSPORT_OVERLAY
 
     def test_type_tcp_is_not_gated(self):
         parsed = self._parsed(f"vless://{self.UUID}@example.com:443?type=tcp")
@@ -2162,13 +2845,13 @@ class TestPhase62VlessShareLinkGate:
     def test_legacy_network_param_still_parses(self):
         parsed = self._parsed(f"vless://{self.UUID}@example.com:443?security=tls&network=ws")
         assert parsed.network == "ws"
-        assert transport_gate(parsed) == errors.TRANSPORT_WS
+        assert transport_gate(parsed) is None
 
-    async def test_type_ws_share_link_never_dials(self):
+    async def test_type_ws_share_link_reaches_wire(self):
+        """A WS type share-link now dials; an unreachable port proves it."""
         parsed = self._parsed(f"vless://{self.UUID}@127.0.0.1:1?security=tls&type=ws")
-        runner = _runner()
+        runner = _runner(timeout=0.4)
         result = await runner.check(HealthEntry(parsed=parsed))
-        assert result.status == HealthStatus.UNSUPPORTED
-        assert result.error == errors.TRANSPORT_WS
-        assert result.connect_ms is None
+        assert result.status == HealthStatus.UNREACHABLE
+        assert result.error == errors.CONNECTION_REFUSED
         assert result.protocol_checked is False
