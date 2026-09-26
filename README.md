@@ -70,6 +70,31 @@ HTTPS:
 - https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/https.txt
 - https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/https-base64.txt
 
+### Location feeds
+
+Location feeds are generated from the same deduplicated and health-checked
+proxy set, so they contain only verified proxies. Only non-empty groups are
+published and country codes use lowercase ISO 3166-1 alpha-2 codes.
+
+Country-only filenames:
+- `country-{cc}.txt`
+- `country-{cc}-base64.txt`
+
+Protocol+country filenames:
+- `{protocol}-{cc}.txt`
+- `{protocol}-{cc}-base64.txt`
+
+Unknown or unrecognized countries are grouped under `xx` when non-empty;
+otherwise the group is omitted.
+
+Examples (plain and base64 variants exist for each):
+- https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/country-de.txt
+- https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/country-de-base64.txt
+- https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/vless-de.txt
+- https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/vless-de-base64.txt
+- https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/country-us.txt
+- https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/vmess-us.txt
+
 ## Quick Start
 
 ```bash
