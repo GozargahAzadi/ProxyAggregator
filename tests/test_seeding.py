@@ -615,7 +615,7 @@ class TestSeedToPipeline:
 
         assert stats.sources_discovered == 2
         assert stats.sources_fetched == 2
-        assert stats.published_artifacts == 18
+        assert stats.published_artifacts == 20
 
         out = tmp_path / "out"
         assert (out / "proxyaggregator.txt").exists()
@@ -646,7 +646,11 @@ class TestSeedToPipeline:
                     ),
                 )
             )
-        first_bytes = {p.name: p.read_bytes() for p in out.iterdir()}
+
+        def _content_of(out):
+            return {str(p.relative_to(out)): p.read_bytes() for p in out.rglob("*") if p.is_file()}
+
+        first_bytes = _content_of(out)
 
         with mock.patch.object(pipeline, "_collect_sources", self._fake_collect):
             second = asyncio.run(
@@ -661,9 +665,13 @@ class TestSeedToPipeline:
                     ),
                 )
             )
-        second_bytes = {p.name: p.read_bytes() for p in out.iterdir()}
+
+        def _content_of(out):
+            return {str(p.relative_to(out)): p.read_bytes() for p in out.rglob("*") if p.is_file()}
+
+        second_bytes = _content_of(out)
 
         assert sorted(first_bytes) == sorted(second_bytes)
         for name, data in first_bytes.items():
             assert data == second_bytes[name]
-        assert first.published_artifacts == second.published_artifacts == 18
+        assert first.published_artifacts == second.published_artifacts == 20

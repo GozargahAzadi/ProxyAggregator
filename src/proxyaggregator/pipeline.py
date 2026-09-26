@@ -52,12 +52,8 @@ from proxyaggregator.parsers.detect import detect_protocol
 from proxyaggregator.parsers.extract import extract_uris
 from proxyaggregator.parsers.registry import get_registry as get_parser_registry
 from proxyaggregator.publishing import DEFAULT_OUTPUT_DIR
-from proxyaggregator.publishing.feeds import (
-    build_country_subscriptions,
-    build_protocol_country_subscriptions,
-    build_protocol_subscriptions,
-    build_subscription,
-)
+from proxyaggregator.publishing.countries import build_country_artifacts
+from proxyaggregator.publishing.feeds import build_protocol_subscriptions, build_subscription
 from proxyaggregator.publishing.models import (
     RankedProxy,
     Subscription,
@@ -65,9 +61,7 @@ from proxyaggregator.publishing.models import (
 )
 from proxyaggregator.publishing.publisher import (
     SubscriptionRelease,
-    default_country_filename,
     default_filename,
-    default_protocol_country_filename,
     default_protocol_filename,
     publish_release,
 )
@@ -427,12 +421,14 @@ def _build_feeds(
 
     Order: the three combined feeds first (backward-compatible), then the
     per-protocol plain + base64 feeds in canonical protocol order, then the
-    country feeds, then the protocol + country feeds. The global ``max_items``
-    cap and content-hash dedup are applied once, before every split, so every
-    protocol/country feed always mirrors the combined feed. Location feeds are
-    additive: combined and protocol feeds are byte-for-byte unchanged, and the
-    same already-selected ``RankedProxy`` set is reused with no extra health
-    checks, GeoIP lookups, DNS, or database access.
+    ``countries/`` artifacts (generated index README, then one directory per
+    country in ISO-code order: all-protocol feeds, non-empty protocol feeds,
+    then the directory README). The global ``max_items`` cap and content-hash
+    dedup are applied exactly once, before every split, so every
+    protocol/country feed always mirrors the combined feed. Country artifacts
+    are additive: combined and root protocol feeds are byte-for-byte
+    unchanged, and the same already-selected ``RankedProxy`` set is reused
+    with no extra health checks, GeoIP lookups, DNS, or database access.
     """
     feeds: list[tuple[str, Subscription]] = [
         (
@@ -446,23 +442,7 @@ def _build_feeds(
     ):
         feeds.append((default_protocol_filename(protocol, SubscriptionFormat.PLAIN), plain))
         feeds.append((default_protocol_filename(protocol, SubscriptionFormat.BASE64), base64_feed))
-    for bucket, plain, base64_feed in build_country_subscriptions(
-        ranked_proxies, max_items=max_items
-    ):
-        feeds.append((default_country_filename(bucket, SubscriptionFormat.PLAIN), plain))
-        feeds.append((default_country_filename(bucket, SubscriptionFormat.BASE64), base64_feed))
-    for protocol, bucket, plain, base64_feed in build_protocol_country_subscriptions(
-        ranked_proxies, max_items=max_items
-    ):
-        feeds.append(
-            (default_protocol_country_filename(protocol, bucket, SubscriptionFormat.PLAIN), plain)
-        )
-        feeds.append(
-            (
-                default_protocol_country_filename(protocol, bucket, SubscriptionFormat.BASE64),
-                base64_feed,
-            )
-        )
+    feeds.extend(build_country_artifacts(ranked_proxies, max_items=max_items))
     return feeds
 
 

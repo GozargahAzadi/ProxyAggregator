@@ -24,7 +24,7 @@ from proxyaggregator.parsers.base import ParseError
 from proxyaggregator.parsers.registry import get_registry
 from proxyaggregator.publishing.errors import SubscriptionError
 from proxyaggregator.publishing.models import RankedProxy, Subscription, SubscriptionFormat
-from proxyaggregator.publishing.naming import build_remark, country_bucket
+from proxyaggregator.publishing.naming import build_remark
 from proxyaggregator.publishing.serializer import SUPPORTED_PROTOCOLS, canonical_uri
 
 if TYPE_CHECKING:
@@ -186,106 +186,4 @@ def build_protocol_subscriptions(
                 Subscription(format=SubscriptionFormat.BASE64, content=encoded, count=len(group)),
             )
         )
-    return tuple(feeds)
-
-
-def build_country_subscriptions(
-    candidates: Sequence[RankedProxy],
-    *,
-    max_items: int | None = None,
-) -> tuple[tuple[str, Subscription, Subscription], ...]:
-    """Generate deterministic plain + base64 feeds per country (Phase 17).
-
-    Like :func:`build_protocol_subscriptions`, a single global selection
-    (dedup by ``content_hash``, then the ``max_items`` cap) is applied before
-    splitting, here by the normalized lowercase country bucket (``US`` ->
-    ``us``; unknown/invalid -> ``xx``). Every proxy lands in exactly one
-    country feed (as well as the combined and its protocol feed), ranked
-    ordering is preserved within each group, and countries with zero selected
-    candidates emit no feed.
-
-    Returns ``(country_bucket, plain, base64)`` triples ordered by bucket;
-    each plain/base64 pair describes the same proxies.
-
-    Raises:
-        ValueError: ``max_items`` is not a positive integer or ``None``.
-        SubscriptionError: a candidate cannot be serialized deterministically.
-    """
-    _validate_max_items(max_items)
-    selected = _select(candidates, max_items)
-
-    grouped: dict[str, list[RankedProxy]] = {}
-    for candidate in selected:
-        grouped.setdefault(country_bucket(candidate.country_code), []).append(candidate)
-
-    feeds: list[tuple[str, Subscription, Subscription]] = []
-    for bucket in sorted(grouped):
-        group = grouped[bucket]
-        plain_content = _plain_feed([_serialize(candidate) for candidate in group])
-        plain = Subscription(
-            format=SubscriptionFormat.PLAIN, content=plain_content, count=len(group)
-        )
-        encoded = base64.b64encode(plain_content.encode("utf-8")).decode("ascii")
-        feeds.append(
-            (
-                bucket,
-                plain,
-                Subscription(format=SubscriptionFormat.BASE64, content=encoded, count=len(group)),
-            )
-        )
-    return tuple(feeds)
-
-
-def build_protocol_country_subscriptions(
-    candidates: Sequence[RankedProxy],
-    *,
-    max_items: int | None = None,
-) -> tuple[tuple[str, str, Subscription, Subscription], ...]:
-    """Generate deterministic plain + base64 feeds per (protocol, country).
-
-    Global selection (dedup by ``content_hash``, then the ``max_items`` cap)
-    is applied once before grouping by ``(protocol, country_bucket)``. Each
-    selected proxy appears in exactly one protocol+country feed in addition to
-    the combined, its protocol, and its country feed. Ranked ordering is
-    preserved within every group; empty groups emit no feed.
-
-    Returns ``(protocol, country_bucket, plain, base64)`` quadruples in
-    canonical protocol order (:data:`SUPPORTED_PROTOCOLS`) and, within a
-    protocol, sorted bucket order.
-
-    Raises:
-        ValueError: ``max_items`` is not a positive integer or ``None``.
-        SubscriptionError: a candidate cannot be serialized deterministically.
-    """
-    _validate_max_items(max_items)
-    selected = _select(candidates, max_items)
-
-    by_protocol: dict[str, dict[str, list[RankedProxy]]] = {}
-    for candidate in selected:
-        by_protocol.setdefault(candidate.protocol, {}).setdefault(
-            country_bucket(candidate.country_code), []
-        ).append(candidate)
-
-    feeds: list[tuple[str, str, Subscription, Subscription]] = []
-    for protocol in SUPPORTED_PROTOCOLS:
-        by_country = by_protocol.get(protocol)
-        if not by_country:
-            continue
-        for bucket in sorted(by_country):
-            group = by_country[bucket]
-            plain_content = _plain_feed([_serialize(candidate) for candidate in group])
-            plain = Subscription(
-                format=SubscriptionFormat.PLAIN, content=plain_content, count=len(group)
-            )
-            encoded = base64.b64encode(plain_content.encode("utf-8")).decode("ascii")
-            feeds.append(
-                (
-                    protocol,
-                    bucket,
-                    plain,
-                    Subscription(
-                        format=SubscriptionFormat.BASE64, content=encoded, count=len(group)
-                    ),
-                )
-            )
     return tuple(feeds)

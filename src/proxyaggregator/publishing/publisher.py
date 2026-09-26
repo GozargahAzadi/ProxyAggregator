@@ -24,15 +24,23 @@ Guarantees:
 - Current-release only: after a successful publish, canonical artifacts from
   a previous run that are not part of the current release (e.g. a protocol
   feed with zero candidates this run) are removed, so the output directory
-  always reflects the current aggregation, never accidental leftovers.
-- Safe: every filename must be a single plain path component; anything with a
-  path separator, NUL byte, or empty name is rejected before touching disk.
+  always reflects the current aggregation, never accidental leftovers. This
+  covers the per-country directories too: a country that disappears from the
+  current result set has its whole ``countries/{CC}/`` directory removed, and
+  stale protocol files inside a surviving directory are unlinked. A directory
+  that disappears is never left half-written (it is promoted whole then
+  removed whole, under the same atomic publish).
+- Safe: every artifact is addressed by a root name or by a ``countries/{CC}/``
+  relative path, so write/verify operations can never escape the output
+  directory; anything absolute, with a ``..``/empty/``.`` component, a NUL
+  byte, or an otherwise malformed path is rejected before touching disk.
 
 Errors carry only the offending filename and a stable reason token.
 """
 
 from __future__ import annotations
 
+import contextlib
 import hashlib
 import json
 import os
@@ -93,6 +101,17 @@ MANIFEST_FILENAME = "manifest.json"
 _ALPHA2_BUCKETS: frozenset[str] = frozenset(
     a + b for a in "abcdefghijklmnopqrstuvwxyz" for b in "abcdefghijklmnopqrstuvwxyz"
 ) | frozenset({COUNTRY_UNKNOWN_BUCKET})
+
+#: Directory under which country-separated artifacts are published. Every
+#: country feed lives inside ``countries/{CC}/`` (uppercase ISO alpha-2, with
+#: the unknown-country bucket ``XX``), plus a generated ``countries/README.md``
+#: index listing the non-empty directories.
+COUNTRIES_DIR = "countries"
+
+#: Stable canonical stems/names used by the generated country directories.
+_COUNTRY_README_NAME = "README.md"
+_COUNTRY_INDEX_NAME = "README.md"
+_COUNTRY_ALL_STEM = "all"
 
 #: Stable, credential-free reason tokens used in PublishError.
 _EMPTY_FILENAME = "empty_filename"
@@ -165,55 +184,128 @@ def default_protocol_filename(protocol: str, format: SubscriptionFormat, /) -> s
     raise ValueError(f"unsupported protocol feed format: {format!r}")
 
 
-def default_country_filename(country_code: object, format: SubscriptionFormat, /) -> str:
-    """Return the canonical artifact filename for a country-separated feed.
+def country_dir_name(country_code: object) -> str:
+    """Return the uppercase directory name for a country bucket (``DE``/``XX``).
 
-    The feed bundles every protocol in a single country. Only plain and base64
-    artifacts exist per country (JSON is combined-feed only). Country codes
-    are normalized via :func:`country_bucket`: valid two-letter codes are
-    lowercased and anything unknown/invalid maps to the ``xx`` bucket, so the
-    returned name is always filename-safe.
+    Buckets are normalized via :func:`country_bucket`: valid two-letter codes
+    are lowercased and anything unknown/invalid maps to ``xx``, so the
+    uppercased name is always a safe two-letter directory component.
     """
-    bucket = country_bucket(country_code)
+    return country_bucket(country_code).upper()
+
+
+def country_dir_path(country_code: object) -> str:
+    """Return the relative ``countries/{CC}`` directory path for a bucket."""
+    return f"{COUNTRIES_DIR}/{country_dir_name(country_code)}"
+
+
+def country_index_path() -> str:
+    """Return the relative path of the generated per-country index README."""
+    return f"{COUNTRIES_DIR}/{_COUNTRY_INDEX_NAME}"
+
+
+def country_readme_path(country_code: object) -> str:
+    """Return the relative path of ``countries/{CC}/README.md`` for a bucket."""
+    return f"{country_dir_path(country_code)}/{_COUNTRY_README_NAME}"
+
+
+def country_all_path(country_code: object, format: SubscriptionFormat, /) -> str:
+    """Return the relative path of the all-protocol feed for a country bucket.
+
+    Only plain and base64 artifacts exist per country (JSON is combined-feed
+    only); ``format`` is validated like ``default_filename``.
+    """
     if format is SubscriptionFormat.PLAIN:
-        return f"country-{bucket}.txt"
+        return f"{country_dir_path(country_code)}/{_COUNTRY_ALL_STEM}.txt"
     if format is SubscriptionFormat.BASE64:
-        return f"country-{bucket}-base64.txt"
+        return f"{country_dir_path(country_code)}/{_COUNTRY_ALL_STEM}-base64.txt"
     raise ValueError(f"unsupported country feed format: {format!r}")
 
 
-def default_protocol_country_filename(
+def country_protocol_path(
     protocol: str, country_code: object, format: SubscriptionFormat, /
 ) -> str:
-    """Return the canonical artifact filename for a protocol + country feed.
+    """Return the relative path of a protocol feed inside a country directory.
 
-    Combines the existing protocol stem map with the normalized lowercase
-    country bucket (``vless`` + ``DE`` -> ``vless-de.txt``); unknown/invalid
-    countries map to the ``xx`` bucket. Only plain and base64 artifacts exist;
-    JSON is combined-feed only.
+    Combines the existing protocol stem map with the normalized uppercase
+    country bucket (``vless`` + ``DE`` -> ``countries/DE/vless.txt``);
+    unknown/invalid countries map to ``XX``. Only plain and base64 artifacts
+    exist; JSON is combined-feed only.
     """
     if protocol not in SUPPORTED_PROTOCOLS:
         raise ValueError(f"unsupported protocol feed: {protocol!r}")
     stem = DEFAULT_PROTOCOL_FILENAME_STEMS[protocol]
-    bucket = country_bucket(country_code)
     if format is SubscriptionFormat.PLAIN:
-        return f"{stem}-{bucket}.txt"
+        return f"{country_dir_path(country_code)}/{stem}.txt"
     if format is SubscriptionFormat.BASE64:
-        return f"{stem}-{bucket}-base64.txt"
+        return f"{country_dir_path(country_code)}/{stem}-base64.txt"
     raise ValueError(f"unsupported protocol feed format: {format!r}")
 
 
-def _validate_filename(filename: str) -> None:
+def _is_country_dir_name(name: str) -> bool:
+    """True for an uppercase two-letter bucket directory name (``DE``/``XX``).
+
+    The check is purely lexical (ASCII uppercase alpha pair), matching exactly
+    the directory names the publisher can generate from
+    :func:`country_dir_name`, so unrelated directories are never pruned.
+    """
+    return len(name) == 2 and name.isascii() and name.isalpha() and name.isupper()
+
+
+def _legacy_location_artifact_names() -> frozenset[str]:
+    """Name space of the pre-redesign flat location feed files.
+
+    The first country-feed generation wrote ``country-de.txt`` and per-protocol
+    ``vless-de.txt`` flat files. The current publisher never generates them,
+    but they remain canonical so an existing output directory created by that
+    generation converges to the ``countries/{CC}/`` layout on the next run.
+    """
+    names: set[str] = set()
+    for bucket in _ALPHA2_BUCKETS:
+        names.add(f"country-{bucket}.txt")
+        names.add(f"country-{bucket}-base64.txt")
+        for protocol in SUPPORTED_PROTOCOLS:
+            stem = DEFAULT_PROTOCOL_FILENAME_STEMS[protocol]
+            names.add(f"{stem}-{bucket}.txt")
+            names.add(f"{stem}-{bucket}-base64.txt")
+    return frozenset(names)
+
+
+def _validate_artifact_path(filename: str) -> None:
+    """Reject any artifact path that could escape the output directory.
+
+    Accepted shapes (replacing the old single-component-only rule):
+
+    - a single plain path component (``proxyaggregator.txt``, ``manifest.json``)
+    - ``countries/README.md``
+    - ``countries/{CC}/{file}`` where ``CC`` is an uppercase two-letter bucket
+      directory (``DE``, ``XX``) and ``{file}`` a single plain component
+
+    Anything absolute, containing ``\\`` or a NUL byte, with an empty, ``.``,
+    or ``..`` component, or otherwise outside the two shapes is rejected
+    before touching disk.
+    """
     if not isinstance(filename, str):
         raise PublishError(filename, "filename_must_be_string")
     if filename == "":
         raise PublishError(filename, _EMPTY_FILENAME)
     if "\x00" in filename:
         raise PublishError(filename, _NUL_FILENAME)
-    if filename in (".", ".."):
+    parts = filename.split("/")
+    if "\\" in filename or any(part in ("", ".", "..") for part in parts):
         raise PublishError(filename, _PATH_FILENAME)
-    if Path(filename).name != filename:
-        raise PublishError(filename, _PATH_FILENAME)
+    if len(parts) == 1:
+        return
+    if len(parts) == 2 and parts[0] == COUNTRIES_DIR and parts[1] == _COUNTRY_INDEX_NAME:
+        return
+    if (
+        len(parts) == 3
+        and parts[0] == COUNTRIES_DIR
+        and _is_country_dir_name(parts[1])
+        and Path(parts[2]).name == parts[2]
+    ):
+        return
+    raise PublishError(filename, _PATH_FILENAME)
 
 
 def _encode(content: str | bytes) -> bytes:
@@ -233,15 +325,18 @@ def write_artifact(
 
     The final bytes are exactly the UTF-8 encoding of ``content`` (or the
     raw ``bytes`` passed in). The write is atomic: content is staged under a
-    fixed sibling temp name, fsynced, then ``os.replace`` into place.
+    fixed sibling temp name, fsynced, then ``os.replace`` into place. Nested
+    country-dir targets create their parent directories as needed.
     """
-    _validate_filename(filename)
+    _validate_artifact_path(filename)
     path = Path(output_dir)
     path.mkdir(parents=True, exist_ok=True)
     data = _encode(content)
 
     final = path / filename
     temp = path / f".{filename}.tmp"
+    final.parent.mkdir(parents=True, exist_ok=True)
+    temp.parent.mkdir(parents=True, exist_ok=True)
     try:
         with temp.open("wb") as handle:
             handle.write(data)
@@ -312,30 +407,35 @@ def publish_subscriptions(
 
 
 def canonical_artifact_filenames() -> frozenset[str]:
-    """Every artifact name the publisher can ever own (feeds + manifest).
+    """Every artifact path the publisher can ever own (feeds + manifest).
 
-    This is the enumerated cleanup surface: only these names may ever be
+    This is the enumerated cleanup surface: only these paths may ever be
     deleted from an output directory, so stale cleanup can never touch an
     unrelated file (e.g. ``proxyaggregator.db`` or a stray README).
 
-    The set spans the fixed combined names and the finite protocol / country
-    / protocol+country location space (:data:`_ALPHA2_BUCKETS`), so a stale
-    ``vless-de.txt`` or ``country-de.txt`` from an earlier run is prunable
-    while names outside the closed namespace never are.
+    The set spans the fixed combined names, the root protocol feeds, the
+    generated ``countries/README.md`` index, the closed per-country directory
+    space (:data:`_ALPHA2_BUCKETS` uppercased, each with README, all-protocol,
+    and per-protocol files), and the legacy flat location names
+    (:func:`_legacy_location_artifact_names`) so output from the flat layout
+    converges to the directory layout.
     """
     names = set(DEFAULT_FILENAMES.values())
     for protocol in SUPPORTED_PROTOCOLS:
         names.add(default_protocol_filename(protocol, SubscriptionFormat.PLAIN))
         names.add(default_protocol_filename(protocol, SubscriptionFormat.BASE64))
-        for bucket in _ALPHA2_BUCKETS:
-            names.add(default_protocol_country_filename(protocol, bucket, SubscriptionFormat.PLAIN))
-            names.add(
-                default_protocol_country_filename(protocol, bucket, SubscriptionFormat.BASE64)
-            )
-    for bucket in _ALPHA2_BUCKETS:
-        names.add(default_country_filename(bucket, SubscriptionFormat.PLAIN))
-        names.add(default_country_filename(bucket, SubscriptionFormat.BASE64))
     names.add(MANIFEST_FILENAME)
+    names.add(country_index_path())
+    for bucket in _ALPHA2_BUCKETS:
+        dir_path = f"{COUNTRIES_DIR}/{bucket.upper()}"
+        names.add(f"{dir_path}/{_COUNTRY_README_NAME}")
+        names.add(f"{dir_path}/{_COUNTRY_ALL_STEM}.txt")
+        names.add(f"{dir_path}/{_COUNTRY_ALL_STEM}-base64.txt")
+        for protocol in SUPPORTED_PROTOCOLS:
+            stem = DEFAULT_PROTOCOL_FILENAME_STEMS[protocol]
+            names.add(f"{dir_path}/{stem}.txt")
+            names.add(f"{dir_path}/{stem}-base64.txt")
+    names.update(_legacy_location_artifact_names())
     return frozenset(names)
 
 
@@ -370,7 +470,7 @@ def publish_release(
     feed_entries: list[SubscriptionRelease] = []
     materialized: list[tuple[str, bytes]] = []
     for filename, feed in subscriptions:
-        _validate_filename(filename)
+        _validate_artifact_path(filename)
         data = feed.content.encode("utf-8")
         materialized.append((filename, data))
         feed_entries.append(release_metadata(filename, feed.format, feed.count, data))
@@ -388,7 +488,9 @@ def publish_release(
         for name, data in materialized:
             write_artifact(name, data, staging)
         for name, _data in _latest_staged_write(materialized):
-            os.replace(staging / name, output / name)
+            target = output / name
+            target.parent.mkdir(parents=True, exist_ok=True)
+            os.replace(staging / name, target)
         _prune_stale_artifacts(output, written_names)
     finally:
         shutil.rmtree(staging, ignore_errors=True)
@@ -399,26 +501,75 @@ def _prune_stale_artifacts(output_dir: Path, keep: frozenset[str] | set[str]) ->
     """Remove canonical artifacts that are not part of the current release.
 
     Iterates the directory (never the full canonical set) so pruning stays
-    proportional to the files actually present. Only canonical artifacts not
-    kept by the current release are unlinked; unrelated files (e.g.
-    ``README.md``, ``proxyaggregator.db``), directories, and non-canonical
-    names are never touched.
+    proportional to the files actually present. Root-level canonical files not
+    kept by the current release are unlinked. The ``countries/`` subtree is
+    handled as a unit: the generated index README is pruned like a file, a
+    ``countries/{CC}`` directory whose country is absent from the current
+    release is removed whole with ``shutil.rmtree``, and a surviving directory
+    only gets canonical per-country files that ``keep`` does not include
+    unlinked (e.g. a pending protocol feed dropped this run). A vanished
+    directory is therefore never left as a stale half; unrelated files,
+    directories, and non-canonical names are never touched.
     """
     try:
         present = {entry.name for entry in output_dir.iterdir()}
     except FileNotFoundError:
         return
     canonical = canonical_artifact_filenames()
-    for name in present - set(keep):
-        if name not in canonical:
-            continue
+    root_keep = {name for name in keep if "/" not in name}
+    current_dirs = _current_country_dirs(keep)
+
+    for name in present - root_keep:
         path = output_dir / name
-        if not path.is_file():
+        if name == COUNTRIES_DIR and path.is_dir():
+            _prune_countries_subtree(path, keep, canonical, current_dirs)
+            continue
+        if path.is_file() and name in canonical:
+            _unlink(path)
+
+
+def _current_country_dirs(keep: frozenset[str] | set[str]) -> frozenset[str]:
+    """Country dirs referenced by the release: ``{CC}`` for ``countries/{CC}/{f}``."""
+    return frozenset(
+        parts[1]
+        for parts in (name.split("/") for name in keep)
+        if len(parts) == 3 and parts[0] == COUNTRIES_DIR and _is_country_dir_name(parts[1])
+    )
+
+
+def _prune_countries_subtree(
+    countries_dir: Path,
+    keep: frozenset[str] | set[str],
+    canonical: frozenset[str],
+    current_dirs: frozenset[str],
+) -> None:
+    """Prune a ``countries/`` directory to the current release."""
+    try:
+        names = {entry.name for entry in countries_dir.iterdir()}
+    except FileNotFoundError:
+        return
+    if country_index_path() not in keep:
+        _unlink(countries_dir / _COUNTRY_INDEX_NAME)
+    for name in names:
+        path = countries_dir / name
+        if not path.is_dir() or not _is_country_dir_name(name):
+            continue
+        if name not in current_dirs:
+            shutil.rmtree(path)
             continue
         try:
-            path.unlink()
+            files = {entry.name for entry in path.iterdir()}
         except FileNotFoundError:
             continue
+        for fname in files:
+            rel = f"{COUNTRIES_DIR}/{name}/{fname}"
+            if rel not in keep and rel in canonical:
+                _unlink(path / fname)
+
+
+def _unlink(path: Path) -> None:
+    with contextlib.suppress(FileNotFoundError):
+        path.unlink()
 
 
 def verify_release(output_dir: str | Path) -> list[SubscriptionRelease]:
@@ -433,9 +584,10 @@ def verify_release(output_dir: str | Path) -> list[SubscriptionRelease]:
       content does not match the recorded SHA-256 (a mismatch means the file
       was corrupted or the manifest does not describe what it claims)
 
-    Names are validated as single path components, so a traversal filename in
-    a manifest can never redirect a read outside the output directory.
-    Database files are never considered artifacts; they are simply ignored.
+    Names are validated as safe artifact paths (single root components or
+    ``countries/{CC}/{file}``), so a traversal filename in a manifest can never
+    redirect a read outside the output directory. Database files are never
+    considered artifacts; they are simply ignored.
     """
     output = Path(output_dir)
     manifest_path = output / MANIFEST_FILENAME
@@ -462,7 +614,7 @@ def verify_release(output_dir: str | Path) -> list[SubscriptionRelease]:
         raise ReleaseVerificationError("no non-empty feed in manifest")
 
     for entry in entries:
-        _validate_filename(entry.filename)
+        _validate_artifact_path(entry.filename)
         path = output / entry.filename
         try:
             size = path.stat().st_size

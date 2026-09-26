@@ -24,16 +24,21 @@ from proxyaggregator.publishing import (
 )
 from proxyaggregator.publishing.naming import COUNTRY_UNKNOWN_BUCKET
 from proxyaggregator.publishing.publisher import (
+    COUNTRIES_DIR,
     DEFAULT_FILENAMES,
     MANIFEST_FILENAME,
     PublishError,
     ReleaseVerificationError,
     SubscriptionRelease,
+    _validate_artifact_path,
     build_release_manifest,
     canonical_artifact_filenames,
-    default_country_filename,
+    country_all_path,
+    country_dir_name,
+    country_index_path,
+    country_protocol_path,
+    country_readme_path,
     default_filename,
-    default_protocol_country_filename,
     default_protocol_filename,
     publish_release,
     publish_subscriptions,
@@ -93,7 +98,7 @@ class TestWriteArtifact:
 
 
 class TestPathTraversal:
-    """Filenames must be a single plain component; anything else is rejected."""
+    """Artifact paths are single components or safe ``countries/{CC}/{file}``."""
 
     @pytest.mark.parametrize(
         "name",
@@ -101,17 +106,43 @@ class TestPathTraversal:
             "../escape.txt",
             "a/b.txt",
             "x/../y.txt",
+            "sub/dir/feed.txt",
             "/absolute.txt",
             ".",
             "..",
             "",
             "a\x00b.txt",
-            "sub/dir/feed.txt",
+            "countries/de/all.txt",
+            "countries/de-de/all.txt",
+            "countries/DEU/all.txt",
+            "countries//all.txt",
+            "countries/DE/",
+            "countries/DE/a/b.txt",
+            "countries/DE/../all.txt",
+            "countries/../../x",
+            "countries\\DE\\all.txt",
+            "countries/README.txt",
         ],
     )
     def test_rejects_dangerous_filenames(self, tmp_path, name):
         with pytest.raises(PublishError):
             write_artifact(name, "content", tmp_path)
+
+    @pytest.mark.parametrize(
+        "name",
+        [
+            "feed.txt",
+            "proxyaggregator.txt",
+            "countries/README.md",
+            "countries/DE/all.txt",
+            "countries/DE/all-base64.txt",
+            "countries/US/vless.txt",
+            "countries/XX/shadowsocks-base64.txt",
+        ],
+    )
+    def test_accepts_safe_root_and_country_paths(self, tmp_path, name):
+        write_artifact(name, "x", tmp_path)
+        assert (tmp_path / name).read_bytes() == b"x"
 
     def test_rejects_without_creating_files(self, tmp_path):
         with pytest.raises(PublishError):
@@ -269,12 +300,20 @@ class TestDefaultFilenames:
 
 
 class TestLocationFilenames:
-    """Phase 17: canonical country / protocol+country artifact names."""
+    """Phase 17: canonical country ``countries/{CC}/`` artifact paths."""
 
-    def test_country_filename_shapes(self):
-        assert default_country_filename("DE", SubscriptionFormat.PLAIN) == "country-de.txt"
-        assert default_country_filename("DE", SubscriptionFormat.BASE64) == "country-de-base64.txt"
-        assert default_country_filename(None, SubscriptionFormat.PLAIN) == "country-xx.txt"
+    def test_country_dir_name_uppercases_buckets(self):
+        assert country_dir_name("de") == "DE"
+        assert country_dir_name("DE") == "DE"
+        assert country_dir_name(None) == "XX"
+        assert country_dir_name(COUNTRY_UNKNOWN_BUCKET) == "XX"
+
+    def test_country_path_shapes(self):
+        assert country_index_path() == "countries/README.md"
+        assert country_readme_path("DE") == "countries/DE/README.md"
+        assert country_all_path("DE", SubscriptionFormat.PLAIN) == "countries/DE/all.txt"
+        assert country_all_path("DE", SubscriptionFormat.BASE64) == "countries/DE/all-base64.txt"
+        assert country_all_path(None, SubscriptionFormat.PLAIN) == "countries/XX/all.txt"
 
     @pytest.mark.parametrize(
         ("protocol", "stem"),
@@ -291,38 +330,38 @@ class TestLocationFilenames:
             ("https", "https"),
         ],
     )
-    def test_protocol_country_filename_shapes(self, protocol, stem):
-        assert (
-            default_protocol_country_filename(protocol, "US", SubscriptionFormat.PLAIN)
-            == f"{stem}-us.txt"
+    def test_protocol_country_path_shapes(self, protocol, stem):
+        assert country_protocol_path(protocol, "US", SubscriptionFormat.PLAIN) == (
+            f"countries/US/{stem}.txt"
         )
-        assert (
-            default_protocol_country_filename(protocol, "US", SubscriptionFormat.BASE64)
-            == f"{stem}-us-base64.txt"
+        assert country_protocol_path(protocol, "US", SubscriptionFormat.BASE64) == (
+            f"countries/US/{stem}-base64.txt"
         )
 
     def test_unknown_protocol_rejected(self):
         with pytest.raises(ValueError):
-            default_protocol_country_filename("wireguard", "US", SubscriptionFormat.PLAIN)
+            country_protocol_path("wireguard", "US", SubscriptionFormat.PLAIN)
 
     def test_json_rejected_for_location_names(self):
         with pytest.raises(ValueError):
-            default_country_filename("DE", SubscriptionFormat.JSON)
+            country_all_path("DE", SubscriptionFormat.JSON)
         with pytest.raises(ValueError):
-            default_protocol_country_filename("vless", "DE", SubscriptionFormat.JSON)
+            country_protocol_path("vless", "DE", SubscriptionFormat.JSON)
 
     def test_generated_names_pass_safety_validation(self, tmp_path):
         names = [
-            default_country_filename("DE", SubscriptionFormat.PLAIN),
-            default_country_filename("DE", SubscriptionFormat.BASE64),
-            default_country_filename(None, SubscriptionFormat.PLAIN),
-            default_protocol_country_filename("ss", "US", SubscriptionFormat.PLAIN),
-            default_protocol_country_filename("ss", "US", SubscriptionFormat.BASE64),
+            country_all_path("DE", SubscriptionFormat.PLAIN),
+            country_all_path("DE", SubscriptionFormat.BASE64),
+            country_all_path(None, SubscriptionFormat.PLAIN),
+            country_protocol_path("ss", "US", SubscriptionFormat.PLAIN),
+            country_protocol_path("ss", "US", SubscriptionFormat.BASE64),
+            country_readme_path("US"),
+            country_index_path(),
         ]
         for name in names:
             write_artifact(name, "x", tmp_path)
             assert (tmp_path / name).read_bytes() == b"x"
-            assert (tmp_path / name).name == name
+            _validate_artifact_path(name)
 
 
 class TestDemoSamples:
@@ -421,31 +460,36 @@ class TestCanonicalArtifactFilenames:
             assert default_protocol_filename(protocol, SubscriptionFormat.PLAIN) in names
             assert default_protocol_filename(protocol, SubscriptionFormat.BASE64) in names
 
-    def test_covers_country_and_protocol_country_location_names(self):
+    def test_covers_country_directory_artifacts(self):
         names = canonical_artifact_filenames()
-        for bucket in ("de", "us", "gb", "xx"):
-            assert default_country_filename(bucket, SubscriptionFormat.PLAIN) in names
-            assert default_country_filename(bucket, SubscriptionFormat.BASE64) in names
-            assert (
-                default_protocol_country_filename("vless", bucket, SubscriptionFormat.PLAIN)
-                in names
-            )
-            assert (
-                default_protocol_country_filename("ss", bucket, SubscriptionFormat.BASE64)
-                == f"shadowsocks-{bucket}-base64.txt"
-            )
+        assert country_index_path() in names
+        for bucket in ("de", "us", "gb", COUNTRY_UNKNOWN_BUCKET):
+            code = bucket.upper()
+            assert f"{COUNTRIES_DIR}/{code}/README.md" in names
+            assert f"{COUNTRIES_DIR}/{code}/all.txt" in names
+            assert f"{COUNTRIES_DIR}/{code}/all-base64.txt" in names
+            assert f"{COUNTRIES_DIR}/{code}/vless.txt" in names
+
+    def test_covers_legacy_flat_location_names(self):
+        names = canonical_artifact_filenames()
+        for bucket in ("de", "us", "gb", COUNTRY_UNKNOWN_BUCKET):
+            assert f"country-{bucket}.txt" in names
+            assert f"country-{bucket}-base64.txt" in names
+            assert f"vless-{bucket}.txt" in names
             assert f"shadowsocks-{bucket}-base64.txt" in names
 
     def test_boundary_2_letter_codes_and_xx_are_prunable(self):
         names = canonical_artifact_filenames()
-        for bucket in ("aa", "zz", "de", COUNTRY_UNKNOWN_BUCKET):
-            assert f"country-{bucket}.txt" in names
-            assert f"vless-{bucket}.txt" in names
+        for bucket in ("aa", "zz", COUNTRY_UNKNOWN_BUCKET):
+            assert f"{COUNTRIES_DIR}/{bucket.upper()}/all.txt" in names
+            assert f"{COUNTRIES_DIR}/{bucket.upper()}/vless.txt" in names
 
     def test_never_touches_unrelated_names(self):
         names = canonical_artifact_filenames()
         for bogus in ("README.md", "proxyaggregator.db", "notes.txt", "output"):
             assert bogus not in names
+        assert "countries/nope/all.txt" not in names
+        assert "countries/DE/other.txt" not in names
         assert "country.txt" not in names
         assert "country-de.json" not in names
         assert "vless-USA.txt" not in names
@@ -511,15 +555,17 @@ class TestPublishRelease:
 
     def test_prunes_stale_location_artifacts(self, tmp_path):
         stale_location = [
-            default_country_filename("de", SubscriptionFormat.PLAIN),
-            default_country_filename("de", SubscriptionFormat.BASE64),
-            default_protocol_country_filename("vless", "de", SubscriptionFormat.PLAIN),
-            default_protocol_country_filename("vless", "de", SubscriptionFormat.BASE64),
-            default_protocol_country_filename("ss", "us", SubscriptionFormat.BASE64),
+            country_all_path("de", SubscriptionFormat.PLAIN),
+            country_all_path("de", SubscriptionFormat.BASE64),
+            country_protocol_path("vless", "de", SubscriptionFormat.PLAIN),
+            country_protocol_path("vless", "de", SubscriptionFormat.BASE64),
+            country_protocol_path("ss", "us", SubscriptionFormat.BASE64),
         ]
         for name in stale_location:
+            (tmp_path / name).parent.mkdir(parents=True, exist_ok=True)
             (tmp_path / name).write_text("stale-bytes")
-        (tmp_path / "README.md").write_text("# readme")
+        (tmp_path / COUNTRIES_DIR / "README.md").write_text("# stale index")
+        (tmp_path / "READ.me").write_text("# keep this unrelated file")
         (tmp_path / "proxyaggregator.db").write_bytes(b"sqlite")
 
         feed = build_subscription([], format=SubscriptionFormat.PLAIN)
@@ -527,16 +573,73 @@ class TestPublishRelease:
 
         for name in stale_location:
             assert not (tmp_path / name).exists(), name
-        assert (tmp_path / "README.md").read_text() == "# readme"
+        for bucket in ("de", "us", "xx"):
+            dir_path = tmp_path / COUNTRIES_DIR / bucket.upper()
+            assert not dir_path.exists(), dir_path
+        assert (tmp_path / "READ.me").read_text() == "# keep this unrelated file"
         assert (tmp_path / "proxyaggregator.db").read_bytes() == b"sqlite"
 
-    def test_stale_location_artifacts_removed_when_group_disappears(self, tmp_path):
+    def test_prunes_legacy_flat_location_artifacts(self, tmp_path):
+        stale_flat = [
+            "country-de.txt",
+            "country-de-base64.txt",
+            "vless-de.txt",
+            "vless-de-base64.txt",
+            "shadowsocks-us-base64.txt",
+        ]
+        for name in stale_flat:
+            (tmp_path / name).write_text("stale-bytes")
+
         feed = build_subscription([], format=SubscriptionFormat.PLAIN)
         publish_release([(PLAIN_NAME, feed)], tmp_path)
-        assert not (
-            tmp_path / default_protocol_country_filename("vless", "us", SubscriptionFormat.PLAIN)
-        ).exists()
-        assert not (tmp_path / default_country_filename("us", SubscriptionFormat.PLAIN)).exists()
+
+        for name in stale_flat:
+            assert not (tmp_path / name).exists(), name
+        assert (tmp_path / PLAIN_NAME).exists()
+
+    def test_stale_country_directory_removed_whole_when_empty(self, tmp_path):
+        feed = build_subscription([], format=SubscriptionFormat.PLAIN)
+        publish_release([(PLAIN_NAME, feed)], tmp_path)
+        assert not (tmp_path / COUNTRIES_DIR / "US").exists()
+        assert not (tmp_path / COUNTRIES_DIR).exists() or not list(
+            (tmp_path / COUNTRIES_DIR).iterdir()
+        )
+
+    def test_stale_protocol_file_removed_from_surviving_directory(self, tmp_path):
+        de_dir = tmp_path / COUNTRIES_DIR / "DE"
+        de_dir.mkdir(parents=True)
+        (de_dir / "socks5.txt").write_text("stale")
+        (de_dir / "all.txt").write_text("stale")
+
+        vless = "vless://11111111-2222-3333-4444-555555555555@vless.example.com:443?security=none"
+        candidates = [
+            RankedProxy(
+                proxy_config_id=1,
+                protocol="vless",
+                host="vless.example.com",
+                port=443,
+                raw_uri=vless,
+                content_hash="a" * 64,
+                score=0.9,
+                rank=1,
+                country_code="DE",
+            )
+        ]
+        feeds = pipeline_module._build_feeds(candidates)
+        publish_release(feeds, tmp_path)
+
+        assert de_dir.is_dir()
+        assert (de_dir / "all.txt").exists()
+        assert not (de_dir / "socks5.txt").exists()
+
+    def test_unrelated_country_directory_never_touched(self, tmp_path):
+        (tmp_path / COUNTRIES_DIR / "FROZEN").mkdir(parents=True)
+        (tmp_path / COUNTRIES_DIR / "FROZEN" / "notes.txt").write_text("keep")
+
+        feed = build_subscription([], format=SubscriptionFormat.PLAIN)
+        publish_release([(PLAIN_NAME, feed)], tmp_path)
+
+        assert (tmp_path / COUNTRIES_DIR / "FROZEN" / "notes.txt").read_text() == "keep"
 
     def test_location_artifacts_carry_over_in_next_release(self, tmp_path):
         from proxyaggregator import pipeline as pipeline_module
@@ -557,10 +660,10 @@ class TestPublishRelease:
         ]
         feeds = pipeline_module._build_feeds(candidates)
         publish_release(feeds, tmp_path)
-        assert (tmp_path / default_country_filename("us", SubscriptionFormat.PLAIN)).exists()
-        assert (
-            tmp_path / default_protocol_country_filename("vless", "us", SubscriptionFormat.PLAIN)
-        ).exists()
+        assert (tmp_path / country_all_path("us", SubscriptionFormat.PLAIN)).is_file()
+        assert (tmp_path / country_protocol_path("vless", "us", SubscriptionFormat.PLAIN)).is_file()
+        assert (tmp_path / country_readme_path("us")).is_file()
+        assert (tmp_path / country_index_path()).is_file()
 
     def test_failed_generation_leaves_previous_output_intact(self, tmp_path, monkeypatch):
         plain = build_subscription([], format=SubscriptionFormat.PLAIN)
@@ -607,7 +710,7 @@ class TestPublishRelease:
 
 
 class TestLocationReleaseManifest:
-    """Phase 17: manifest and verify_release cover location artifacts."""
+    """Phase 17: manifest and verify_release cover country-directory artifacts."""
 
     def _release(self, tmp_path):
         from proxyaggregator import pipeline as pipeline_module
@@ -668,16 +771,19 @@ class TestLocationReleaseManifest:
         payload = json.loads((tmp_path / MANIFEST_FILENAME).read_text(encoding="utf-8"))
         by_name = {item["filename"]: item for item in payload}
         expected_location = {
-            "country-de.txt",
-            "country-de-base64.txt",
-            "country-us.txt",
-            "country-us-base64.txt",
-            "vless-de.txt",
-            "vless-de-base64.txt",
-            "vless-us.txt",
-            "vless-us-base64.txt",
-            "shadowsocks-de.txt",
-            "shadowsocks-de-base64.txt",
+            "countries/README.md",
+            "countries/DE/README.md",
+            "countries/DE/all.txt",
+            "countries/DE/all-base64.txt",
+            "countries/DE/vless.txt",
+            "countries/DE/vless-base64.txt",
+            "countries/DE/shadowsocks.txt",
+            "countries/DE/shadowsocks-base64.txt",
+            "countries/US/README.md",
+            "countries/US/all.txt",
+            "countries/US/all-base64.txt",
+            "countries/US/vless.txt",
+            "countries/US/vless-base64.txt",
         }
         assert expected_location <= set(by_name)
         for name in expected_location:
@@ -689,18 +795,21 @@ class TestLocationReleaseManifest:
         self._release(tmp_path)
         payload = json.loads((tmp_path / MANIFEST_FILENAME).read_text(encoding="utf-8"))
         by_name = {item["filename"]: item for item in payload}
-        assert by_name["country-de.txt"]["count"] == 2
-        assert by_name["country-us.txt"]["count"] == 1
-        assert by_name["vless-de.txt"]["count"] == 1
-        assert by_name["shadowsocks-de.txt"]["count"] == 1
+        assert by_name["countries/DE/all.txt"]["count"] == 2
+        assert by_name["countries/US/all.txt"]["count"] == 1
+        assert by_name["countries/DE/vless.txt"]["count"] == 1
+        assert by_name["countries/DE/shadowsocks.txt"]["count"] == 1
+        assert by_name["countries/README.md"]["count"] == 0
+        assert by_name["countries/DE/README.md"]["count"] == 0
 
     def test_verify_release_passes_with_location_artifacts(self, tmp_path):
         self._release(tmp_path)
         entries = verify_release(tmp_path)
         names = {entry.filename for entry in entries}
-        assert "country-de.txt" in names
-        assert "vless-us.txt" in names
-        assert all(entry.count >= 1 for entry in entries)
+        assert "countries/DE/vless.txt" in names
+        assert "countries/US/all.txt" in names
+        assert "countries/US/vless.txt" in names
+        assert all(entry.count >= 1 or entry.filename.endswith("README.md") for entry in entries)
 
 
 class TestVerifyRelease:
@@ -771,3 +880,4 @@ class TestVerifyRelease:
             verify_release(tmp_path)
         assert secret not in str(exc_info.value)
         assert "SecretNode" not in str(exc_info.value)
+                                                                 

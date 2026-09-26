@@ -1,33 +1,37 @@
-"""Phase 17 tests: country-separated subscription feeds.
+"""Phase 17 tests: country-separated subscription directories.
 
 In addition to the three combined feeds and the per-protocol feeds, the
 publisher emits, per selected (deduplicated, `max_items`-capped) candidate
 set:
 
-- country-only feeds (all protocols of one country): ``country-{cc}.txt`` /
-  ``country-{cc}-base64.txt``
-- protocol + country feeds: ``{stem}-{cc}.txt`` / ``{stem}-{cc}-base64.txt``
+- a generated index ``countries/README.md`` listing every non-empty country
+  directory, deterministically ordered by ISO code;
+- one directory per non-empty country bucket ``countries/{CC}/`` with
+  ``README.md``, an all-protocol feed (``all.txt`` / ``all-base64.txt``), and
+  a plain + base64 feed per protocol only when that protocol has candidates.
 
-Country buckets are lowercase ISO-3166-1 alpha-2; missing/invalid countries
-map to the ``xx`` bucket. Location feeds are pure, deterministic,
+Country buckets are uppercase ISO-3166-1 alpha-2; missing/invalid countries
+map to the ``XX`` bucket. Country artifacts are pure, deterministic,
 in-memory slices of the same already-ranked proxies used by combined and
 protocol feeds: no extra DNS, GeoIP, health check, DB, or network I/O.
 
 Contracts under test:
 
-- Country normalization: uppercase/lowercase valid codes -> lowercase bucket;
-  None / invalid values -> ``xx``.
-- Grouping is by (protocol, country) and by country alone; each proxy appears
-  exactly once per family; interfaces are subset of the combined feed.
-- Deterministic ordering: canonical protocol order, then sorted buckets; rank
-  order preserved inside every group.
-- Plain/base64 exact parity; empty groups are never published; no duplicate
-  entries; ``xx`` bucket exists only when actually needed.
+- Flag conversion: ``DE`` -> ``🇩🇪``; ``XX``/invalid -> ``🌐``.
+- Country normalization: uppercase/lowercase valid codes -> one bucket; None /
+  invalid values -> the ``XX`` bucket.
+- Grouping: each selected proxy appears in exactly one country directory;
+  every directory feed is a subset of the combined feed.
+- Deterministic ordering: index entries and directories ordered by ISO code;
+  rank order preserved inside every group.
+- Country README / index README content, plain/base64 exact parity, and
+  per-protocol feeds only for non-empty protocols; empty countries (no ``XX``
+  directory when nothing is unknown) are never emitted.
 - Existing combined/protocol feeds are byte-for-byte unchanged (additive-only,
   captured as a regression test).
-- Filename builders reuse the protocol stem map and are always filename-safe.
-- Location generation performs no network/I/O and the pipeline re-runs no
-  health/GeoIP/DNS work.
+- Generated artifact paths are always traversal-safe.
+- Country generation performs no network/I/O and the pipeline re-runs no
+  health/GeoIP/DNS work; repeated generation is byte-identical.
 
 No network, no database (except the pipeline-level purity tests), no clock.
 """
@@ -51,25 +55,25 @@ from proxyaggregator.geoip.models import EnrichmentResult
 from proxyaggregator.health.models import CheckStage, HealthCheckResult, HealthStatus
 from proxyaggregator.models.source import SourceSchema
 from proxyaggregator.publishing import (
+    COUNTRIES_DIR,
     COUNTRY_UNKNOWN_BUCKET,
     SubscriptionFormat,
+    build_country_artifacts,
     build_protocol_subscriptions,
     build_subscription,
     country_bucket,
-    default_country_filename,
+    country_code_to_flag,
+    country_index_path,
+    country_protocol_path,
     default_filename,
-    default_protocol_country_filename,
-)
-from proxyaggregator.publishing.feeds import (
-    build_country_subscriptions as _build_country,
-)
-from proxyaggregator.publishing.feeds import (
-    build_protocol_country_subscriptions as _build_pc,
 )
 from proxyaggregator.publishing.models import RankedProxy, Subscription
 from proxyaggregator.publishing.publisher import (
     DEFAULT_FILENAMES,
-    _validate_filename,
+    _validate_artifact_path,
+    canonical_artifact_filenames,
+    country_all_path,
+    country_readme_path,
     default_protocol_filename,
 )
 
@@ -79,7 +83,6 @@ VLESS = (
     f"vless://{UUID}@vless.example.com:443"
     "?network=ws&security=tls&sni=example.com&host=example.com&path=%2Fws#VLESSNode"
 )
-TROJAN = "trojan://s3cr3t-pw@trojan.example.com:443?security=tls&sni=example.com#TrojanNode"
 SS = (
     "ss://"
     + base64.b64encode(b"aes-128-gcm:passwd").decode("ascii")
@@ -87,29 +90,6 @@ SS = (
 )
 SOCKS5 = "socks5://user:p%40ss@proxy.example.com:1080"
 HTTP = "http://user:p%40ss@proxy.example.com:8080"
-HTTPS = "https://proxy.example.com:8443"
-
-
-def _vmess_uri() -> str:
-    import json
-
-    payload = {
-        "v": "2",
-        "ps": "VMessNode",
-        "add": "vmess.example.com",
-        "port": "443",
-        "id": UUID,
-        "net": "ws",
-        "tls": "tls",
-        "sni": "example.com",
-        "host": "example.com",
-        "path": "/ws",
-    }
-    raw = json.dumps(payload, separators=(",", ":"))
-    return "vmess://" + base64.b64encode(raw.encode("utf-8")).decode("ascii")
-
-
-VMESS = _vmess_uri()
 
 
 def _ranked(
@@ -157,7 +137,39 @@ def _country_candidates() -> tuple[RankedProxy, ...]:
     )
 
 
-# A. Country normalization ----------------------------------------------------
+def _artifacts(
+    candidates: tuple[RankedProxy, ...], *, max_items: int | None = None
+) -> dict[str, Subscription]:
+    return dict(build_country_artifacts(candidates, max_items=max_items))
+
+
+# A. Flag conversion -----------------------------------------------------------
+
+
+class TestCountryFlag:
+    @pytest.mark.parametrize(
+        ("code", "flag"),
+        [
+            ("DE", "\U0001f1e9\U0001f1ea"),
+            ("de", "\U0001f1e9\U0001f1ea"),
+            (" US ", "\U0001f1fa\U0001f1f8"),
+            ("GB", "\U0001f1ec\U0001f1e7"),
+            ("XX", "\U0001f310"),
+        ],
+    )
+    def test_valid_codes_map_to_regional_indicator_flags(self, code, flag):
+        assert country_code_to_flag(code) == flag
+
+    @pytest.mark.parametrize(
+        "value",
+        [None, "", "D", "DEU", "DE1", "DÉ", "123", "../US", 123, True],
+    )
+    def test_invalid_values_and_unknown_bucket_use_globe(self, value):
+        assert country_code_to_flag(value) == "\U0001f310"
+        assert country_code_to_flag(COUNTRY_UNKNOWN_BUCKET) == "\U0001f310"
+
+
+# B. Country normalization -----------------------------------------------------
 
 
 class TestCountryNormalization:
@@ -171,9 +183,8 @@ class TestCountryNormalization:
             ("GB", "gb"),
         ],
     )
-    def test_valid_codes_lowercase_to_filename_bucket(self, value, bucket):
+    def test_valid_codes_normalize_to_a_single_bucket(self, value, bucket):
         assert country_bucket(value) == bucket
-        assert default_country_filename(value, SubscriptionFormat.PLAIN) == f"country-{bucket}.txt"
 
     @pytest.mark.parametrize(
         "value",
@@ -181,89 +192,76 @@ class TestCountryNormalization:
     )
     def test_invalid_values_map_to_xx_bucket(self, value):
         assert country_bucket(value) == COUNTRY_UNKNOWN_BUCKET
-        assert default_country_filename(value, SubscriptionFormat.PLAIN) == "country-xx.txt"
-        assert (
-            default_protocol_country_filename("vless", value, SubscriptionFormat.PLAIN)
-            == "vless-xx.txt"
-        )
 
-    def test_uppercase_feeds_group_into_lowercase_file(self):
+    def test_uppercase_feed_directories_group_into_uppercase_dir(self):
         candidates = [_ranked(1, "vless", VLESS, "vless.example.com", 443, country_code="DE")]
-        feeds = _build_country(candidates)
-        assert [(bucket, plain.count) for bucket, plain, _b64 in feeds] == [("de", 1)]
-        pc = _build_pc(candidates)
-        assert [(protocol, bucket, plain.count) for protocol, bucket, plain, _b64 in pc] == [
-            ("vless", "de", 1)
-        ]
+        paths = {path for path, _feed in build_country_artifacts(candidates)}
+        assert "countries/DE/all.txt" in paths
+        assert "countries/DE/vless.txt" in paths
 
-    def test_missing_country_lands_in_xx_group(self):
+    def test_missing_country_lands_in_xx_directory(self):
         candidates = [_ranked(1, "vless", VLESS, "vless.example.com", 443, country_code=None)]
-        feeds = _build_country(candidates)
-        assert [bucket for bucket, plain, _b64 in feeds] == [COUNTRY_UNKNOWN_BUCKET]
+        artifacts = _artifacts(candidates)
+        assert "countries/XX/all.txt" in artifacts
+        assert artifacts["countries/XX/all.txt"].count == 1
 
 
-# B. Grouping -----------------------------------------------------------------
+# C. Grouping -----------------------------------------------------------------
 
 
 class TestGrouping:
-    def test_protocol_country_grouping_counts(self):
-        feeds = _build_pc(_country_candidates())
-        grouped = {(protocol, bucket): plain.count for protocol, bucket, plain, _b64 in feeds}
-        assert grouped == {
-            ("vless", "us"): 1,
-            ("ss", "de"): 1,
-            ("ss", "us"): 1,
-            ("http", "us"): 1,
-            ("socks5", "xx"): 1,
-        }
+    def test_grouping_counts(self):
+        artifacts = _artifacts(_country_candidates())
+        assert artifacts["countries/US/all.txt"].count == 3
+        assert artifacts["countries/DE/all.txt"].count == 1
+        assert artifacts["countries/XX/all.txt"].count == 1
 
-    def test_country_only_grouping(self):
-        feeds = _build_country(_country_candidates())
-        grouped = {bucket: plain.count for bucket, plain, _b64 in feeds}
-        assert grouped == {"de": 1, "us": 3, COUNTRY_UNKNOWN_BUCKET: 1}
-
-    def test_country_only_feed_holds_multiple_protocols(self):
+    def test_country_feed_holds_multiple_protocols(self):
         candidates = [
             _ranked(1, "vless", VLESS, "vless.example.com", 443, country_code="US"),
             _ranked(2, "ss", SS, "ss.example.com", 8388, country_code="US"),
             _ranked(3, "http", HTTP, "proxy.example.com", 8080, country_code="US"),
         ]
-        feeds = {bucket: plain for bucket, plain, _b64 in _build_country(candidates)}
-        assert feeds["us"].count == 3
-        protocols = {_parse(line).protocol for line in feeds["us"].content.splitlines()}
+        artifacts = _artifacts(candidates)
+        assert artifacts["countries/US/all.txt"].count == 3
+        protocols = {
+            _parse(line).protocol for line in artifacts["countries/US/all.txt"].content.splitlines()
+        }
         assert protocols == {"vless", "ss", "http"}
 
-    def test_every_location_line_is_in_the_combined_feed(self):
+    def test_every_country_line_is_in_the_combined_feed(self):
         candidates = _country_candidates()
         combined_lines = set(build_subscription(candidates).content.splitlines())
-        for _bucket, plain, _b64 in _build_country(candidates):
-            assert set(plain.content.splitlines()) <= combined_lines
-        for _protocol, _bucket, plain, _b64 in _build_pc(candidates):
-            assert set(plain.content.splitlines()) <= combined_lines
+        for path, feed in build_country_artifacts(candidates):
+            if feed.format is not SubscriptionFormat.PLAIN or path.endswith("README.md"):
+                continue
+            assert set(feed.content.splitlines()) <= combined_lines
 
 
-# C. Ordering -----------------------------------------------------------------
+# D. Ordering -----------------------------------------------------------------
 
 
 class TestOrdering:
-    def test_country_groups_ordered_by_bucket(self):
+    def test_directories_and_index_ordered_by_iso_code(self):
         candidates = [
             _ranked(1, "ss", SS, "ss.example.com", 8388, country_code="GB"),
             _ranked(2, "http", HTTP, "proxy.example.com", 8080, country_code="DE"),
             _ranked(3, "vless", VLESS, "vless.example.com", 443, country_code="US"),
         ]
-        buckets = [bucket for bucket, _plain, _b64 in _build_country(candidates)]
-        assert buckets == sorted(buckets) == ["de", "gb", "us"]
+        paths = [path for path, _feed in build_country_artifacts(candidates)]
+        assert paths[0] == "countries/README.md"
+        dir_order = []
+        for path in paths:
+            parts = path.split("/")
+            if len(parts) == 3 and dir_order[-1:] != [parts[1]]:
+                dir_order.append(parts[1])
+        assert dir_order == ["DE", "GB", "US"]
 
-    def test_protocol_country_feed_order_is_canonical_then_bucket(self):
-        vless_444 = f"vless://{UUID}@vless.example.com:444?security=none"
-        candidates = [
-            _ranked(1, "ss", SS, "ss.example.com", 8388, country_code="GB"),
-            _ranked(2, "vless", VLESS, "vless.example.com", 443, country_code="DE"),
-            _ranked(3, "vless", vless_444, "vless.example.com", 444, country_code="US"),
+        index = _artifacts(candidates)["countries/README.md"].content
+        codes = [
+            line.split(" ", 1)[1].split(" ")[0] for line in index.splitlines() if "[Open]" in line
         ]
-        order = [(protocol, bucket) for protocol, bucket, _p, _b in _build_pc(candidates)]
-        assert order == [("vless", "de"), ("vless", "us"), ("ss", "gb")]
+        assert codes == ["DE", "GB", "US"]
 
     def test_rank_order_preserved_within_group(self):
         http_8080 = "http://user:p%40ss@proxy.example.com:8080"
@@ -273,112 +271,164 @@ class TestOrdering:
             _ranked(2, "http", http_8081, "proxy.example.com", 8081, country_code="US"),
             _ranked(3, "http", http_8080, "proxy.example.com", 8080),
         ]
-        feeds = {bucket: plain for bucket, plain, _b64 in _build_country(candidates)}
-        lines = [_parse(line).port for line in feeds["us"].content.splitlines()]
+        artifacts = _artifacts(candidates)
+        lines = [
+            _parse(line).port for line in artifacts["countries/US/all.txt"].content.splitlines()
+        ]
         assert lines == [8080, 8081]
 
 
-# D. Base64 parity + empty groups + duplicates + xx ---------------------------
+# E. Directory artifacts: all + protocol feeds --------------------------------
 
 
-class TestBase64AndEmpties:
-    def test_base64_decodes_to_plain_for_all_location_feeds(self):
-        for _bucket, plain, b64 in _build_country(_country_candidates()):
-            assert plain.format is SubscriptionFormat.PLAIN
-            assert b64.format is SubscriptionFormat.BASE64
-            assert base64.b64decode(b64.content.encode("ascii")).decode("utf-8") == plain.content
-            assert b64.count == plain.count
-        for _protocol, _bucket, plain, b64 in _build_pc(_country_candidates()):
-            assert base64.b64decode(b64.content.encode("ascii")).decode("utf-8") == plain.content
-            assert b64.count == plain.count
+class TestDirectoryFeeds:
+    def test_all_plain_and_base64_parity(self):
+        artifacts = _artifacts(_country_candidates())
+        for path, feed in artifacts.items():
+            if path.endswith("README.md"):
+                assert feed.format is SubscriptionFormat.PLAIN
+                assert feed.count == 0
+                continue
+            assert feed.count >= 1
+            if feed.format is SubscriptionFormat.BASE64:
+                plain_path = path.replace("-base64.txt", ".txt")
+                decoded = base64.b64decode(feed.content.encode("ascii")).decode("utf-8")
+                assert decoded == artifacts[plain_path].content
 
-    def test_empty_groups_omitted(self):
-        candidates = [_ranked(1, "vless", VLESS, "vless.example.com", 443, country_code="DE")]
-        country_buckets = [bucket for bucket, _p, _b in _build_country(candidates)]
-        assert country_buckets == ["de"]
-        pc = [f"{protocol}-{bucket}" for protocol, bucket, _p, _b in _build_pc(candidates)]
-        assert pc == ["vless-de"]
+    def test_protocol_feed_grouped_in_directory(self):
+        artifacts = _artifacts(_country_candidates())
+        assert artifacts["countries/DE/shadowsocks.txt"].count == 1
+        assert artifacts["countries/US/shadowsocks.txt"].count == 1
+        assert artifacts["countries/US/vless.txt"].count == 1
+        assert artifacts["countries/US/http.txt"].count == 1
+        assert artifacts["countries/XX/socks5.txt"].count == 1
 
-    def test_duplicate_content_hashes_deduped_once(self):
-        candidate = _ranked(1, "http", HTTP, "proxy.example.com", 8080, country_code="US")
-        duplicate = candidate.model_copy(update={"proxy_config_id": 9})
-        assert duplicate.content_hash == candidate.content_hash
-        feeds = _build_country([candidate, duplicate])
-        (bucket, plain, _b64) = feeds[0]
-        assert bucket == "us"
-        assert plain.count == 1
-        assert len(plain.content.splitlines()) == 1
+    def test_protocol_stem_map_respected_in_directory(self):
+        candidates = [_ranked(1, "ss", SS, "ss.example.com", 8388, country_code="US")]
+        artifacts = _artifacts(candidates)
+        assert "countries/US/shadowsocks.txt" in artifacts
+        assert "countries/US/shadowsocks-base64.txt" in artifacts
 
-    def test_xx_bucket_only_when_needed(self):
-        all_known = [
+    def test_empty_protocols_omitted(self):
+        candidates = [_ranked(1, "ss", SS, "ss.example.com", 8388, country_code="DE")]
+        paths = {path for path, _feed in build_country_artifacts(candidates)}
+        de_files = {path for path in paths if path.startswith("countries/DE/")}
+        assert de_files == {
+            "countries/DE/README.md",
+            "countries/DE/all.txt",
+            "countries/DE/all-base64.txt",
+            "countries/DE/shadowsocks.txt",
+            "countries/DE/shadowsocks-base64.txt",
+        }
+
+    def test_empty_countries_omitted(self):
+        known = [
             _ranked(1, "vless", VLESS, "vless.example.com", 443, country_code="US"),
             _ranked(2, "ss", SS, "ss.example.com", 8388, country_code="DE"),
         ]
-        assert COUNTRY_UNKNOWN_BUCKET not in [b for b, _p, _b in _build_country(all_known)]
-        one_unknown = [
-            *all_known,
+        paths = {path.split("/")[1] for path, _f in build_country_artifacts(known) if "/" in path}
+        assert "XX" not in paths
+        index = _artifacts(known)["countries/README.md"].content
+        assert "XX" not in index
+        unknown = [
+            *known,
             _ranked(3, "http", HTTP, "proxy.example.com", 8080, country_code=None),
         ]
-        assert COUNTRY_UNKNOWN_BUCKET in [b for b, _p, _b in _build_country(one_unknown)]
+        assert "XX" in {
+            path.split("/")[1] for path, _f in build_country_artifacts(unknown) if "/" in path
+        }
 
+    def test_protocol_only_generated_when_candidates_exist(self):
+        candidates = [
+            _ranked(1, "socks5", SOCKS5, "proxy.example.com", 1080, country_code="US"),
+            _ranked(2, "ss", SS, "ss.example.com", 8388, country_code="US"),
+        ]
+        paths = {path for path, _feed in build_country_artifacts(candidates)}
+        assert "countries/US/socks5.txt" in paths
+        assert "countries/US/shadowsocks.txt" in paths
+        assert "countries/US/vless.txt" not in paths
+
+
+# F. Generated READMEs ---------------------------------------------------------
+
+
+class TestGeneratedReadmes:
+    def test_country_readme_content(self):
+        candidates = [_ranked(1, "ss", SS, "ss.example.com", 8388, country_code="DE")]
+        content = _artifacts(candidates)["countries/DE/README.md"].content
+        assert content == (
+            "# \U0001f1e9\U0001f1ea DE\n"
+            "\n"
+            "1 healthy proxy.\n"
+            "\n"
+            "## All protocols\n"
+            "\n"
+            "- [Plain](./all.txt)\n"
+            "- [Base64](./all-base64.txt)\n"
+            "\n"
+            "## Protocols\n"
+            "\n"
+            "- [Shadowsocks](./shadowsocks.txt)\n"
+            "- [Shadowsocks Base64](./shadowsocks-base64.txt)\n"
+        )
+
+    def test_country_readme_single_proxy_grammar(self):
+        candidates = [_ranked(1, "vless", VLESS, "vless.example.com", 443, country_code="US")]
+        content = _artifacts(candidates)["countries/US/README.md"].content
+        assert "1 healthy proxy." in content
+
+    def test_country_readme_protocol_section_only_for_present_protocols(self):
+        candidates = [_ranked(1, "http", HTTP, "proxy.example.com", 8080, country_code="US")]
+        content = _artifacts(candidates)["countries/US/README.md"].content
+        assert "## Protocols" in content
+        assert "- [HTTP](./http.txt)" in content
+        assert "- [VLESS](./vless.txt)" not in content
+
+    def test_country_readme_manual_protocol_display_map(self):
+        candidates = [_ranked(1, "ss", SS, "ss.example.com", 8388, country_code="US")]
+        content = _artifacts(candidates)["countries/US/README.md"].content
+        assert "- [Shadowsocks](./shadowsocks.txt)" in content
+
+    def test_index_readme_lists_every_country_with_count_and_link(self):
+        index = _artifacts(_country_candidates())["countries/README.md"].content
+        assert index.startswith("# \U0001f30d ProxyAggregator \u2014 Proxies by Country\n\n")
+        assert "\U0001f1e9\U0001f1ea DE \u2014 1 proxy \u2014 [Open](./DE/)" in index
+        assert "\U0001f1fa\U0001f1f8 US \u2014 3 proxies \u2014 [Open](./US/)" in index
+        assert "\U0001f310 XX \u2014 1 proxy \u2014 [Open](./XX/)" in index
+
+    def test_index_protocol_files_exist_for_every_indexed_country(self):
+        artifacts = _artifacts(_country_candidates())
+        index = artifacts["countries/README.md"].content
+        codes = [
+            line.split(" ", 1)[1].split(" ")[0] for line in index.splitlines() if "[Open]" in line
+        ]
+        for code in codes:
+            assert f"countries/{code}/README.md" in artifacts
+            assert f"countries/{code}/all.txt" in artifacts
+
+    def test_index_count_matches_all_feed(self):
+        artifacts = _artifacts(_country_candidates())
+        index = artifacts["countries/README.md"].content
+        for line in index.splitlines():
+            if "[Open]" not in line:
+                continue
+            code = line.split(" ", 1)[1].split(" ")[0]
+            count = line.split("\u2014 ")[1].split(" ")[0]
+            assert artifacts[f"countries/{code}/all.txt"].count == int(count)
+
+
+# G. Determinism + path safety -------------------------------------------------
+
+
+class TestDeterminismAndPathSafety:
     def test_repeated_generation_is_byte_identical(self):
-        first_c = _build_country(_country_candidates())
-        second_c = _build_country(_country_candidates())
-        assert [(b, p.content, x.content) for b, p, x in first_c] == [
-            (b, p.content, x.content) for b, p, x in second_c
-        ]
-        first_pc = _build_pc(_country_candidates())
-        second_pc = _build_pc(_country_candidates())
-        assert [(p, b, f.content) for p, b, f, _x in first_pc] == [
-            (p, b, f.content) for p, b, f, _x in second_pc
+        first = build_country_artifacts(_country_candidates())
+        second = build_country_artifacts(_country_candidates())
+        assert [(path, feed.content) for path, feed in first] == [
+            (path, feed.content) for path, feed in second
         ]
 
-
-# E. Filename builders --------------------------------------------------------
-
-
-class TestLocationFilenames:
-    @pytest.mark.parametrize(
-        ("protocol", "stem"),
-        [
-            ("vless", "vless"),
-            ("vmess", "vmess"),
-            ("trojan", "trojan"),
-            ("ss", "shadowsocks"),
-            ("hysteria", "hysteria"),
-            ("hysteria2", "hysteria2"),
-            ("socks4", "socks4"),
-            ("socks5", "socks5"),
-            ("http", "http"),
-            ("https", "https"),
-        ],
-    )
-    def test_protocol_country_filenames_use_stem_map(self, protocol, stem):
-        assert (
-            default_protocol_country_filename(protocol, "US", SubscriptionFormat.PLAIN)
-            == f"{stem}-us.txt"
-        )
-        assert (
-            default_protocol_country_filename(protocol, "US", SubscriptionFormat.BASE64)
-            == f"{stem}-us-base64.txt"
-        )
-
-    def test_country_filename_shapes(self):
-        assert default_country_filename("DE", SubscriptionFormat.PLAIN) == "country-de.txt"
-        assert default_country_filename("DE", SubscriptionFormat.BASE64) == "country-de-base64.txt"
-        assert default_country_filename(None, SubscriptionFormat.PLAIN) == "country-xx.txt"
-
-    def test_unknown_protocol_rejected(self):
-        with pytest.raises(ValueError):
-            default_protocol_country_filename("wireguard", "DE", SubscriptionFormat.PLAIN)
-
-    def test_json_rejected_for_location_feeds(self):
-        with pytest.raises(ValueError):
-            default_country_filename("DE", SubscriptionFormat.JSON)
-        with pytest.raises(ValueError):
-            default_protocol_country_filename("vless", "DE", SubscriptionFormat.JSON)
-
-    def test_unsafe_country_values_never_produce_unsafe_filenames(self):
+    def test_unsafe_country_values_never_produce_unsafe_paths(self):
         hostile = [
             "DEU",
             "../DE",
@@ -390,25 +440,27 @@ class TestLocationFilenames:
             "a" * 50,
         ]
         for value in hostile:
-            country_name = default_country_filename(value, SubscriptionFormat.PLAIN)
-            pc_name = default_protocol_country_filename("vless", value, SubscriptionFormat.PLAIN)
-            assert country_name == "country-xx.txt"
-            assert pc_name == "vless-xx.txt"
-            _validate_filename(country_name)
-            _validate_filename(pc_name)
+            path = country_all_path(value, SubscriptionFormat.PLAIN)
+            assert path == "countries/XX/all.txt"
+            _validate_artifact_path(path)
+            _validate_artifact_path(country_readme_path(value))
+            _validate_artifact_path(country_protocol_path("vless", value, SubscriptionFormat.PLAIN))
 
-    def test_default_filename_mappings_untouched(self):
-        assert DEFAULT_FILENAMES[SubscriptionFormat.PLAIN] == "proxyaggregator.txt"
-        assert DEFAULT_FILENAMES[SubscriptionFormat.BASE64] == "proxyaggregator-base64.txt"
-        assert DEFAULT_FILENAMES[SubscriptionFormat.JSON] == "proxyaggregator.json"
-        assert default_protocol_filename("ss", SubscriptionFormat.PLAIN) == "shadowsocks.txt"
+    def test_generated_paths_all_pass_validation(self):
+        for path, _feed in build_country_artifacts(_country_candidates()):
+            _validate_artifact_path(path)
+
+    def test_canonical_set_covers_generated_paths(self):
+        canonical = canonical_artifact_filenames()
+        for path, _feed in build_country_artifacts(_country_candidates()):
+            assert path in canonical
 
 
-# F. Backward compatibility regression ----------------------------------------
+# H. Backward compatibility regression ----------------------------------------
 
 
 class TestBackwardCompat:
-    def test_existing_feeds_byte_identical_when_location_feeds_enabled(self):
+    def test_existing_feeds_byte_identical_when_country_feeds_enabled(self):
         candidates = _country_candidates()
         expected: list[tuple[str, Subscription]] = []
         for subscription_format in (
@@ -432,28 +484,26 @@ class TestBackwardCompat:
             (name, feed.content) for name, feed in expected
         ]
 
-    def test_combined_protocol_serializer_bytes_unchanged(self):
-        candidates = _country_candidates()
-        assert (
-            build_subscription(candidates, format=SubscriptionFormat.PLAIN).content
-            == build_subscription(
-                candidates, format=SubscriptionFormat.PLAIN, max_items=None
-            ).content
-        )
+    def test_default_filename_mappings_untouched(self):
+        assert DEFAULT_FILENAMES[SubscriptionFormat.PLAIN] == "proxyaggregator.txt"
+        assert DEFAULT_FILENAMES[SubscriptionFormat.BASE64] == "proxyaggregator-base64.txt"
+        assert DEFAULT_FILENAMES[SubscriptionFormat.JSON] == "proxyaggregator.json"
+        assert default_protocol_filename("ss", SubscriptionFormat.PLAIN) == "shadowsocks.txt"
 
 
-# G. Purity: no network, no I/O -----------------------------------------------
+# I. Purity: no network, no I/O -------------------------------------------------
 
 
 class TestPurity:
-    def test_feed_module_has_no_network_or_db_touchpoints(self):
+    def test_feed_modules_have_no_network_or_db_touchpoints(self):
+        import proxyaggregator.publishing.countries as countries_module
         import proxyaggregator.publishing.feeds as feeds_module
 
-        source = inspect.getsource(feeds_module)
-        for forbidden in ("socket.", "subprocess", "sqlalchemy", "requests", "getaddrinfo"):
-            assert forbidden not in source
+        for source in (inspect.getsource(countries_module), inspect.getsource(feeds_module)):
+            for forbidden in ("socket.", "subprocess", "sqlalchemy", "requests", "getaddrinfo"):
+                assert forbidden not in source
 
-    def test_location_generation_does_not_touch_network_or_files(self, monkeypatch, tmp_path):
+    def test_country_generation_does_not_touch_network_or_files(self, monkeypatch, tmp_path):
         import socket as socket_module
 
         dns_calls: list[str] = []
@@ -461,13 +511,12 @@ class TestPurity:
             socket_module, "getaddrinfo", lambda *a, **k: dns_calls.append("dns") or []
         )
         candidates = _country_candidates()
-        _build_country(candidates)
-        _build_pc(candidates)
+        build_country_artifacts(candidates)
         assert dns_calls == []
         assert list(tmp_path.iterdir()) == []
 
 
-# H. Pipeline purity: health/GeoIP/DNS run exactly once -------------------------
+# J. Pipeline purity: health/GeoIP/DNS run exactly once -------------------------
 
 _SRC_A = SourceSchema(name="alpha", source_type="http", url="https://cdn.test/alpha.txt")
 _SRC_B = SourceSchema(name="beta", source_type="http", url="https://cdn.test/beta.txt")
@@ -589,18 +638,57 @@ class TestPipelinePurity:
         assert calls["geoip"] == 3
         assert runner.calls == 1
 
-    def test_location_filenames_generated_end_to_end(self, db_session, tmp_path):
+    def test_country_directories_generated_end_to_end(self, db_session, tmp_path):
         stats = self._run(db_session, tmp_path, _enricher, _CountingHealthRunner())
-        expected_location = {
-            "country-us.txt",
-            "country-us-base64.txt",
-            "http-us.txt",
-            "http-us-base64.txt",
-            "socks5-us.txt",
-            "socks5-us-base64.txt",
-            "vless-us.txt",
-            "vless-us-base64.txt",
+        expected = {
+            "countries/README.md",
+            "countries/US/README.md",
+            "countries/US/all.txt",
+            "countries/US/all-base64.txt",
+            "countries/US/http.txt",
+            "countries/US/http-base64.txt",
+            "countries/US/socks5.txt",
+            "countries/US/socks5-base64.txt",
+            "countries/US/vless.txt",
+            "countries/US/vless-base64.txt",
         }
-        assert {path.name for path in (tmp_path / "out").iterdir()} >= expected_location
-        assert stats.published_artifacts == 3 + 2 * 3 + 2 * 1 + 2 * 3 + 1
-        assert COUNTRY_UNKNOWN_BUCKET not in {p.name for p in (tmp_path / "out").iterdir()}
+        out = tmp_path / "out"
+        on_disk = {path for path in out.rglob("*") if path.is_file()}
+        assert on_disk >= {out / name for name in expected}
+        countries_dir = out / COUNTRIES_DIR
+        assert countries_dir.is_dir()
+        assert {p.name for p in countries_dir.iterdir()} == {"README.md", "US"}
+        assert stats.published_artifacts == 20
+        assert COUNTRY_UNKNOWN_BUCKET.upper() not in {p.name for p in countries_dir.iterdir()}
+        assert (
+            (countries_dir / "README.md")
+            .read_text()
+            .startswith("# \U0001f30d ProxyAggregator \u2014 Proxies by Country")
+        )
+
+
+# K. Pipeline-level x-country dependency tests ----------------------------------
+
+
+class TestCountryProtocolPaths:
+    def test_country_protocol_path_shape(self):
+        assert country_protocol_path("vless", "DE", SubscriptionFormat.PLAIN) == (
+            "countries/DE/vless.txt"
+        )
+        assert country_protocol_path("ss", "DE", SubscriptionFormat.BASE64) == (
+            "countries/DE/shadowsocks-base64.txt"
+        )
+        assert country_protocol_path("vless", None, SubscriptionFormat.PLAIN) == (
+            "countries/XX/vless.txt"
+        )
+
+    def test_country_protocol_path_json_rejected(self):
+        with pytest.raises(ValueError):
+            country_protocol_path("vless", "DE", SubscriptionFormat.JSON)
+
+    def test_country_protocol_path_unknown_protocol_rejected(self):
+        with pytest.raises(ValueError):
+            country_protocol_path("wireguard", "DE", SubscriptionFormat.PLAIN)
+
+    def test_country_index_constant_is_used_by_builders(self):
+        assert country_index_path() == "countries/README.md"

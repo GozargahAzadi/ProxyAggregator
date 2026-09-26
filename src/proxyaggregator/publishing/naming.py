@@ -105,6 +105,21 @@ def country_flag(country_code: object) -> tuple[str, str]:
     return "".join(_regional_indicator(ch) for ch in code), code
 
 
+def country_code_to_flag(country_code: object) -> str:
+    """Return the flag emoji for an ISO-3166-1 alpha-2 code (``DE`` -> ``🇩🇪``).
+
+    The two-character contiguous regional-indicator space means the flag is
+    derived deterministically from the code with no lookup table. The reserved
+    ``XX`` sentinel (the unknown-country bucket) and every invalid value render
+    as ``🌐``; a real (unassigned) code would otherwise produce a meaningless
+    ``XX`` flag pair.
+    """
+    code = normalize_country_code(country_code)
+    if code is None or code == _FALLBACK_COUNTRY:
+        return _FALLBACK_FLAG
+    return "".join(_regional_indicator(ch) for ch in code)
+
+
 def protocol_display_name(protocol: object) -> str:
     """Render a protocol identifier as its canonical public display name."""
     if isinstance(protocol, str):

@@ -70,30 +70,34 @@ HTTPS:
 - https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/https.txt
 - https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/https-base64.txt
 
-### Location feeds
+### Proxies by country
 
-Location feeds are generated from the same deduplicated and health-checked
-proxy set, so they contain only verified proxies. Only non-empty groups are
-published and country codes use lowercase ISO 3166-1 alpha-2 codes.
+Country feeds are generated from the same deduplicated and health-checked
+proxy set, so they contain only verified proxies. Each non-empty country gets
+its own directory under `output/countries/{CC}/` (uppercase ISO 3166-1
+alpha-2), containing:
 
-Country-only filenames:
-- `country-{cc}.txt`
-- `country-{cc}-base64.txt`
+- `README.md` — a human-readable index for that country
+- `all.txt` / `all-base64.txt` — every protocol of that country, plain and base64
+- `{protocol}.txt` / `{protocol}-base64.txt` — per-protocol feeds, only when
+  that protocol has healthy proxies from that country
 
-Protocol+country filenames:
-- `{protocol}-{cc}.txt`
-- `{protocol}-{cc}-base64.txt`
-
-Unknown or unrecognized countries are grouped under `xx` when non-empty;
+A generated `output/countries/README.md` lists every country directory with a
+flag, proxy count, and link; it is rebuilt on every publish and never hand-edited.
+Unknown or unrecognized countries are grouped under `XX` when non-empty;
 otherwise the group is omitted.
 
-Examples (plain and base64 variants exist for each):
-- https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/country-de.txt
-- https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/country-de-base64.txt
-- https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/vless-de.txt
-- https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/vless-de-base64.txt
-- https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/country-us.txt
-- https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/vmess-us.txt
+Browse the generated index:
+- https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/countries/README.md
+
+Examples (a directory per country; plain and base64 variants exist for each):
+- https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/countries/DE/README.md
+- https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/countries/DE/all.txt
+- https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/countries/DE/all-base64.txt
+- https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/countries/DE/vless.txt
+- https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/countries/DE/vless-base64.txt
+- https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/countries/US/all.txt
+- https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/countries/US/vmess.txt
 
 ## Quick Start
 
