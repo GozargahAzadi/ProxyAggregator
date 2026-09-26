@@ -10,7 +10,10 @@ Clash and sing-box formats are deferred (see ``docs/SUBSCRIPTION.md``); their
 publishing is likewise deferred.
 """
 
-from proxyaggregator.publishing.countries import build_country_artifacts
+from proxyaggregator.publishing.countries import (
+    COUNTRY_RAW_SUBSCRIPTIONS_BASE_URL,
+    build_country_artifacts,
+)
 from proxyaggregator.publishing.errors import SubscriptionError
 from proxyaggregator.publishing.feeds import (
     build_protocol_subscriptions,
@@ -23,12 +26,14 @@ from proxyaggregator.publishing.models import (
     SubscriptionRequest,
 )
 from proxyaggregator.publishing.naming import (
+    COUNTRY_NAMES,
     COUNTRY_UNKNOWN_BUCKET,
     PROTOCOL_DISPLAY_NAMES,
     REMARK_AUTHOR,
     build_remark,
     country_bucket,
     country_code_to_flag,
+    country_code_to_name,
     country_flag,
     format_latency_ms,
     normalize_country_code,
@@ -64,6 +69,8 @@ from proxyaggregator.publishing.serializer import SUPPORTED_PROTOCOLS, canonical
 
 __all__ = [
     "COUNTRIES_DIR",
+    "COUNTRY_NAMES",
+    "COUNTRY_RAW_SUBSCRIPTIONS_BASE_URL",
     "COUNTRY_UNKNOWN_BUCKET",
     "DEFAULT_FILENAMES",
     "DEFAULT_OUTPUT_DIR",
@@ -91,6 +98,7 @@ __all__ = [
     "country_all_path",
     "country_bucket",
     "country_code_to_flag",
+    "country_code_to_name",
     "country_dir_name",
     "country_dir_path",
     "country_flag",

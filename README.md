@@ -72,25 +72,32 @@ HTTPS:
 
 ### Proxies by country
 
+Browse the auto-generated country index:
+- [output/countries/README.md](https://github.com/GozargahAzadi/ProxyAggregator/blob/main/output/countries/README.md)
+
+It is a Markdown table — flag, country name, ISO code, proxy count, and a
+clickable link to each country's directory — and is **regenerated automatically
+by every Publish run**, so it always reflects the current healthy-proxy
+distribution. Do not edit it by hand.
+
+Start at the index, click a country (e.g. 🇺🇸 United States), and each country
+page (`output/countries/{CC}/README.md`) exposes copyable raw subscription URLs
+for its `all` feed and every available protocol feed.
+
 Country feeds are generated from the same deduplicated and health-checked
 proxy set, so they contain only verified proxies. Each non-empty country gets
 its own directory under `output/countries/{CC}/` (uppercase ISO 3166-1
 alpha-2), containing:
 
-- `README.md` — a human-readable index for that country
+- `README.md` — a human-readable country page with raw subscription links
 - `all.txt` / `all-base64.txt` — every protocol of that country, plain and base64
 - `{protocol}.txt` / `{protocol}-base64.txt` — per-protocol feeds, only when
   that protocol has healthy proxies from that country
 
-A generated `output/countries/README.md` lists every country directory with a
-flag, proxy count, and link; it is rebuilt on every publish and never hand-edited.
-Unknown or unrecognized countries are grouped under `XX` when non-empty;
-otherwise the group is omitted.
+Unknown or unrecognized countries are grouped under `XX` (`🌐`) when non-empty;
+otherwise that group is omitted.
 
-Browse the generated index:
-- https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/countries/README.md
-
-Examples (a directory per country; plain and base64 variants exist for each):
+Stable examples (a directory per country; plain and base64 variants exist for each):
 - https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/countries/DE/README.md
 - https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/countries/DE/all.txt
 - https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/countries/DE/all-base64.txt

@@ -11,6 +11,12 @@ Pure orchestration that groups Phase 7 ranked, eligible candidates into
   only when that protocol has candidates. Empty countries or empty protocols
   never produce artifacts.
 
+The generated READMEs are GitHub-facing: the index is a Markdown table
+(sorted by ISO code) whose rows link relative-directory links ``./{CC}/``
+plus copyable raw subscription URLs from
+:data:`COUNTRY_RAW_SUBSCRIPTIONS_BASE_URL`. Nothing above is hard-coded from
+live countries — every entry is derived from the actual country buckets.
+
 A single global selection (dedup by ``content_hash``, then the ``max_items``
 cap) is applied exactly once and serialization is cached per unique proxy, so
 the combined, protocol, and country feeds from the same inputs are mutually
@@ -30,7 +36,11 @@ from proxyaggregator.publishing.feeds import (
     _validate_max_items,
 )
 from proxyaggregator.publishing.models import Subscription, SubscriptionFormat
-from proxyaggregator.publishing.naming import country_bucket, country_code_to_flag
+from proxyaggregator.publishing.naming import (
+    country_bucket,
+    country_code_to_flag,
+    country_code_to_name,
+)
 from proxyaggregator.publishing.publisher import (
     DEFAULT_PROTOCOL_FILENAME_STEMS,
     country_all_path,
@@ -50,7 +60,7 @@ if TYPE_CHECKING:
 _COUNTRY_README_FORMAT = SubscriptionFormat.PLAIN
 _COUNTRY_README_COUNT = 0
 
-#: Protocol label map used in the country README's ``## Protocols`` listing.
+#: Protocol label map used in the country README's ``## 🔌 Protocols`` table.
 #: Keys are canonical serializer protocol ids; the on-disk stems come from the
 #: publisher's ``DEFAULT_PROTOCOL_FILENAME_STEMS``.
 _COUNTRY_PROTOCOL_DISPLAY: dict[str, str] = {
@@ -68,6 +78,13 @@ _COUNTRY_PROTOCOL_DISPLAY: dict[str, str] = {
 
 _INDEX_HEADING = "# 🌍 ProxyAggregator — Proxies by Country"
 
+#: Base URL for copyable raw subscription links in the country READMEs
+#: (the generated country index lives at ``countries/README.md`` next to
+#: ``countries/{CC}/`` on the ``main`` branch).
+COUNTRY_RAW_SUBSCRIPTIONS_BASE_URL = (
+    "https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/"
+)
+
 
 def _doc(content: str) -> Subscription:
     """Wrap generated markdown as a count-zero plain feed."""
@@ -78,37 +95,79 @@ def _proxy_or_proxies(count: int) -> str:
     return "proxy" if count == 1 else "proxies"
 
 
+def _raw_subscription_url(code: str, *parts: str) -> str:
+    """Join the raw base URL with a country-directory artifact path."""
+    return f"{COUNTRY_RAW_SUBSCRIPTIONS_BASE_URL}countries/{code}/{'/'.join(parts)}"
+
+
 def _country_readme(bucket: str, count: int, protocols: Sequence[str]) -> Subscription:
-    """Generate the deterministic ``countries/{CC}/README.md`` content."""
+    """Generate the deterministic ``countries/{CC}/README.md`` content.
+
+    The page shows the flag + English country name, the healthy-proxy count,
+    the all-protocol feeds, and a ``## 🔌 Protocols`` table containing only the
+    protocols that actually produced files this run. Every subscription link is
+    a copyable raw URL wrapped in a Markdown code span.
+    """
     code = bucket.upper()
     flag = country_code_to_flag(bucket)
+    name = country_code_to_name(bucket)
     lines = [
-        f"# {flag} {code}",
+        f"# {flag} {name}",
         "",
         f"{count} healthy {_proxy_or_proxies(count)}.",
         "",
-        "## All protocols",
+        "## 📋 All Protocols",
         "",
-        "- [Plain](./all.txt)",
-        "- [Base64](./all-base64.txt)",
+        "| Format | GitHub | Raw subscription |",
+        "|---|---|---|",
+        f"| Plain | [Open](./all.txt) | `{_raw_subscription_url(code, 'all.txt')}` |",
+        f"| Base64 | [Open](./all-base64.txt) | `{_raw_subscription_url(code, 'all-base64.txt')}` |",
     ]
     if protocols:
-        lines += ["", "## Protocols", ""]
+        lines += [
+            "",
+            "## 🔌 Protocols",
+            "",
+            "| Protocol | GitHub | Raw |",
+            "|---|---|---|",
+        ]
         for protocol in protocols:
             stem = DEFAULT_PROTOCOL_FILENAME_STEMS[protocol]
             display = _COUNTRY_PROTOCOL_DISPLAY[protocol]
-            lines.append(f"- [{display}](./{stem}.txt)")
-            lines.append(f"- [{display} Base64](./{stem}-base64.txt)")
+            lines.append(
+                f"| {display} | [Open](./{stem}.txt) | "
+                f"`{_raw_subscription_url(code, stem + '.txt')}` |"
+            )
+            lines.append(
+                f"| {display} Base64 | [Open](./{stem}-base64.txt) | "
+                f"`{_raw_subscription_url(code, stem + '-base64.txt')}` |"
+            )
     return _doc("\n".join(lines) + "\n")
 
 
 def _index_readme(entries: Sequence[tuple[str, int]]) -> Subscription:
-    """Generate the deterministic ``countries/README.md`` index content."""
-    lines = [_INDEX_HEADING, ""]
+    """Generate the deterministic ``countries/README.md`` country index.
+
+    A Markdown table with one row per non-empty country bucket: a clickable
+    flag + name (relative link ``./{CC}/``), the ISO alpha-2 code, the healthy
+    proxy count, and an open-directory link. Rows are ordered by ISO code; the
+    live country list is never hard-coded.
+    """
+    lines = [
+        _INDEX_HEADING,
+        "",
+        "Click a country to open its subscriptions.",
+        "",
+        "| Country | Code | Proxies | Links |",
+        "| --- | --- | ---: | --- |",
+    ]
     for bucket, count in entries:
         code = bucket.upper()
         flag = country_code_to_flag(bucket)
-        lines.append(f"{flag} {code} — {count} {_proxy_or_proxies(count)} — [Open](./{code}/)")
+        name = country_code_to_name(bucket)
+        lines.append(
+            f"| [{flag} {name}](./{code}/) | {code} | {count} | [Open {flag}](./{code}/) |"
+        )
     return _doc("\n".join(lines) + "\n")
 
 

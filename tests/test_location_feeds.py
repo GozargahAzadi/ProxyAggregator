@@ -56,6 +56,7 @@ from proxyaggregator.health.models import CheckStage, HealthCheckResult, HealthS
 from proxyaggregator.models.source import SourceSchema
 from proxyaggregator.publishing import (
     COUNTRIES_DIR,
+    COUNTRY_RAW_SUBSCRIPTIONS_BASE_URL,
     COUNTRY_UNKNOWN_BUCKET,
     SubscriptionFormat,
     build_country_artifacts,
@@ -141,6 +142,22 @@ def _artifacts(
     candidates: tuple[RankedProxy, ...], *, max_items: int | None = None
 ) -> dict[str, Subscription]:
     return dict(build_country_artifacts(candidates, max_items=max_items))
+
+
+def _index_rows(index: str) -> list[tuple[str, int]]:
+    """Parse country-index table data rows into ``(code, count)`` pairs.
+
+    The code is read from the relative directory link ``(./CC/)`` (not from a
+    flag/name cell), so the parser stays correct regardless of rendering.
+    """
+    rows = []
+    for line in index.splitlines():
+        if not line.startswith("| ") or "[Open " not in line:
+            continue
+        cells = [cell.strip() for cell in line.strip("|").split("|")]
+        link_code = cells[3].rsplit("(", 1)[1].rstrip(")").removeprefix("./").removesuffix("/")
+        rows.append((link_code, int(cells[2])))
+    return rows
 
 
 # A. Flag conversion -----------------------------------------------------------
@@ -258,10 +275,7 @@ class TestOrdering:
         assert dir_order == ["DE", "GB", "US"]
 
         index = _artifacts(candidates)["countries/README.md"].content
-        codes = [
-            line.split(" ", 1)[1].split(" ")[0] for line in index.splitlines() if "[Open]" in line
-        ]
-        assert codes == ["DE", "GB", "US"]
+        assert [code for code, _count in _index_rows(index)] == ["DE", "GB", "US"]
 
     def test_rank_order_preserved_within_group(self):
         http_8080 = "http://user:p%40ss@proxy.example.com:8080"
@@ -357,20 +371,47 @@ class TestGeneratedReadmes:
         candidates = [_ranked(1, "ss", SS, "ss.example.com", 8388, country_code="DE")]
         content = _artifacts(candidates)["countries/DE/README.md"].content
         assert content == (
-            "# \U0001f1e9\U0001f1ea DE\n"
+            "# \U0001f1e9\U0001f1ea Germany\n"
             "\n"
             "1 healthy proxy.\n"
             "\n"
-            "## All protocols\n"
+            "## \U0001f4cb All Protocols\n"
             "\n"
-            "- [Plain](./all.txt)\n"
-            "- [Base64](./all-base64.txt)\n"
+            "| Format | GitHub | Raw subscription |\n"
+            "|---|---|---|\n"
+            "| Plain | [Open](./all.txt) | "
+            "`https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/"
+            "countries/DE/all.txt` |\n"
+            "| Base64 | [Open](./all-base64.txt) | "
+            "`https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/"
+            "countries/DE/all-base64.txt` |\n"
             "\n"
-            "## Protocols\n"
+            "## \U0001f50c Protocols\n"
             "\n"
-            "- [Shadowsocks](./shadowsocks.txt)\n"
-            "- [Shadowsocks Base64](./shadowsocks-base64.txt)\n"
+            "| Protocol | GitHub | Raw |\n"
+            "|---|---|---|\n"
+            "| Shadowsocks | [Open](./shadowsocks.txt) | "
+            "`https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/"
+            "countries/DE/shadowsocks.txt` |\n"
+            "| Shadowsocks Base64 | [Open](./shadowsocks-base64.txt) | "
+            "`https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/"
+            "countries/DE/shadowsocks-base64.txt` |\n"
         )
+
+    def test_country_readme_shows_country_name_and_code(self):
+        candidates = [_ranked(1, "ss", SS, "ss.example.com", 8388, country_code="DE")]
+        content = _artifacts(candidates)["countries/DE/README.md"].content
+        assert content.startswith("# \U0001f1e9\U0001f1ea Germany\n\n")
+        us = _artifacts([_ranked(1, "vless", VLESS, "vless.example.com", 443, country_code="US")])[
+            "countries/US/README.md"
+        ].content
+        assert us.startswith("# \U0001f1fa\U0001f1f8 United States\n\n")
+
+    def test_country_readme_raw_urls_are_copyable(self):
+        content = _artifacts(_country_candidates())["countries/US/README.md"].content
+        for file in ("all.txt", "all-base64.txt", "vless.txt", "vless-base64.txt"):
+            raw = f"{COUNTRY_RAW_SUBSCRIPTIONS_BASE_URL}countries/US/{file}"
+            assert f"`{raw}`" in content
 
     def test_country_readme_single_proxy_grammar(self):
         candidates = [_ranked(1, "vless", VLESS, "vless.example.com", 443, country_code="US")]
@@ -380,41 +421,67 @@ class TestGeneratedReadmes:
     def test_country_readme_protocol_section_only_for_present_protocols(self):
         candidates = [_ranked(1, "http", HTTP, "proxy.example.com", 8080, country_code="US")]
         content = _artifacts(candidates)["countries/US/README.md"].content
-        assert "## Protocols" in content
-        assert "- [HTTP](./http.txt)" in content
-        assert "- [VLESS](./vless.txt)" not in content
+        assert "## \U0001f50c Protocols" in content
+        assert "| HTTP | [Open](./http.txt) |" in content
+        assert "| VLESS | [Open](./vless.txt) |" not in content
+        assert "[Open](./vless.txt)" not in content
 
     def test_country_readme_manual_protocol_display_map(self):
         candidates = [_ranked(1, "ss", SS, "ss.example.com", 8388, country_code="US")]
         content = _artifacts(candidates)["countries/US/README.md"].content
-        assert "- [Shadowsocks](./shadowsocks.txt)" in content
+        assert "| Shadowsocks | [Open](./shadowsocks.txt) |" in content
+
+    def test_country_readme_links_only_reference_generated_artifacts(self):
+        artifacts = _artifacts(_country_candidates())
+        for path, feed in artifacts.items():
+            if not path.endswith("README.md"):
+                continue
+            prefix = path.rsplit("/", 1)[0] + "/"
+            marker = "[Open](./"
+            for line in feed.content.splitlines():
+                start = 0
+                while True:
+                    start = line.find(marker, start)
+                    if start == -1:
+                        break
+                    ref = line[start + len(marker) :].split(")")[0]
+                    assert prefix + ref in artifacts, f"{ref} referenced by {path}"
+                    start += len(marker)
+
+    def test_unknown_country_readme_uses_globe_and_unknown_name(self):
+        candidates = [_ranked(1, "socks5", SOCKS5, "proxy.example.com", 1080, country_code=None)]
+        content = _artifacts(candidates)["countries/XX/README.md"].content
+        assert content.startswith("# \U0001f310 Unknown\n\n")
+        assert "| Plain | [Open](./all.txt) |" in content
+        assert "| Socks5 | [Open](./socks5.txt) |" in content
 
     def test_index_readme_lists_every_country_with_count_and_link(self):
         index = _artifacts(_country_candidates())["countries/README.md"].content
         assert index.startswith("# \U0001f30d ProxyAggregator \u2014 Proxies by Country\n\n")
-        assert "\U0001f1e9\U0001f1ea DE \u2014 1 proxy \u2014 [Open](./DE/)" in index
-        assert "\U0001f1fa\U0001f1f8 US \u2014 3 proxies \u2014 [Open](./US/)" in index
-        assert "\U0001f310 XX \u2014 1 proxy \u2014 [Open](./XX/)" in index
+        assert "Click a country to open its subscriptions." in index
+        assert _index_rows(index) == [("DE", 1), ("US", 3), ("XX", 1)]
+        assert (
+            "| [\U0001f1e9\U0001f1ea Germany](./DE/) | DE | 1 | [Open \U0001f1e9\U0001f1ea](./DE/) |"
+            in index
+        )
+        assert (
+            "| [\U0001f1fa\U0001f1f8 United States](./US/) | US | 3 | [Open \U0001f1fa\U0001f1f8](./US/) |"
+            in index
+        )
+        assert "| [\U0001f310 Unknown](./XX/) | XX | 1 | [Open \U0001f310](./XX/) |" in index
 
     def test_index_protocol_files_exist_for_every_indexed_country(self):
         artifacts = _artifacts(_country_candidates())
         index = artifacts["countries/README.md"].content
-        codes = [
-            line.split(" ", 1)[1].split(" ")[0] for line in index.splitlines() if "[Open]" in line
-        ]
-        for code in codes:
+        for code, _count in _index_rows(index):
             assert f"countries/{code}/README.md" in artifacts
             assert f"countries/{code}/all.txt" in artifacts
 
     def test_index_count_matches_all_feed(self):
         artifacts = _artifacts(_country_candidates())
         index = artifacts["countries/README.md"].content
-        for line in index.splitlines():
-            if "[Open]" not in line:
-                continue
-            code = line.split(" ", 1)[1].split(" ")[0]
-            count = line.split("\u2014 ")[1].split(" ")[0]
-            assert artifacts[f"countries/{code}/all.txt"].count == int(count)
+        for code, count in _index_rows(index):
+            assert artifacts[f"countries/{code}/all.txt"].count == count
 
 
 # G. Determinism + path safety -------------------------------------------------
