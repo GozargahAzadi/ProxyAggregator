@@ -1033,12 +1033,14 @@ class TestFullRunSourceFailure:
 
         assert stats.sources_discovered == 2
         assert stats.sources_fetched == 1
-        assert stats.healthy_proxies == 1
-        assert stats.published_artifacts == 4
+        assert stats.healthy_proxies == 2
+        assert stats.subscription_count == 7
+        assert stats.published_artifacts == 8
         assert (out / "manifest.json").exists()
         plain = (out / "proxyaggregator.txt").read_text(encoding="utf-8")
         assert "secretpass" not in plain
-        assert "203.0.113.10" not in plain  # failing source contributed nothing
+        assert "203.0.113.11" not in plain  # failing source contributed nothing
+        assert "203.0.113.12" in plain  # healthy proxy from the live source is published
 
 
 class TestDbFailureIsolation:
@@ -1071,4 +1073,3 @@ class TestDbFailureIsolation:
 
         assert published["ran"] is False
         assert not out.exists()
-                                             
