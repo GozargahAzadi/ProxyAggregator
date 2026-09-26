@@ -5,7 +5,9 @@ disk together with a deterministic release manifest:
 
 - ``write_artifact``  -- atomic, traversal-safe single-file write
 - ``publish_subscriptions`` -- writes a set of named feeds, returns metadata
+- ``publish_release`` -- atomically publishes a whole release and prunes stale artifacts
 - ``build_release_manifest`` -- deterministic JSON manifest
+- ``verify_release`` -- structural + integrity validation of a release on disk
 
 Guarantees:
 
@@ -15,6 +17,14 @@ Guarantees:
   environment variables, or credentials enter file contents or errors.
 - Atomic: files are staged under a sibling temp name and ``os.replace`` into
   place, so a failed run never leaves a partial feed.
+- Whole-set atomic: ``publish_release`` stages the entire release (feeds +
+  manifest) before promoting anything, so a failed generation leaves the
+  previous output byte-for-byte intact; the manifest is promoted last so a
+  partial on-disk release is never presented as complete.
+- Current-release only: after a successful publish, canonical artifacts from
+  a previous run that are not part of the current release (e.g. a protocol
+  feed with zero candidates this run) are removed, so the output directory
+  always reflects the current aggregation, never accidental leftovers.
 - Safe: every filename must be a single plain path component; anything with a
   path separator, NUL byte, or empty name is rejected before touching disk.
 
@@ -26,10 +36,12 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import shutil
+import tempfile
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ValidationError
 
 from proxyaggregator.publishing.models import SubscriptionFormat
 from proxyaggregator.publishing.serializer import SUPPORTED_PROTOCOLS
@@ -86,6 +98,14 @@ class PublishError(Exception):
         self.filename = filename
         self.reason = reason
         super().__init__(f"cannot publish {filename!r}: {reason}")
+
+
+class ReleaseVerificationError(RuntimeError):
+    """A release on disk failed structural or integrity validation.
+
+    The message contains only artifact filenames and stable reason tokens;
+    content and credentials are never echoed.
+    """
 
 
 class SubscriptionRelease(BaseModel):
@@ -236,4 +256,141 @@ def publish_subscriptions(
         data = feed.content.encode("utf-8")
         write_artifact(filename, data, output_dir)
         entries.append(release_metadata(filename, feed.format, feed.count, data))
+    return entries
+
+
+def canonical_artifact_filenames() -> frozenset[str]:
+    """Every artifact name the publisher can ever own (feeds + manifest).
+
+    This is the enumerated cleanup surface: only these names may ever be
+    deleted from an output directory, so stale cleanup can never touch an
+    unrelated file (e.g. ``proxyaggregator.db`` or a stray README).
+    """
+    names = set(DEFAULT_FILENAMES.values())
+    for protocol in SUPPORTED_PROTOCOLS:
+        names.add(default_protocol_filename(protocol, SubscriptionFormat.PLAIN))
+        names.add(default_protocol_filename(protocol, SubscriptionFormat.BASE64))
+    names.add(MANIFEST_FILENAME)
+    return frozenset(names)
+
+
+def _latest_staged_write(order: list[tuple[str, bytes]]) -> tuple[str, bytes]:
+    """Pick the manifest as the last promoted file; deterministic feed order."""
+    return sorted(order, key=lambda item: (item[0] == MANIFEST_FILENAME, item[0]))
+
+
+def publish_release(
+    subscriptions: Sequence[tuple[str, Subscription]],
+    output_dir: str | Path,
+    *,
+    manifest_filename: str = MANIFEST_FILENAME,
+) -> list[SubscriptionRelease]:
+    """Atomically publish an entire release and prune stale artifacts.
+
+    Every feed plus the release manifest is first written into a private
+    staging directory (a sibling of ``output_dir``, never inside it). Only
+    when every single write succeeds are the files promoted into place with
+    ``os.replace`` (each an atomic rename); the manifest is promoted last so a
+    promotion interrupted mid-way cannot be mistaken for a complete release.
+    After promotion, any canonical artifact left over from a previous release
+    (e.g. a protocol feed with zero candidates in the current run) is removed.
+
+    On any failure the staging directory is deleted and ``output_dir`` is left
+    byte-for-byte untouched: a previous valid output is never partially
+    replaced by a failed generation.
+
+    Returns the release metadata for the feed entries (the manifest is
+    excluded, matching ``publish_subscriptions``' contract).
+    """
+    feed_entries: list[SubscriptionRelease] = []
+    materialized: list[tuple[str, bytes]] = []
+    for filename, feed in subscriptions:
+        _validate_filename(filename)
+        data = feed.content.encode("utf-8")
+        materialized.append((filename, data))
+        feed_entries.append(release_metadata(filename, feed.format, feed.count, data))
+
+    manifest = build_release_manifest(feed_entries)
+    materialized.append((manifest_filename, manifest.encode("utf-8")))
+    written_names = {name for name, _ in materialized}
+
+    output = Path(output_dir)
+    output.mkdir(parents=True, exist_ok=True)
+    parent = output.parent
+    parent.mkdir(parents=True, exist_ok=True)
+    staging = Path(tempfile.mkdtemp(prefix=f".{output.name}.staging-", dir=parent))
+    try:
+        for name, data in materialized:
+            write_artifact(name, data, staging)
+        for name, _data in _latest_staged_write(materialized):
+            os.replace(staging / name, output / name)
+        _prune_stale_artifacts(output, written_names)
+    finally:
+        shutil.rmtree(staging, ignore_errors=True)
+    return feed_entries
+
+
+def _prune_stale_artifacts(output_dir: Path, keep: frozenset[str] | set[str]) -> None:
+    """Remove canonical artifacts that are not part of the current release."""
+    for name in canonical_artifact_filenames():
+        if name in keep:
+            continue
+        try:
+            (output_dir / name).unlink()
+        except FileNotFoundError:
+            continue
+
+
+def verify_release(output_dir: str | Path) -> list[SubscriptionRelease]:
+    """Structurally validate a release on disk and return its entries.
+
+    Raises :class:`ReleaseVerificationError` when the release is not complete
+    and valid:
+
+    - ``manifest.json`` is missing, unreadable, not a JSON list, or invalid
+    - the manifest declares no artifacts, or no feed with ``count >= 1``
+    - a listed artifact is missing, has a different size than recorded, or its
+      content does not match the recorded SHA-256 (a mismatch means the file
+      was corrupted or the manifest does not describe what it claims)
+
+    Names are validated as single path components, so a traversal filename in
+    a manifest can never redirect a read outside the output directory.
+    Database files are never considered artifacts; they are simply ignored.
+    """
+    output = Path(output_dir)
+    manifest_path = output / MANIFEST_FILENAME
+    try:
+        raw = manifest_path.read_bytes()
+    except FileNotFoundError:
+        raise ReleaseVerificationError("missing manifest.json") from None
+    try:
+        payload = json.loads(raw.decode("utf-8"))
+    except (json.JSONDecodeError, UnicodeDecodeError) as exc:
+        raise ReleaseVerificationError("invalid manifest.json") from exc
+    if not isinstance(payload, list):
+        raise ReleaseVerificationError("manifest must be a JSON list")
+
+    entries: list[SubscriptionRelease] = []
+    for item in payload:
+        try:
+            entries.append(SubscriptionRelease.model_validate(item))
+        except ValidationError as exc:
+            raise ReleaseVerificationError("invalid manifest entry") from exc
+    if not entries:
+        raise ReleaseVerificationError("manifest is empty")
+    if not any(entry.count >= 1 for entry in entries):
+        raise ReleaseVerificationError("no non-empty feed in manifest")
+
+    for entry in entries:
+        _validate_filename(entry.filename)
+        path = output / entry.filename
+        try:
+            size = path.stat().st_size
+        except FileNotFoundError:
+            raise ReleaseVerificationError(f"artifact missing: {entry.filename}") from None
+        if size != entry.byte_size:
+            raise ReleaseVerificationError(f"artifact size mismatch: {entry.filename}")
+        digest = hashlib.sha256(path.read_bytes()).hexdigest()
+        if digest != entry.sha256:
+            raise ReleaseVerificationError(f"artifact checksum mismatch: {entry.filename}")
     return entries

@@ -16,6 +16,7 @@ from pydantic import ValidationError
 
 import proxyaggregator.publishing.publisher as publisher_module
 from proxyaggregator.publishing import (
+    Subscription,
     SubscriptionFormat,
     build_subscription,
 )
@@ -23,12 +24,16 @@ from proxyaggregator.publishing.publisher import (
     DEFAULT_FILENAMES,
     MANIFEST_FILENAME,
     PublishError,
+    ReleaseVerificationError,
     SubscriptionRelease,
     build_release_manifest,
+    canonical_artifact_filenames,
     default_filename,
     default_protocol_filename,
+    publish_release,
     publish_subscriptions,
     release_metadata,
+    verify_release,
     write_artifact,
     write_release_manifest,
 )
@@ -338,3 +343,194 @@ def test_written_files_byte_exact_with_feeds(tmp_path):
         assert path.read_bytes() == sub.content.encode("utf-8")
         assert entry.byte_size == path.stat().st_size
         assert entry.sha256 == hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+class TestCanonicalArtifactFilenames:
+    """The cleanup surface is exactly the artifacts the publisher can own."""
+
+    def test_covers_default_formats_and_manifest(self):
+        names = canonical_artifact_filenames()
+        assert set(DEFAULT_FILENAMES.values()) <= names
+        assert MANIFEST_FILENAME in names
+
+    def test_covers_every_supported_protocol_in_both_formats(self):
+        names = canonical_artifact_filenames()
+        for protocol in publisher_module.SUPPORTED_PROTOCOLS:
+            assert default_protocol_filename(protocol, SubscriptionFormat.PLAIN) in names
+            assert default_protocol_filename(protocol, SubscriptionFormat.BASE64) in names
+
+    def test_never_touches_unrelated_names(self):
+        names = canonical_artifact_filenames()
+        for bogus in ("README.md", "proxyaggregator.db", "notes.txt", "output"):
+            assert bogus not in names
+
+
+class TestPublishRelease:
+    """Whole-set staged atomic publish plus stale-artifact pruning (Phase 16)."""
+
+    def test_publishes_feeds_and_manifest(self, tmp_path):
+        plain = build_subscription([], format=SubscriptionFormat.PLAIN)
+        b64 = build_subscription([], format=SubscriptionFormat.BASE64)
+        entries = publish_release([(PLAIN_NAME, plain), (B64_NAME, b64)], tmp_path)
+        assert [e.filename for e in entries] == [PLAIN_NAME, B64_NAME]
+        assert (tmp_path / PLAIN_NAME).read_bytes() == b""
+        assert (tmp_path / B64_NAME).read_bytes() == b""
+        payload = json.loads((tmp_path / MANIFEST_FILENAME).read_text(encoding="utf-8"))
+        assert [item["filename"] for item in payload] == sorted([PLAIN_NAME, B64_NAME])
+
+    def test_second_run_is_byte_identical(self, tmp_path):
+        feeds = build_demo_subscriptions()
+        publish_release(feeds, tmp_path)
+        first = {p.name: p.read_bytes() for p in tmp_path.iterdir()}
+        publish_release(feeds, tmp_path)
+        second = {p.name: p.read_bytes() for p in tmp_path.iterdir()}
+        assert sorted(first) == sorted(second)
+        for name, data in first.items():
+            assert data == second[name]
+
+    def test_manifest_promoted_last(self):
+        items = [
+            (JSON_NAME, b"[]"),
+            (PLAIN_NAME, b"a"),
+            (B64_NAME, b"b"),
+            (MANIFEST_FILENAME, b"{}"),
+        ]
+        ordered = publisher_module._latest_staged_write(items)
+        assert [name for name, _ in ordered][-1] == MANIFEST_FILENAME
+        assert [name for name, _ in ordered][:-1] == sorted([PLAIN_NAME, B64_NAME, JSON_NAME])
+
+    def test_no_staging_dir_left_behind(self, tmp_path):
+        publish_release(build_demo_subscriptions(), tmp_path)
+        leftovers = [p for p in tmp_path.parent.iterdir() if ".staging-" in p.name]
+        assert leftovers == []
+
+    def test_prunes_stale_canonical_artifacts_only(self, tmp_path):
+        stale = ["hysteria.txt", "hysteria-base64.txt", "http.txt", "http-base64.txt"]
+        for name in stale:
+            (tmp_path / name).write_text("stale-bytes")
+        (tmp_path / "unrelated.txt").write_text("keep me")
+        (tmp_path / "proxyaggregator.db").write_bytes(b"sqlite")
+
+        feed = build_subscription([], format=SubscriptionFormat.PLAIN)
+        entries = publish_release([(PLAIN_NAME, feed)], tmp_path)
+        assert [e.filename for e in entries] == [PLAIN_NAME]
+
+        for name in stale:
+            assert not (tmp_path / name).exists(), name
+        assert (tmp_path / "unrelated.txt").read_text() == "keep me"
+        assert (tmp_path / "proxyaggregator.db").read_bytes() == b"sqlite"
+        assert (tmp_path / PLAIN_NAME).exists()
+        assert (tmp_path / MANIFEST_FILENAME).exists()
+
+    def test_failed_generation_leaves_previous_output_intact(self, tmp_path, monkeypatch):
+        plain = build_subscription([], format=SubscriptionFormat.PLAIN)
+        b64 = build_subscription([], format=SubscriptionFormat.BASE64)
+        publish_release([(PLAIN_NAME, plain), (B64_NAME, b64)], tmp_path)
+        before = {p.name: p.read_bytes() for p in tmp_path.iterdir()}
+
+        changed = Subscription(format=SubscriptionFormat.PLAIN, content="changed\n", count=1)
+        changed_b64 = Subscription(format=SubscriptionFormat.BASE64, content="changed\n", count=1)
+
+        real_write = publisher_module.write_artifact
+
+        def failing_write(filename, content, output_dir):
+            if filename == B64_NAME:
+                raise PublishError(filename, "injected_failure")
+            return real_write(filename, content, output_dir)
+
+        monkeypatch.setattr(publisher_module, "write_artifact", failing_write)
+        with pytest.raises(PublishError):
+            publish_release([(PLAIN_NAME, changed), (B64_NAME, changed_b64)], tmp_path)
+
+        after = {p.name: p.read_bytes() for p in tmp_path.iterdir()}
+        assert after == before
+        leftovers = [p for p in tmp_path.parent.iterdir() if ".staging-" in p.name]
+        assert leftovers == []
+
+    def test_matches_byte_for_byte_with_publish_subscriptions(self, tmp_path):
+        feeds = build_demo_subscriptions()
+        publish_release(feeds, tmp_path)
+        same = {p.name: p.read_bytes() for p in tmp_path.iterdir()}
+
+        other = tmp_path / "other"
+        publish_subscriptions(feeds, other)
+        write_release_manifest(
+            build_release_manifest(
+                [
+                    release_metadata(n, s.format, s.count, s.content.encode("utf-8"))
+                    for n, s in feeds
+                ]
+            ),
+            other,
+        )
+        assert same == {p.name: p.read_bytes() for p in other.iterdir()}
+
+
+class TestVerifyRelease:
+    """Structural + integrity validation of a release on disk (Phase 16)."""
+
+    def _published(self, tmp_path):
+        publish_release(build_demo_subscriptions(), tmp_path)
+        return tmp_path
+
+    def test_valid_release_passes_and_returns_entries(self, tmp_path):
+        entries = verify_release(self._published(tmp_path))
+        assert len(entries) == DEMO_FEED_COUNT
+        assert all(entry.count >= 1 for entry in entries)
+
+    def test_missing_manifest(self, tmp_path):
+        (tmp_path / "feed.txt").write_text("x")
+        with pytest.raises(ReleaseVerificationError):
+            verify_release(tmp_path)
+
+    def test_invalid_manifest_json(self, tmp_path):
+        (tmp_path / MANIFEST_FILENAME).write_text("{not json", encoding="utf-8")
+        with pytest.raises(ReleaseVerificationError):
+            verify_release(tmp_path)
+
+    def test_manifest_must_be_list(self, tmp_path):
+        (tmp_path / MANIFEST_FILENAME).write_text("null", encoding="utf-8")
+        with pytest.raises(ReleaseVerificationError):
+            verify_release(tmp_path)
+
+    def test_manifest_must_be_non_empty(self, tmp_path):
+        (tmp_path / MANIFEST_FILENAME).write_text("[]", encoding="utf-8")
+        with pytest.raises(ReleaseVerificationError):
+            verify_release(tmp_path)
+
+    def test_missing_artifact_rejected(self, tmp_path):
+        out = self._published(tmp_path)
+        (out / PLAIN_NAME).unlink()
+        with pytest.raises(ReleaseVerificationError, match=PLAIN_NAME):
+            verify_release(out)
+
+    def test_size_mismatch_rejected(self, tmp_path):
+        out = self._published(tmp_path)
+        (out / PLAIN_NAME).write_text("longer-than-recorded", encoding="utf-8")
+        with pytest.raises(ReleaseVerificationError, match=PLAIN_NAME):
+            verify_release(out)
+
+    def test_checksum_mismatch_rejected(self, tmp_path):
+        out = self._published(tmp_path)
+        data = (out / PLAIN_NAME).read_bytes()
+        (out / PLAIN_NAME).write_bytes(b"X" + data[1:])
+        with pytest.raises(ReleaseVerificationError, match="checksum"):
+            verify_release(out)
+
+    def test_no_nonempty_feed_rejected(self, tmp_path):
+        data = b""
+        entries = [release_metadata(PLAIN_NAME, SubscriptionFormat.PLAIN, 0, data)]
+        write_release_manifest(build_release_manifest(entries), tmp_path)
+        write_artifact(PLAIN_NAME, data, tmp_path)
+        with pytest.raises(ReleaseVerificationError, match="non-empty"):
+            verify_release(tmp_path)
+
+    def test_error_never_echoes_content(self, tmp_path):
+        secret = "ss://c3VwZXJzZWNyZXQ@host.example.com:8388#SecretNode\n"
+        feed = Subscription(format=SubscriptionFormat.PLAIN, content=secret, count=1)
+        publish_release([(PLAIN_NAME, feed)], tmp_path)
+        (tmp_path / PLAIN_NAME).write_bytes(b"tampered")
+        with pytest.raises(ReleaseVerificationError) as exc_info:
+            verify_release(tmp_path)
+        assert secret not in str(exc_info.value)
+        assert "SecretNode" not in str(exc_info.value)

@@ -1483,6 +1483,39 @@ class TestHealthRunnerConcurrency:
         finally:
             server.close()
 
+    async def test_check_all_isolates_unexpected_exception(self):
+        """One entry raising unexpectedly must not abort the other checks.
+
+        The affected entry degrades to a stable UNREACHABLE result and the
+        remaining entries complete normally (Phase 16 reliability guard).
+        """
+
+        class ExplodingRunner(HealthRunner):
+            async def check(self, entry):
+                if entry.parsed.host == "boom.invalid":
+                    raise RuntimeError("unexpected failure")
+                return await super().check(entry)
+
+        host, port, server = await _start(_http_handler(200))
+        try:
+            runner = ExplodingRunner(
+                policy=TargetPolicy(allow_private=True), timeout=2.0, concurrency=4
+            )
+            entries = [
+                _entry(protocol="http", host="boom.invalid", port=port),
+                _entry(protocol="http", host=host, port=port),
+            ]
+            results = await runner.check_all(entries)
+        finally:
+            server.close()
+
+        assert len(results) == 2
+        assert results[0].status == HealthStatus.UNREACHABLE
+        assert results[0].error == errors.CONNECTION_ERROR
+        assert results[0].host == "boom.invalid"
+        assert results[1].status == HealthStatus.OK
+        assert results[1].is_alive is True
+
 
 class TestSanitizedErrors:
     async def test_error_never_contains_credentials_or_uri(self):

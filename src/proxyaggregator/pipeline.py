@@ -60,11 +60,9 @@ from proxyaggregator.publishing.models import (
 )
 from proxyaggregator.publishing.publisher import (
     SubscriptionRelease,
-    build_release_manifest,
     default_filename,
     default_protocol_filename,
-    publish_subscriptions,
-    write_release_manifest,
+    publish_release,
 )
 from proxyaggregator.scoring.scorer import build_rank_candidates, rank_proxies
 from proxyaggregator.sources.orchestrator import SourceOrchestrator
@@ -443,11 +441,14 @@ def _build_feeds(
 def _publish(
     feeds: Sequence[tuple[str, Subscription]], output_dir: str | Path
 ) -> list[SubscriptionRelease]:
-    """Write artifacts and the release manifest, then return the releases."""
-    releases = publish_subscriptions(feeds, output_dir)
-    manifest = build_release_manifest(releases)
-    write_release_manifest(manifest, output_dir)
-    return releases
+    """Atomically publish the whole release and return the releases.
+
+    ``publish_release`` stages every feed plus the manifest before promoting
+    anything, so a failed generation leaves any previous output untouched, and
+    removes canonical artifacts absent from the current release so the output
+    never carries staleness across runs.
+    """
+    return publish_release(feeds, output_dir)
 
 
 async def run_pipeline(session: Session, cfg: PipelineConfig) -> PipelineStats:

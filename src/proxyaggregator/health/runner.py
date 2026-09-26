@@ -175,12 +175,23 @@ class HealthRunner:
         return self._build_result(entry, candidates, raw_count, attempts, best)
 
     async def check_all(self, entries: list[HealthEntry]) -> list[HealthCheckResult]:
-        """Check many endpoints with a bounded worker pool."""
+        """Check many endpoints with a bounded worker pool.
+
+        Every entry is isolated: an unexpected exception raised inside one
+        entry's check is contained and surfaced as an ``UNREACHABLE`` result
+        (``errors.CONNECTION_ERROR``) so a single bad entry can never abort or
+        corrupt the results for the other entries. Cancellation is preserved.
+        """
         semaphore = asyncio.Semaphore(self.concurrency)
 
         async def _worker(entry: HealthEntry) -> HealthCheckResult:
             async with semaphore:
-                return await self.check(entry)
+                try:
+                    return await self.check(entry)
+                except asyncio.CancelledError:
+                    raise
+                except Exception:
+                    return _safe_result(entry)
 
         return await asyncio.gather(*(_worker(entry) for entry in entries))
 
@@ -409,6 +420,18 @@ def _select_best(attempts: list[_Attempt]) -> _Attempt:
     if not attempts:
         return _Attempt(ip="", status=HealthStatus.DNS_FAILURE)
     return min(attempts, key=lambda a: _tc_priority(a.status))
+
+
+def _safe_result(entry: HealthEntry) -> HealthCheckResult:
+    """Build a stable UNREACHABLE result for an entry that raised unexpectedly."""
+    return HealthCheckResult(
+        proxy_config_id=entry.proxy_config_id,
+        protocol=entry.parsed.protocol,
+        host=entry.parsed.host,
+        port=entry.parsed.port,
+        status=HealthStatus.UNREACHABLE,
+        error=errors.CONNECTION_ERROR,
+    )
 
 
 def build_health_runner(settings: Settings) -> HealthRunner:

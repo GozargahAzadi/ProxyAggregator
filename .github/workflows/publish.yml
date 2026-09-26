@@ -121,12 +121,29 @@ jobs:
       - name: Run production pipeline
         run: uv run python -m proxyaggregator pipeline
 
-      - name: Guard against empty output
+      - name: Guard against empty or invalid output
+        shell: bash
         run: |
-          if [ ! -d output ] || [ -z "$(find output -type f ! -name '*.db' 2>/dev/null)" ]; then
-            echo "No subscription artifacts generated; refusing to publish empty feeds." >&2
+          set -euo pipefail
+          if [ ! -d output ]; then
+            echo "ERROR: output/ missing after pipeline run" >&2
             exit 1
           fi
+          # Structural + integrity guard: manifest.json must exist, be valid
+          # JSON, list at least one non-empty feed, and every listed artifact
+          # must exist with the exact recorded byte_size and SHA-256. Database
+          # files are never considered artifacts. A failure here means the
+          # release is incomplete or corrupted, so nothing is published.
+          uv run python - <<'PY'
+          import sys
+          from proxyaggregator.publishing.publisher import verify_release
+          try:
+              verify_release("output")
+          except Exception as exc:
+              print(f"ERROR: output guard failed: {exc}", file=sys.stderr)
+              sys.exit(1)
+          PY
+          echo "Output guard passed"
 
       - name: Commit & push generated subscriptions
         env:

@@ -538,7 +538,7 @@ class TestRepositoryContract:
         assert "concurrency:" in text
         assert "group: publish" in text
         assert "cancel-in-progress: false" in text
-        assert "Guard against empty output" in text
+        assert "Guard against empty or invalid output" in text
 
     def test_default_geoip_db_path_setting(self):
         assert Settings().geoip_db_path == "GeoLite2-City.mmdb"

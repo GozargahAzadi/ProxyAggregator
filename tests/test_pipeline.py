@@ -1000,3 +1000,75 @@ class TestProtocolCompleteFeedSet:
             content = (out / name).read_text(encoding="utf-8").splitlines()
             assert len(content) == 1, name
         assert "grpc" not in "".join((out / "proxyaggregator.txt").read_text(encoding="utf-8"))
+
+
+# Phase 16: failure isolation regression ---------------------------------------
+
+
+class TestFullRunSourceFailure:
+    """A failing source never blocks the full pipeline or its release."""
+
+    def test_pipeline_continues_and_publishes_when_one_source_fails(
+        self, db_session, monkeypatch, tmp_path
+    ):
+        out = tmp_path / "out"
+
+        async def fake_collect(sources, registry=None, **kwargs):
+            return [
+                SourceResult(
+                    source_name=SRC_A.name,
+                    source_type=SRC_A.source_type,
+                    source_url=SRC_A.url,
+                    status=SourceResultStatus.ERROR,
+                    content="",
+                    fetched_at=_utcnow(),
+                    error="HTTP 503: Service Unavailable",
+                ),
+                _source_result(SRC_B, CONTENT_B),
+            ]
+
+        monkeypatch.setattr(pipeline, "_collect_sources", fake_collect)
+        cfg = _config((SRC_A, SRC_B), output_dir=out)
+        stats = asyncio.run(pipeline.run_pipeline(db_session, cfg))
+
+        assert stats.sources_discovered == 2
+        assert stats.sources_fetched == 1
+        assert stats.healthy_proxies == 1
+        assert stats.published_artifacts == 4
+        assert (out / "manifest.json").exists()
+        plain = (out / "proxyaggregator.txt").read_text(encoding="utf-8")
+        assert "secretpass" not in plain
+        assert "203.0.113.10" not in plain  # failing source contributed nothing
+
+
+class TestDbFailureIsolation:
+    """A database commit failure aborts fatally and never publishes."""
+
+    def test_commit_failure_aborts_before_publish(self, db_session, monkeypatch, tmp_path):
+        out = tmp_path / "out"
+
+        async def fake_collect(sources, registry=None, **kwargs):
+            return [_source_result(SRC_A, CONTENT_A)]
+
+        monkeypatch.setattr(pipeline, "_collect_sources", fake_collect)
+
+        published = {"ran": False}
+
+        def fake_publish(feeds, output_dir):
+            published["ran"] = True
+            return []
+
+        monkeypatch.setattr(pipeline, "_publish", fake_publish)
+
+        def boom(*_args, **_kwargs):
+            raise RuntimeError("injected commit failure")
+
+        monkeypatch.setattr(db_session, "commit", boom)
+
+        cfg = _config((SRC_A,), output_dir=out)
+        with pytest.raises(RuntimeError, match="injected commit failure"):
+            asyncio.run(pipeline.run_pipeline(db_session, cfg))
+
+        assert published["ran"] is False
+        assert not out.exists()
+                                             
