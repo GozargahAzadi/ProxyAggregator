@@ -44,6 +44,10 @@ from typing import TYPE_CHECKING
 from pydantic import BaseModel, Field, ValidationError
 
 from proxyaggregator.publishing.models import SubscriptionFormat
+from proxyaggregator.publishing.naming import (
+    COUNTRY_UNKNOWN_BUCKET,
+    country_bucket,
+)
 from proxyaggregator.publishing.serializer import SUPPORTED_PROTOCOLS
 
 if TYPE_CHECKING:
@@ -79,6 +83,16 @@ DEFAULT_PROTOCOL_FILENAME_STEMS: dict[str, str] = {
 
 #: Name of the deterministic release manifest written next to the feeds.
 MANIFEST_FILENAME = "manifest.json"
+
+#: Finite, enumerable lowercase alpha-2 bucket space for location feeds: every
+#: two-letter combination (a superset of the assigned ISO-3166-1 alpha-2 codes
+#: GeoIP can emit) plus the ``xx`` unknown bucket. This is the bounded
+#: stale-cleanup surface for location artifacts; any protocol/country feed the
+#: pipeline can ever produce is covered, and names outside it (e.g.
+#: ``README.md``, ``proxyaggregator.db``) can never match.
+_ALPHA2_BUCKETS: frozenset[str] = frozenset(
+    a + b for a in "abcdefghijklmnopqrstuvwxyz" for b in "abcdefghijklmnopqrstuvwxyz"
+) | frozenset({COUNTRY_UNKNOWN_BUCKET})
 
 #: Stable, credential-free reason tokens used in PublishError.
 _EMPTY_FILENAME = "empty_filename"
@@ -148,6 +162,44 @@ def default_protocol_filename(protocol: str, format: SubscriptionFormat, /) -> s
         return f"{stem}.txt"
     if format is SubscriptionFormat.BASE64:
         return f"{stem}-base64.txt"
+    raise ValueError(f"unsupported protocol feed format: {format!r}")
+
+
+def default_country_filename(country_code: object, format: SubscriptionFormat, /) -> str:
+    """Return the canonical artifact filename for a country-separated feed.
+
+    The feed bundles every protocol in a single country. Only plain and base64
+    artifacts exist per country (JSON is combined-feed only). Country codes
+    are normalized via :func:`country_bucket`: valid two-letter codes are
+    lowercased and anything unknown/invalid maps to the ``xx`` bucket, so the
+    returned name is always filename-safe.
+    """
+    bucket = country_bucket(country_code)
+    if format is SubscriptionFormat.PLAIN:
+        return f"country-{bucket}.txt"
+    if format is SubscriptionFormat.BASE64:
+        return f"country-{bucket}-base64.txt"
+    raise ValueError(f"unsupported country feed format: {format!r}")
+
+
+def default_protocol_country_filename(
+    protocol: str, country_code: object, format: SubscriptionFormat, /
+) -> str:
+    """Return the canonical artifact filename for a protocol + country feed.
+
+    Combines the existing protocol stem map with the normalized lowercase
+    country bucket (``vless`` + ``DE`` -> ``vless-de.txt``); unknown/invalid
+    countries map to the ``xx`` bucket. Only plain and base64 artifacts exist;
+    JSON is combined-feed only.
+    """
+    if protocol not in SUPPORTED_PROTOCOLS:
+        raise ValueError(f"unsupported protocol feed: {protocol!r}")
+    stem = DEFAULT_PROTOCOL_FILENAME_STEMS[protocol]
+    bucket = country_bucket(country_code)
+    if format is SubscriptionFormat.PLAIN:
+        return f"{stem}-{bucket}.txt"
+    if format is SubscriptionFormat.BASE64:
+        return f"{stem}-{bucket}-base64.txt"
     raise ValueError(f"unsupported protocol feed format: {format!r}")
 
 
@@ -265,11 +317,24 @@ def canonical_artifact_filenames() -> frozenset[str]:
     This is the enumerated cleanup surface: only these names may ever be
     deleted from an output directory, so stale cleanup can never touch an
     unrelated file (e.g. ``proxyaggregator.db`` or a stray README).
+
+    The set spans the fixed combined names and the finite protocol / country
+    / protocol+country location space (:data:`_ALPHA2_BUCKETS`), so a stale
+    ``vless-de.txt`` or ``country-de.txt`` from an earlier run is prunable
+    while names outside the closed namespace never are.
     """
     names = set(DEFAULT_FILENAMES.values())
     for protocol in SUPPORTED_PROTOCOLS:
         names.add(default_protocol_filename(protocol, SubscriptionFormat.PLAIN))
         names.add(default_protocol_filename(protocol, SubscriptionFormat.BASE64))
+        for bucket in _ALPHA2_BUCKETS:
+            names.add(default_protocol_country_filename(protocol, bucket, SubscriptionFormat.PLAIN))
+            names.add(
+                default_protocol_country_filename(protocol, bucket, SubscriptionFormat.BASE64)
+            )
+    for bucket in _ALPHA2_BUCKETS:
+        names.add(default_country_filename(bucket, SubscriptionFormat.PLAIN))
+        names.add(default_country_filename(bucket, SubscriptionFormat.BASE64))
     names.add(MANIFEST_FILENAME)
     return frozenset(names)
 
@@ -331,12 +396,27 @@ def publish_release(
 
 
 def _prune_stale_artifacts(output_dir: Path, keep: frozenset[str] | set[str]) -> None:
-    """Remove canonical artifacts that are not part of the current release."""
-    for name in canonical_artifact_filenames():
-        if name in keep:
+    """Remove canonical artifacts that are not part of the current release.
+
+    Iterates the directory (never the full canonical set) so pruning stays
+    proportional to the files actually present. Only canonical artifacts not
+    kept by the current release are unlinked; unrelated files (e.g.
+    ``README.md``, ``proxyaggregator.db``), directories, and non-canonical
+    names are never touched.
+    """
+    try:
+        present = {entry.name for entry in output_dir.iterdir()}
+    except FileNotFoundError:
+        return
+    canonical = canonical_artifact_filenames()
+    for name in present - set(keep):
+        if name not in canonical:
+            continue
+        path = output_dir / name
+        if not path.is_file():
             continue
         try:
-            (output_dir / name).unlink()
+            path.unlink()
         except FileNotFoundError:
             continue
 

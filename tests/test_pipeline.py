@@ -528,7 +528,7 @@ class TestSubscriptionInput:
             ),
         ]
         feeds = pipeline._build_feeds(ranked, max_items=None)
-        assert len(feeds) == 7
+        assert len(feeds) == 13
         plain = feeds[0][1]
         assert plain.format is SubscriptionFormat.PLAIN
         assert plain.count == 2
@@ -816,20 +816,28 @@ class TestEndToEndRun:
         assert stats.health_checks_completed == 3
         assert stats.healthy_proxies == 3
         assert stats.ranked_proxies == 3
-        assert stats.subscription_count == 9
-        assert stats.published_artifacts == 10
+        assert stats.subscription_count == 17
+        assert stats.published_artifacts == 18
 
         files = sorted(path.name for path in out.iterdir())
         assert files == [
+            "country-us-base64.txt",
+            "country-us.txt",
             "http-base64.txt",
+            "http-us-base64.txt",
+            "http-us.txt",
             "http.txt",
             "manifest.json",
             "proxyaggregator-base64.txt",
             "proxyaggregator.json",
             "proxyaggregator.txt",
             "socks5-base64.txt",
+            "socks5-us-base64.txt",
+            "socks5-us.txt",
             "socks5.txt",
             "vless-base64.txt",
+            "vless-us-base64.txt",
+            "vless-us.txt",
             "vless.txt",
         ]
 
@@ -842,14 +850,22 @@ class TestEndToEndRun:
         manifest = json.loads((out / "manifest.json").read_text(encoding="utf-8"))
         by_name = {entry["filename"]: entry for entry in manifest}
         assert set(by_name) == {
+            "country-us-base64.txt",
+            "country-us.txt",
             "http-base64.txt",
+            "http-us-base64.txt",
+            "http-us.txt",
             "http.txt",
             "proxyaggregator-base64.txt",
             "proxyaggregator.json",
             "proxyaggregator.txt",
             "socks5-base64.txt",
+            "socks5-us-base64.txt",
+            "socks5-us.txt",
             "socks5.txt",
             "vless-base64.txt",
+            "vless-us-base64.txt",
+            "vless-us.txt",
             "vless.txt",
         }
         for name, entry in by_name.items():
@@ -983,22 +999,36 @@ class TestProtocolCompleteFeedSet:
 
         files = sorted(path.name for path in out.iterdir())
         assert files == [
+            "country-us-base64.txt",
+            "country-us.txt",
             "manifest.json",
             "proxyaggregator-base64.txt",
             "proxyaggregator.json",
             "proxyaggregator.txt",
             "socks5-base64.txt",
+            "socks5-us-base64.txt",
+            "socks5-us.txt",
             "socks5.txt",
             "trojan-base64.txt",
+            "trojan-us-base64.txt",
+            "trojan-us.txt",
             "trojan.txt",
             "vless-base64.txt",
+            "vless-us-base64.txt",
+            "vless-us.txt",
             "vless.txt",
             "vmess-base64.txt",
+            "vmess-us-base64.txt",
+            "vmess-us.txt",
             "vmess.txt",
         ]
         for name in ("vless.txt", "vmess.txt", "trojan.txt", "socks5.txt"):
             content = (out / name).read_text(encoding="utf-8").splitlines()
             assert len(content) == 1, name
+        for name in ("vless-us.txt", "vmess-us.txt", "trojan-us.txt", "socks5-us.txt"):
+            content = (out / name).read_text(encoding="utf-8").splitlines()
+            assert len(content) == 1, name
+        assert len((out / "country-us.txt").read_text(encoding="utf-8").splitlines()) == 4
         assert "grpc" not in "".join((out / "proxyaggregator.txt").read_text(encoding="utf-8"))
 
 
@@ -1034,13 +1064,15 @@ class TestFullRunSourceFailure:
         assert stats.sources_discovered == 2
         assert stats.sources_fetched == 1
         assert stats.healthy_proxies == 2
-        assert stats.subscription_count == 7
-        assert stats.published_artifacts == 8
+        assert stats.subscription_count == 13
+        assert stats.published_artifacts == 14
         assert (out / "manifest.json").exists()
         plain = (out / "proxyaggregator.txt").read_text(encoding="utf-8")
         assert "secretpass" not in plain
         assert "203.0.113.11" not in plain  # failing source contributed nothing
         assert "203.0.113.12" in plain  # healthy proxy from the live source is published
+        for name in ("country-us.txt", "http-us.txt", "vless-us.txt", "country-us-base64.txt"):
+            assert (out / name).exists(), name
 
 
 class TestDbFailureIsolation:

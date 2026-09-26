@@ -40,6 +40,10 @@ _FALLBACK_COUNTRY = "XX"
 _FALLBACK_LATENCY = "N/A"
 _FALLBACK_PROTOCOL_DISPLAY = "UNKNOWN"
 
+#: Lowercase bucket key used for location feeds whose country is unknown or
+#: invalid. It is the lowercase counterpart of the ``🌐 XX`` Remark fallback.
+COUNTRY_UNKNOWN_BUCKET = "xx"
+
 #: Author suffix used in every Remark (the project's public identity).
 REMARK_AUTHOR = "GozargahAzadi"
 
@@ -77,6 +81,20 @@ def normalize_country_code(country_code: object) -> str | None:
 
 def _regional_indicator(letter: str) -> str:
     return chr(_REGIONAL_INDICATOR_A + (ord(letter) - _ASCII_A))
+
+
+def country_bucket(country_code: object) -> str:
+    """Return the lowercase alpha-2 location bucket for a country code.
+
+    Valid codes are lowercased (``DE`` -> ``de``); missing or invalid values
+    map to the :data:`COUNTRY_UNKNOWN_BUCKET` ``xx`` bucket (mirroring the
+    ``🌐 XX`` Remark fallback). The result is always exactly two lowercase
+    ASCII letters, so it is filename-safe by construction.
+    """
+    normalized = normalize_country_code(country_code)
+    if normalized is None:
+        return COUNTRY_UNKNOWN_BUCKET
+    return normalized.lower()
 
 
 def country_flag(country_code: object) -> tuple[str, str]:

@@ -615,7 +615,7 @@ class TestSeedToPipeline:
 
         assert stats.sources_discovered == 2
         assert stats.sources_fetched == 2
-        assert stats.published_artifacts == 10
+        assert stats.published_artifacts == 18
 
         out = tmp_path / "out"
         assert (out / "proxyaggregator.txt").exists()
@@ -666,4 +666,4 @@ class TestSeedToPipeline:
         assert sorted(first_bytes) == sorted(second_bytes)
         for name, data in first_bytes.items():
             assert data == second_bytes[name]
-        assert first.published_artifacts == second.published_artifacts == 10
+        assert first.published_artifacts == second.published_artifacts == 18
