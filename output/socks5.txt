@@ -1,1 +1,0 @@
-socks5://admin:admin@47.242.19.215:8899#%F0%9F%87%BA%F0%9F%87%B8%20US%20%7C%20SOCKS5%20%7C%20576ms%20%7C%20GozargahAzadi
