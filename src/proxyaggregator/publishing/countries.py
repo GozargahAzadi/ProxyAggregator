@@ -160,21 +160,19 @@ def _render_country_table(entries: Sequence[tuple[str, int]]) -> list[str]:
 
     Every row is derived from ``(bucket, count)`` metadata via the canonical
     flag/name lookups, ordered by ISO code: a clickable flag + name (relative
-    link ``./{CC}/``), the ISO alpha-2 code, the healthy-proxy count, and an
-    open-directory link. The repository-root README uses the collapsible
-    :func:`render_root_country_index_block` instead.
+    link ``./{CC}/``, which opens the country directory itself), the ISO alpha-2
+    code, and the healthy-proxy count. The repository-root README uses the
+    collapsible :func:`render_root_country_index_block` instead.
     """
     lines = [
-        "| Country | Code | Proxies | Links |",
-        "| --- | --- | ---: | --- |",
+        "| Country | Code | Proxies |",
+        "| --- | --- | ---: |",
     ]
     for bucket, count in entries:
         code = bucket.upper()
         flag = country_code_to_flag(bucket)
         name = country_code_to_name(bucket)
-        lines.append(
-            f"| [{flag} {name}](./{code}/) | {code} | {count} | [Open {flag}](./{code}/) |"
-        )
+        lines.append(f"| [{flag} {name}](./{code}/) | {code} | {count} |")
     return lines
 
 
@@ -182,10 +180,10 @@ def _index_readme(entries: Sequence[tuple[str, int]]) -> Subscription:
     """Generate the deterministic ``countries/README.md`` country index.
 
     A Markdown table with one row per non-empty country bucket: a clickable
-    flag + name (relative link ``./{CC}/``), the ISO alpha-2 code, the healthy
-    proxy count, and an open-directory link. Rows are ordered by ISO code; the
-    live country list is never hard-coded. The table itself is rendered by the
-    shared :func:`_render_country_table`.
+    flag + name (relative link ``./{CC}/``, which opens the country directory),
+    the ISO alpha-2 code, and the healthy proxy count. Rows are ordered by ISO
+    code; the live country list is never hard-coded. The table itself is
+    rendered by the shared :func:`_render_country_table`.
     """
     lines = [
         _INDEX_HEADING,

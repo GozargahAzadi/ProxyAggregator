@@ -158,15 +158,15 @@ def _artifacts(
 def _index_rows(index: str) -> list[tuple[str, int]]:
     """Parse country-index table data rows into ``(code, count)`` pairs.
 
-    The code is read from the relative directory link ``(./CC/)`` (not from a
-    flag/name cell), so the parser stays correct regardless of rendering.
+    The code is read from the relative directory link ``(./CC/)`` in the first
+    cell, so the parser stays correct regardless of name/flag rendering.
     """
     rows = []
     for line in index.splitlines():
-        if not line.startswith("| ") or "[Open " not in line:
+        if not line.startswith("| ") or "/) | " not in line:
             continue
         cells = [cell.strip() for cell in line.strip("|").split("|")]
-        link_code = cells[3].rsplit("(", 1)[1].rstrip(")").removeprefix("./").removesuffix("/")
+        link_code = cells[0].rsplit("(", 1)[1].rstrip(")").removeprefix("./").removesuffix("/")
         rows.append((link_code, int(cells[2])))
     return rows
 
@@ -496,15 +496,9 @@ class TestGeneratedReadmes:
         assert index.startswith("# \U0001f30d ProxyAggregator \u2014 Proxies by Country\n\n")
         assert "Click a country to open its subscriptions." in index
         assert _index_rows(index) == [("DE", 1), ("US", 3), ("XX", 1)]
-        assert (
-            "| [\U0001f1e9\U0001f1ea Germany](./DE/) | DE | 1 | [Open \U0001f1e9\U0001f1ea](./DE/) |"
-            in index
-        )
-        assert (
-            "| [\U0001f1fa\U0001f1f8 United States](./US/) | US | 3 | [Open \U0001f1fa\U0001f1f8](./US/) |"
-            in index
-        )
-        assert "| [\U0001f310 Unknown](./XX/) | XX | 1 | [Open \U0001f310](./XX/) |" in index
+        assert "| [\U0001f1e9\U0001f1ea Germany](./DE/) | DE | 1 |" in index
+        assert "| [\U0001f1fa\U0001f1f8 United States](./US/) | US | 3 |" in index
+        assert "| [\U0001f310 Unknown](./XX/) | XX | 1 |" in index
 
     def test_index_protocol_files_exist_for_every_indexed_country(self):
         artifacts = _artifacts(_country_candidates())
