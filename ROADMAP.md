@@ -100,6 +100,15 @@
 - [x] Full pipeline integration *(end-to-end orchestrator `python -m proxyaggregator pipeline` wires sources → parse → dedup → geoip → health → scoring → subscription → publish; fails fast when no sources are configured or no proxy is eligible)*
 - [x] Production source seeding *(`seed-sources` loads the version-controlled `config/sources.json` into the `sources` table before the pipeline; validated, credential-free, url-keyed upsert, no network — see `docs/SOURCES.md`)*
 
+## Phase 18 — 15-Minute Production Scheduling Reliability
+
+- [x] `*/5` cron trigger (best-effort scheduling has more start opportunities)
+- [x] Freshness gate (`freshness-gate` CLI + `output/published_at.json`) capping real publications at ~once per 15 minutes
+- [x] `record-publish` writes the timestamp only after a successful output guard (failed runs never advance the gate)
+- [x] `concurrency.group: publish` + `cancel-in-progress: false` kept so overlapping triggers serialize and never race
+- [x] Deterministic freshness tests (threshold, UTC safety, failure semantics)
+- [ ] *(observe a real scheduled / dispatched GitHub run and confirm the gate + publish cadence)*
+
 ## Phase 10 — API (Optional)
 
 - [ ] FastAPI endpoints

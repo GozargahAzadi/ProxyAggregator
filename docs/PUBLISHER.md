@@ -94,15 +94,46 @@ output — this validates the Phase 9 chain locally.
 
 ## GitHub Actions workflow (`.github/workflows/publish.yml`)
 
-- Triggers: `workflow_dispatch` (manual) and `schedule` daily at `00:00 UTC`
-  (pre-existing contract, kept unchanged).
+- Triggers: `workflow_dispatch` (manual) and `schedule` every `5` minutes
+  (Phase 18). The 5-minute trigger gives GitHub many opportunities to start a
+  run, but real publications are capped at ~once per 15 minutes by the
+  freshness gate below, so the cadence is a *reliability* improvement, never
+  more frequent output.
 - `permissions: contents: write` — least-privilege scope.
 - `concurrency.group: publish` with `cancel-in-progress: false` so scheduled
-  runs never race each other on the same branch.
-- Steps: checkout → uv/Python 3.12 → `uv sync --all-extras` → `mkdir output`
-  → `alembic upgrade head` (SQLite at `output/proxyaggregator.db`, gitignored
-  via `*.db`) → **seed production sources** → **run production pipeline** →
-  empty-output guard → commit & push.
+  runs never race each other on the same branch: an overlapping trigger is
+  queued until the active run finishes and then reads the committed state, so
+  the freshness gate is always evaluated against the latest successful
+  publication and the pipeline can never be killed by a newer run.
+
+### Phase 18 — freshness gate
+
+The scheduled workflow fires every 5 minutes, but before doing any expensive
+work it evaluates how old the last *successful* publication is via the gate
+step `python -m proxyaggregator freshness-gate`.
+
+- The gate reads `output/published_at.json`, a small committed JSON document
+  (`{"published_at": "<RFC 3339 UTC>"}`) produced **only** by the
+  `record-publish` step that runs after a successful output guard. The release
+  `manifest.json` is intentionally timestamp-free (deterministic contract), so
+  this sidecar file is the sole publication-time source; the pipeline never
+  writes it.
+- Decision: no previous publication, or `age >= 13 minutes` → `RUN`; younger →
+  `SKIP`. `workflow_dispatch` always forces `RUN`.
+- Every expensive step (GeoIP provisioning/checksum/verify, migrations,
+  seeding, pipeline, output guard, commit/push) is guarded with
+  `if: steps.freshness.outputs.decision == 'RUN'`, so a `SKIP` finishes the
+  job green without running the pipeline.
+- Failure semantics: if the pipeline, the output guard, or the push fails, the
+  timestamp is **not** advanced — scheduled runs keep retrying until a
+  genuinely successful publication lands.
+
+Steps (when `RUN`): checkout → uv/Python 3.12 → `uv sync --all-extras` →
+`mkdir output` → freshness gate → GeoIP provisioning + SHA-256 checksum +
+`verify-geoip` → `alembic upgrade head` (SQLite at `output/proxyaggregator.db`,
+gitignored via `*.db`) → **seed production sources** → **run production
+pipeline** → empty-output guard → `record-publish` → `git add output README.md`
+→ commit & push (`chore: update generated subscriptions`).
 
 The empty-output guard fails the job when no artifacts were produced, so
 stale or empty subscriptions are **never** published. The commit step exits

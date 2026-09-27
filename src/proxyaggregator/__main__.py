@@ -68,6 +68,39 @@ def _build_parser() -> argparse.ArgumentParser:
         help="Path to the MMDB file (default: $PA_GEOIP_DB_PATH).",
     )
     cmd_verify_geoip.set_defaults(handler=_cmd_verify_geoip)
+
+    cmd_freshness = subparsers.add_parser(
+        "freshness-gate",
+        help="Decide whether a scheduled publish should run (Phase 18).",
+    )
+    cmd_freshness.add_argument(
+        "--file",
+        default=None,
+        help="Path to the committed publication timestamp file (default: output/published_at.json).",
+    )
+    cmd_freshness.add_argument(
+        "--threshold-minutes",
+        type=int,
+        default=13,
+        help="Minimum age of the last publication before a run is due (default: 13).",
+    )
+    cmd_freshness.add_argument(
+        "--force",
+        action="store_true",
+        help="Force Decision RUN (used by workflow_dispatch).",
+    )
+    cmd_freshness.set_defaults(handler=_cmd_freshness_gate)
+
+    cmd_record = subparsers.add_parser(
+        "record-publish",
+        help="Record a successful publication timestamp (Phase 18).",
+    )
+    cmd_record.add_argument(
+        "--file",
+        default=None,
+        help="Path to the committed publication timestamp file (default: output/published_at.json).",
+    )
+    cmd_record.set_defaults(handler=_cmd_record_publish)
     return parser
 
 
@@ -125,6 +158,79 @@ def _cmd_verify_geoip(args: argparse.Namespace) -> int:
         print(f"ERROR: {exc}", file=sys.stderr)
         return 1
     print(f"GeoIP database OK: {database_type} ({path})")
+    return 0
+
+
+def _cmd_freshness_gate(args: argparse.Namespace) -> int:
+    """Evaluate the freshness gate and print the decision (always exit 0).
+
+    The decision is exposed to the workflow through ``$GITHUB_OUTPUT`` when the
+    step runs in GitHub Actions (``decision=RUN``/``decision=SKIP``); every
+    expensive downstream step is guarded with ``if: steps.freshness.outputs.
+    decision == 'RUN'``, so a SKIP finishes the job green without running the
+    pipeline.
+    """
+    import os
+
+    from proxyaggregator.publishing.freshness import (
+        DEFAULT_FRESHNESS_THRESHOLD_MINUTES,
+        FreshnessDecision,
+        default_published_at_path,
+        publish_decision,
+        read_published_at,
+        render_decision_log,
+        serialize_published_at,
+        utc_now,
+    )
+
+    threshold = args.threshold_minutes or DEFAULT_FRESHNESS_THRESHOLD_MINUTES
+    path = Path(args.file) if args.file else default_published_at_path()
+    now = utc_now()
+    published_at = None if args.force else read_published_at(path)
+    if args.force:
+        decision = FreshnessDecision(
+            run=True,
+            reason="forced",
+            published_at=published_at,
+            now=now,
+            age_seconds=publish_decision(published_at, now, threshold).age_seconds,
+        )
+    else:
+        decision = publish_decision(published_at, now, threshold)
+
+    print(render_decision_log(decision), flush=True)
+
+    outputs = os.environ.get("GITHUB_OUTPUT", "")
+    if outputs:
+        with open(outputs, "a", encoding="utf-8") as handle:
+            handle.write(f"decision={decision.decision}\n")
+            handle.write(
+                f"published_at={(published_at and serialize_published_at(published_at)) or 'none'}\n"
+            )
+            handle.write(
+                f"age_seconds={decision.age_seconds if decision.age_seconds is not None else 'n/a'}\n"
+            )
+            handle.write(f"threshold_minutes={threshold}\n")
+    return 0
+
+
+def _cmd_record_publish(args: argparse.Namespace) -> int:
+    """Record the current UTC time as a successful publication timestamp."""
+    from proxyaggregator.publishing.freshness import (
+        PUBLISHED_AT_FILENAME,
+        default_published_at_path,
+        record_published_at,
+        serialize_published_at,
+        utc_now,
+    )
+
+    path = Path(args.file) if args.file else default_published_at_path()
+    now = utc_now()
+    record_published_at(path, now)
+    print(
+        f"[Publish] recorded successful publication at {serialize_published_at(now)} "
+        f"into {path} ({PUBLISHED_AT_FILENAME})"
+    )
     return 0
 
 

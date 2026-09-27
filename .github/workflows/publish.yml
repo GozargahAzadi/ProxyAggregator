@@ -3,8 +3,11 @@ name: Publish
 on:
   workflow_dispatch:
   schedule:
-    # Run every 15 minutes (Phase 13 fast production cycle).
-    - cron: "*/15 * * * *"
+    # Trigger every 5 minutes (Phase 18): scheduled workflows are best-effort
+    # and may be delayed, so a 5-minute trigger gives many opportunities to
+    # start. A freshness gate (see below) still caps real publications at
+    # ~once per 15 minutes.
+    - cron: "*/5 * * * *"
 
 permissions:
   contents: write
@@ -47,12 +50,34 @@ jobs:
       - name: Create output directory
         run: mkdir -p output
 
+      # Phase 18 freshness gate. The schedule fires every 5 minutes, but a real
+      # publication must not happen more than ~once per 15 minutes. This step
+      # compares the last successful publication time (output/published_at.json,
+      # committed only by the successful-publish step below) against the
+      # 13-minute threshold and exits with Decision SKIP/RUN. Every expensive
+      # downstream step is guarded on `decision == 'RUN'`, so a SKIP finishes
+      # the job green without running the pipeline or GeoIP provisioning.
+      # The concurrency group (`publish`, cancel-in-progress: false) queues any
+      # overlapping run, so a later trigger always reads the state committed by
+      # an earlier one - the gate can never create a second concurrent
+      # publisher, and no cross-run lock is needed.
+      - name: Freshness gate
+        id: freshness
+        run: |
+          set -euo pipefail
+          flag=""
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            flag="--force"
+          fi
+          uv run python -m proxyaggregator freshness-gate $flag
+
       # GeoIP provisioning. No credentials are involved: the country MMDB from
       # the ip-location-db project (database_type "country ipvAll") is fetched
       # fresh on every run into $PA_GEOIP_DB_PATH (a .runtime/ dir inside the
       # workspace that is never staged/committed). The release asset is the
       # raw MMDB, so no archive extraction is needed.
       - name: Provision GeoIP database
+        if: steps.freshness.outputs.decision == 'RUN'
         shell: bash
         run: |
           set -euo pipefail
@@ -72,6 +97,7 @@ jobs:
       # assets[].digest); it is fetched at runtime so it always matches the
       # current upstream file — nothing is hard-coded.
       - name: Verify GeoIP database checksum
+        if: steps.freshness.outputs.decision == 'RUN'
         shell: bash
         run: |
           set -euo pipefail
@@ -99,9 +125,11 @@ jobs:
       # Fails fast with a clear error if the provisioned database is missing,
       # unreadable, invalid, or the wrong type. Never prints credentials.
       - name: Verify GeoIP database
+        if: steps.freshness.outputs.decision == 'RUN'
         run: uv run python -m proxyaggregator verify-geoip
 
       - name: Apply database migrations
+        if: steps.freshness.outputs.decision == 'RUN'
         run: uv run alembic upgrade head
 
       # Production source seeding (Phase 9.2). The `seed-sources` command loads
@@ -110,6 +138,7 @@ jobs:
       # fetches; the pipeline below owns all network I/O. Seed *before* the
       # pipeline so the empty-table fast-fail reflects the real definitions.
       - name: Seed production sources
+        if: steps.freshness.outputs.decision == 'RUN'
         run: uv run python -m proxyaggregator seed-sources
 
       # Full pipeline integration point (Phase 9.1, roadmap item "Full pipeline
@@ -120,9 +149,11 @@ jobs:
       # published. Production sources are registered in the `sources` table by
       # the seed step above; the pipeline never invents sources.
       - name: Run production pipeline
+        if: steps.freshness.outputs.decision == 'RUN'
         run: uv run python -m proxyaggregator pipeline
 
       - name: Guard against empty or invalid output
+        if: steps.freshness.outputs.decision == 'RUN'
         shell: bash
         run: |
           set -euo pipefail
@@ -146,7 +177,16 @@ jobs:
           PY
           echo "Output guard passed"
 
+      # Phase 18: record the successful publication. output/published_at.json is
+      # written only here - never by the pipeline - so a failed pipeline, a
+      # failed output guard, or a failed push all leave the previous timestamp
+      # untouched and later scheduled runs remain free to retry.
+      - name: Record successful publication time
+        if: steps.freshness.outputs.decision == 'RUN'
+        run: uv run python -m proxyaggregator record-publish
+
       - name: Commit & push generated subscriptions
+        if: steps.freshness.outputs.decision == 'RUN'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |

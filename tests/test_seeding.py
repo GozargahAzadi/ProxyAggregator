@@ -531,10 +531,13 @@ class TestRepositoryContract:
         assert Settings().sources_file == "config/sources.json"
         assert parser.parse_args(["seed-sources"]).sources_file is None
 
-    def test_workflow_runs_every_15_minutes_dispatchable_and_serialized(self):
+    def test_workflow_schedules_freshness_gate_and_stays_serialized(self):
         text = (ROOT_DIR / ".github" / "workflows" / "publish.yml").read_text(encoding="utf-8")
-        assert 'cron: "*/15 * * * *"' in text
+        assert 'cron: "*/5 * * * *"' in text
         assert "workflow_dispatch" in text
+        assert "Freshness gate" in text
+        assert "decision == 'RUN'" in text
+        assert "record-publish" in text
         assert "concurrency:" in text
         assert "group: publish" in text
         assert "cancel-in-progress: false" in text
