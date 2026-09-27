@@ -29,10 +29,11 @@ Contracts under test:
   directory when nothing is unknown) are never emitted.
 - Existing combined/protocol feeds are byte-for-byte unchanged (additive-only,
   captured as a regression test).
-- The repository-root ``README.md`` gains a ``## 🌍 Proxies by Country`` table
-  between sentinel markers; it is regenerated on every publish from the same
-  country list and never goes stale, while content outside the markers is
-  preserved verbatim.
+- The repository-root ``README.md`` gains a ``## 🌍 Proxies by Country`` list
+  of collapsed ``<details>`` sections (one per non-empty country) between
+  sentinel markers; it is regenerated on every publish from the same country
+  list and never goes stale, while content outside the markers is preserved
+  verbatim.
 - Generated artifact paths are always traversal-safe.
 - Country generation performs no network/I/O and the pipeline re-runs no
   health/GeoIP/DNS work; repeated generation is byte-identical.
@@ -70,7 +71,7 @@ from proxyaggregator.publishing import (
     build_subscription,
     country_bucket,
     country_code_to_flag,
-    country_index_entries,
+    country_feed_entries,
     country_index_path,
     country_protocol_path,
     default_filename,
@@ -169,20 +170,25 @@ def _index_rows(index: str) -> list[tuple[str, int]]:
     return rows
 
 
-def _root_rows(block: str) -> list[tuple[str, int]]:
-    """Parse root-README country table data rows into ``(code, count)`` pairs.
+def _root_countries(block: str) -> list[tuple[str, int]]:
+    """Parse root-README ``<details>`` summaries into ``(code, count)`` pairs.
 
-    Root links point at ``./output/countries/{CC}/``, so the code is read from
-    the last path segment of the Open-link cell (the root table uses a
-    flag-free ``[Open](...)`` label).
+    The summary carries the healthy-proxy count; the ISO code is read from the
+    first raw URL of each country body (``countries/{CC}/all.txt``), so the
+    parser stays correct regardless of name/flag rendering.
     """
     rows = []
+    pending: int | None = None
     for line in block.splitlines():
-        if not line.startswith("| ") or "[Open](" not in line:
-            continue
-        cells = [cell.strip() for cell in line.strip("|").split("|")]
-        link_code = cells[3].rsplit("(", 1)[1].rstrip(")").rsplit("/", 1)[0].rsplit("/", 1)[1]
-        rows.append((link_code, int(cells[2])))
+        if line.startswith("<summary>"):
+            count_part = line[len("<summary>") :].rsplit("\u2014", 1)[1].strip()
+            pending = int(count_part.split()[0])
+        elif pending is not None and line.startswith(
+            COUNTRY_RAW_SUBSCRIPTIONS_BASE_URL + "countries/"
+        ):
+            code = line.split("countries/")[1].split("/")[0]
+            rows.append((code, pending))
+            pending = None
     return rows
 
 
@@ -765,10 +771,8 @@ class TestPipelinePurity:
         stats = self._run(db_session, tmp_path, _enricher, _CountingHealthRunner())
         text = readme.read_text(encoding="utf-8")
         assert "## \U0001f30d Proxies by Country" in text
-        assert (
-            "| [\U0001f1fa\U0001f1f8 United States](./output/countries/US/) | US | 3 "
-            "| [Open](./output/countries/US/) |"
-        ) in text
+        assert "Click here to get proxies from a specific country" in text
+        assert "<summary>\U0001f1fa\U0001f1f8 United States \u2014 3 proxies</summary>" in text
         assert text.index("## \U0001f30d Proxies by Country") < text.index("## Quick Start")
         assert "Some prose." in text
         assert "rest" in text
@@ -807,61 +811,114 @@ class TestCountryProtocolPaths:
 
 class TestRootReadmeCountryIndex:
     def test_render_block_is_delimited_by_markers(self):
-        block = render_root_country_index_block(country_index_entries(_country_candidates()))
+        block = render_root_country_index_block(country_feed_entries(_country_candidates()))
         assert block.startswith(ROOT_README_COUNTRY_START_MARKER + "\n")
         assert block.rstrip().endswith(ROOT_README_COUNTRY_END_MARKER)
         assert "## \U0001f30d Proxies by Country" in block
-        assert "Click a country to open its subscription links." in block
-        assert "| Country | Code | Proxies | Links |" in block
-        assert "| --- | --- | ---: | --- |" in block
+        assert "\U0001f98b Click here to get proxies from a specific country" in block
 
-    def test_render_block_names_flags_counts_links(self):
-        block = render_root_country_index_block(country_index_entries(_country_candidates()))
-        assert (
-            "| [\U0001f1e9\U0001f1ea Germany](./output/countries/DE/) | DE | 1 "
-            "| [Open](./output/countries/DE/) |"
-        ) in block
-        assert (
-            "| [\U0001f1fa\U0001f1f8 United States](./output/countries/US/) | US | 3 "
-            "| [Open](./output/countries/US/) |"
-        ) in block
-        assert (
-            "| [\U0001f310 Unknown](./output/countries/XX/) | XX | 1 "
-            "| [Open](./output/countries/XX/) |"
-        ) in block
-        assert "[Open \U0001f310](./output/countries/XX/) |" not in block
+    def test_render_block_names_flags_counts(self):
+        block = render_root_country_index_block(country_feed_entries(_country_candidates()))
+        assert "<summary>\U0001f1e9\U0001f1ea Germany \u2014 1 proxy</summary>" in block
+        assert "<summary>\U0001f1fa\U0001f1f8 United States \u2014 3 proxies</summary>" in block
+        assert "<summary>\U0001f310 Unknown (XX) \u2014 1 proxy</summary>" in block
+        assert "### \U0001f1e9\U0001f1ea Germany" in block
+        assert "### \U0001f310 Unknown (XX)" in block
+        assert "### \U0001f1fa\U0001f1f8 United States" in block
+
+    def test_render_block_country_collapsible_structure(self):
+        block = render_root_country_index_block(country_feed_entries(_country_candidates()))
+        details_open = block.count("<details>")
+        details_close = block.count("</details>")
+        summaries = sum(line.startswith("<summary>") for line in block.splitlines())
+        assert details_open == 3 == details_close == summaries
 
     def test_render_block_sorted_by_iso_code(self):
-        block = render_root_country_index_block(country_index_entries(_country_candidates()))
-        rows = _root_rows(block)
+        block = render_root_country_index_block(country_feed_entries(_country_candidates()))
+        rows = _root_countries(block)
         assert rows == [("DE", 1), ("US", 3), ("XX", 1)]
+        assert [code for code, _ in rows] == sorted([code for code, _ in rows])
 
     def test_render_block_counts_equal_all_feed_counts(self):
         candidates = _country_candidates()
         artifacts = _artifacts(candidates)
-        block = render_root_country_index_block(country_index_entries(candidates))
-        for code, count in _root_rows(block):
+        block = render_root_country_index_block(country_feed_entries(candidates))
+        for code, count in _root_countries(block):
             assert artifacts[f"countries/{code}/all.txt"].count == count
+
+    def test_render_block_urls_are_code_fenced(self):
+        block = render_root_country_index_block(country_feed_entries(_country_candidates()))
+        lines = block.splitlines()
+        for index, line in enumerate(lines):
+            if not line.startswith(COUNTRY_RAW_SUBSCRIPTIONS_BASE_URL):
+                continue
+            assert lines[index - 1] == "```text", f"URL not inside a text fence: {line}"
+            assert lines[index + 1] == "```", f"URL not closed by a fence: {line}"
+        assert (
+            "](https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/"
+            not in block
+        )
+
+    def test_render_block_no_url_for_missing_feed(self):
+        candidates = _country_candidates()
+        artifacts = _artifacts(candidates)
+        block = render_root_country_index_block(country_feed_entries(candidates))
+        for line in block.splitlines():
+            if line.startswith(COUNTRY_RAW_SUBSCRIPTIONS_BASE_URL + "countries/"):
+                rel = line.split("/output/")[1]
+                assert rel in artifacts, f"URL references an ungenerated feed: {rel}"
+
+    def test_render_block_urls_use_existing_files(self):
+        candidates = _country_candidates()
+        artifacts = _artifacts(candidates)
+        block = render_root_country_index_block(country_feed_entries(candidates))
+        asserted = set()
+        for line in block.splitlines():
+            if line.startswith(COUNTRY_RAW_SUBSCRIPTIONS_BASE_URL + "countries/"):
+                asserted.add(line.split("/output/")[1])
+        # every generated per-country feed appears in the root list (READMEs
+        # are country pages, not subscription URLs)
+        generated = {
+            path
+            for path in artifacts
+            if path.startswith("countries/") and not path.endswith("README.md")
+        }
+        assert not generated - asserted
+        assert not asserted - generated
 
     def test_render_block_empty_entries_render_header_only(self):
         block = render_root_country_index_block(())
-        assert "| Country | Code | Proxies | Links |" in block
-        assert _root_rows(block) == []
+        assert "## \U0001f30d Proxies by Country" in block
         assert "XX" not in block
+        assert "<details>" not in block
+        assert _root_countries(block) == []
 
     def test_render_block_xx_only_when_non_empty(self):
         us_only = [_ranked(1, "vless", VLESS, "vless.example.com", 443, country_code="US")]
-        block = render_root_country_index_block(country_index_entries(us_only))
-        rows = _root_rows(block)
+        block = render_root_country_index_block(country_feed_entries(us_only))
+        rows = _root_countries(block)
         assert [code for code, _ in rows] == ["US"]
         assert "XX" not in block
+        assert "Unknown" not in block
 
-    def test_root_table_matches_country_index_counts(self):
+    def test_render_block_protocol_lines_only_for_present_protocols(self):
+        de = _artifacts([_ranked(1, "ss", SS, "ss.example.com", 8388, country_code="DE")])
+        block = render_root_country_index_block(
+            country_feed_entries([_ranked(1, "ss", SS, "ss.example.com", 8388, country_code="DE")])
+        )
+        assert "Shadowsocks:" in block
+        assert "Shadowsocks Base64:" in block
+        raw_shadowsocks = f"{COUNTRY_RAW_SUBSCRIPTIONS_BASE_URL}countries/DE/shadowsocks.txt"
+        assert raw_shadowsocks in block
+        assert f"{COUNTRY_RAW_SUBSCRIPTIONS_BASE_URL}countries/DE/vless.txt" not in block
+        assert "countries/DE/shadowsocks.txt" in de
+
+    def test_root_list_matches_country_index_counts(self):
         candidates = _country_candidates()
         artifacts = _artifacts(candidates)
         index = artifacts["countries/README.md"].content
-        root = render_root_country_index_block(country_index_entries(candidates))
-        assert _root_rows(root) == _index_rows(index)
+        root = render_root_country_index_block(country_feed_entries(candidates))
+        assert _root_countries(root) == _index_rows(index)
 
     def test_update_root_readme_replaces_only_marker_region(self, tmp_path):
         readme = tmp_path / "README.md"
@@ -874,21 +931,18 @@ class TestRootReadmeCountryIndex:
             encoding="utf-8",
         )
         assert (
-            update_root_country_index(readme, country_index_entries(_country_candidates())) is True
+            update_root_country_index(readme, country_feed_entries(_country_candidates())) is True
         )
         text = readme.read_text(encoding="utf-8")
         assert text.startswith("# Test\n\n## Subscriptions\n\ncombined\n\n")
         assert "STALE TABLE" not in text
-        assert (
-            "| [\U0001f1e9\U0001f1ea Germany](./output/countries/DE/) | DE | 1 "
-            "| [Open](./output/countries/DE/) |"
-        ) in text
+        assert "<summary>\U0001f1e9\U0001f1ea Germany \u2014 1 proxy</summary>" in text
         assert text.endswith("\n\nprose after\n\n## Quick Start\n")
 
     def test_update_root_readme_inserts_when_markers_missing(self, tmp_path):
         readme = tmp_path / "README.md"
         readme.write_text("# Test\n\nsome content\n\n## Quick Start\nrest\n", encoding="utf-8")
-        assert update_root_country_index(readme, country_index_entries([])) is True
+        assert update_root_country_index(readme, country_feed_entries([])) is True
         text = readme.read_text(encoding="utf-8")
         assert "## \U0001f30d Proxies by Country" in text
         assert text.index("## \U0001f30d Proxies by Country") < text.index("## Quick Start")
@@ -897,7 +951,7 @@ class TestRootReadmeCountryIndex:
     def test_update_root_readme_is_byte_identical_on_repeat(self, tmp_path):
         readme = tmp_path / "README.md"
         readme.write_text("# T\n\n## Quick Start\n", encoding="utf-8")
-        entries = country_index_entries(_country_candidates())
+        entries = country_feed_entries(_country_candidates())
         update_root_country_index(readme, entries)
         first = readme.read_text(encoding="utf-8")
         update_root_country_index(readme, entries)
@@ -906,6 +960,6 @@ class TestRootReadmeCountryIndex:
 
     def test_update_root_readme_missing_file_is_noop(self, tmp_path):
         missing = tmp_path / "does-not-exist" / "README.md"
-        entries = country_index_entries(_country_candidates())
+        entries = country_feed_entries(_country_candidates())
         assert update_root_country_index(missing, entries) is False
         assert not missing.exists()

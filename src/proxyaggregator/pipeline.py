@@ -55,7 +55,7 @@ from proxyaggregator.parsers.registry import get_registry as get_parser_registry
 from proxyaggregator.publishing import DEFAULT_OUTPUT_DIR
 from proxyaggregator.publishing.countries import (
     build_country_artifacts,
-    country_index_entries,
+    country_feed_entries,
     update_root_country_index,
 )
 from proxyaggregator.publishing.feeds import build_protocol_subscriptions, build_subscription
@@ -582,7 +582,7 @@ async def run_pipeline(session: Session, cfg: PipelineConfig) -> PipelineStats:
     publish_seconds = time.perf_counter() - stage_start
 
     root_readme = Path(cfg.output_dir).parent / "README.md"
-    entries = country_index_entries(ranked_proxies, max_items=cfg.max_items)
+    entries = country_feed_entries(ranked_proxies, max_items=cfg.max_items)
     if update_root_country_index(root_readme, entries):
         logger.info("[PIPELINE] root README country index updated: %s", root_readme)
 
