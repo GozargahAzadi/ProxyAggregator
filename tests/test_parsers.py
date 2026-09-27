@@ -557,6 +557,119 @@ class TestHysteria2Parser:
         assert isinstance(r, ParseError)
 
 
+# --- Hysteria multi-port ("port hopping") parsing tests ---
+#
+# Hysteria port-hopping URIs may carry a comma-separated list of single ports
+# and/or port ranges in the port field, e.g. ``51286,50000-53000`` (see the
+# official Hysteria 2 URI scheme). Every listed alternative is a reachable
+# endpoint, and a client may pick a single port to connect to, so the parsers
+# deterministically select the first listed port.
+
+_REAL_HY2_MULTIPORT = (
+    "hysteria2://f15900b5-f86b-432d-a67c-45325dc66a2d@45.88.43.92:51286,"
+    "50000-53000?insecure=1&sni=www.bing.com#%F0%9F%87%AF%F0%9F%87%B5%20"
+    "%E6%97%A5%E6%9C%AC%20%7C%20JPN"
+)
+
+
+class TestHysteriaMultiPort:
+    def setup_method(self):
+        self.h1 = HysteriaParser()
+        self.h2 = Hysteria2Parser()
+
+    @pytest.mark.parametrize(
+        "uri,host,port",
+        [
+            ("hysteria://host.example.com:51286?auth=x", "host.example.com", 51286),
+            ("hysteria://host:51286,51287?auth=x", "host", 51286),
+            ("hysteria://host:50000-53000?auth=x", "host", 50000),
+            ("hysteria://host:51286,50000-53000?auth=x", "host", 51286),
+            ("hysteria2://user@host:51286,51287?sni=h", "host", 51286),
+            ("hysteria2://user@host:50000-53000?sni=h", "host", 50000),
+            ("hysteria2://user@host:51286,50000-53000?sni=h", "host", 51286),
+            ("hysteria://[2001:db8::1]:51286,50000-53000?auth=x", "2001:db8::1", 51286),
+        ],
+    )
+    def test_multi_port_selects_first_usable_port(self, uri, host, port):
+        parser = self.h2 if uri.startswith("hysteria2") else self.h1
+        r = parser.parse(uri)
+        assert isinstance(r, ParseResult)
+        assert r.host == host
+        assert r.port == port
+
+    def test_real_world_example_parses(self):
+        r = self.h2.parse(_REAL_HY2_MULTIPORT)
+        assert isinstance(r, ParseResult)
+        assert r.protocol == "hysteria2"
+        assert r.host == "45.88.43.92"
+        assert r.port == 51286
+        assert r.user == "f15900b5-f86b-432d-a67c-45325dc66a2d"
+        assert r.sni == "www.bing.com"
+        assert r.fragment == "%F0%9F%87%AF%F0%9F%87%B5%20%E6%97%A5%E6%9C%AC%20%7C%20JPN"
+
+    @pytest.mark.parametrize(
+        "uri",
+        [
+            "hysteria://host:?auth=x",
+            "hysteria://host:abc?auth=x",
+            "hysteria://host:0?auth=x",
+            "hysteria://host:65536?auth=x",
+            "hysteria://host:70000?auth=x",
+            "hysteria://host:51286,?auth=x",
+            "hysteria://host:,51286?auth=x",
+            "hysteria://host:51286,,50000?auth=x",
+            "hysteria://host:50000-400?auth=x",
+            "hysteria://host:a-b?auth=x",
+            "hysteria://host:50000-65536?auth=x",
+            "hysteria://host:50000-53000-54000?auth=x",
+            "hysteria://host:50000-?auth=x",
+            "hysteria://host:-53000?auth=x",
+            "hysteria://host:51286,50000-400?auth=x",
+            "hysteria2://user@host:?sni=h",
+            "hysteria2://user@host:abc?sni=h",
+            "hysteria2://user@host:51286,?sni=h",
+            "hysteria2://user@host:51286,50000-400?sni=h",
+            "hysteria2://user@host:50000-53000,70000?sni=h",
+            "hysteria://[2001:db8::1]:?auth=x",
+            "hysteria://[2001:db8::1]:51286,?auth=x",
+        ],
+    )
+    def test_malformed_port_is_parse_error(self, uri):
+        parser = self.h2 if uri.startswith("hysteria2") else self.h1
+        r = parser.parse(uri)
+        assert isinstance(r, ParseError)
+
+    @pytest.mark.parametrize(
+        "uri",
+        [
+            "hysteria://host:abc?auth=x",
+            "hysteria://host:51286,?auth=x",
+            "hysteria://host:50000-400?auth=x",
+            "hysteria2://user@host:?sni=h",
+            "hysteria://host:51286,,50000?auth=x",
+            "hysteria://host:65536?auth=x",
+        ],
+    )
+    def test_never_leaks_value_error(self, uri):
+        parser = self.h2 if uri.startswith("hysteria2") else self.h1
+        r = parser.parse(uri)
+        assert isinstance(r, ParseError)
+
+    def test_normalize_uri_unchanged(self):
+        assert normalize_uri(_REAL_HY2_MULTIPORT) == _REAL_HY2_MULTIPORT
+
+    def test_canonical_uri_uses_selected_port(self):
+        from proxyaggregator.publishing.serializer import canonical_uri
+
+        h1 = self.h1.parse("hysteria://host:51286,50000-53000?auth=x")
+        assert isinstance(h1, ParseResult)
+        assert canonical_uri(h1) == "hysteria://host:51286?auth=x"
+
+        h2 = self.h2.parse("hysteria2://user@host:50000-53000?sni=h")
+        assert isinstance(h2, ParseResult)
+        assert canonical_uri(h2) == "hysteria2://user@host:50000?sni=h"
+
+
 # --- SOCKS parser tests ---
 
 
