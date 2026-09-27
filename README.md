@@ -77,11 +77,40 @@ Click a country to open its subscription links.
 
 | Country | Code | Proxies | Links |
 | --- | --- | ---: | --- |
+| [🇦🇪 United Arab Emirates](./output/countries/AE/) | AE | 2 | [Open](./output/countries/AE/) |
+| [🇧🇬 Bulgaria](./output/countries/BG/) | BG | 1 | [Open](./output/countries/BG/) |
 | [🇨🇦 Canada](./output/countries/CA/) | CA | 13 | [Open](./output/countries/CA/) |
-| [🇩🇪 Germany](./output/countries/DE/) | DE | 7 | [Open](./output/countries/DE/) |
-| [🇫🇷 France](./output/countries/FR/) | FR | 16 | [Open](./output/countries/FR/) |
+| [🇨🇳 China](./output/countries/CN/) | CN | 1 | [Open](./output/countries/CN/) |
+| [🇨🇿 Czechia](./output/countries/CZ/) | CZ | 1 | [Open](./output/countries/CZ/) |
+| [🇩🇪 Germany](./output/countries/DE/) | DE | 10 | [Open](./output/countries/DE/) |
+| [🇪🇪 Estonia](./output/countries/EE/) | EE | 1 | [Open](./output/countries/EE/) |
+| [🇫🇮 Finland](./output/countries/FI/) | FI | 5 | [Open](./output/countries/FI/) |
+| [🇫🇷 France](./output/countries/FR/) | FR | 22 | [Open](./output/countries/FR/) |
 | [🇬🇧 United Kingdom](./output/countries/GB/) | GB | 77 | [Open](./output/countries/GB/) |
-| [🇺🇸 United States](./output/countries/US/) | US | 117 | [Open](./output/countries/US/) |
+| [🇭🇰 Hong Kong](./output/countries/HK/) | HK | 7 | [Open](./output/countries/HK/) |
+| [🇭🇷 Croatia](./output/countries/HR/) | HR | 2 | [Open](./output/countries/HR/) |
+| [🇮🇪 Ireland](./output/countries/IE/) | IE | 1 | [Open](./output/countries/IE/) |
+| [🇮🇳 India](./output/countries/IN/) | IN | 2 | [Open](./output/countries/IN/) |
+| [🇮🇷 Iran](./output/countries/IR/) | IR | 5 | [Open](./output/countries/IR/) |
+| [🇮🇹 Italy](./output/countries/IT/) | IT | 3 | [Open](./output/countries/IT/) |
+| [🇯🇵 Japan](./output/countries/JP/) | JP | 6 | [Open](./output/countries/JP/) |
+| [🇰🇷 Korea, Republic of](./output/countries/KR/) | KR | 5 | [Open](./output/countries/KR/) |
+| [🇲🇽 Mexico](./output/countries/MX/) | MX | 1 | [Open](./output/countries/MX/) |
+| [🇳🇱 Netherlands](./output/countries/NL/) | NL | 25 | [Open](./output/countries/NL/) |
+| [🇵🇦 Panama](./output/countries/PA/) | PA | 1 | [Open](./output/countries/PA/) |
+| [🇵🇱 Poland](./output/countries/PL/) | PL | 1 | [Open](./output/countries/PL/) |
+| [🇷🇴 Romania](./output/countries/RO/) | RO | 2 | [Open](./output/countries/RO/) |
+| [🇷🇸 Serbia](./output/countries/RS/) | RS | 2 | [Open](./output/countries/RS/) |
+| [🇷🇺 Russia](./output/countries/RU/) | RU | 1 | [Open](./output/countries/RU/) |
+| [🇸🇨 Seychelles](./output/countries/SC/) | SC | 1 | [Open](./output/countries/SC/) |
+| [🇸🇪 Sweden](./output/countries/SE/) | SE | 4 | [Open](./output/countries/SE/) |
+| [🇸🇬 Singapore](./output/countries/SG/) | SG | 6 | [Open](./output/countries/SG/) |
+| [🇹🇭 Thailand](./output/countries/TH/) | TH | 2 | [Open](./output/countries/TH/) |
+| [🇹🇷 Turkey](./output/countries/TR/) | TR | 1 | [Open](./output/countries/TR/) |
+| [🇹🇼 Taiwan](./output/countries/TW/) | TW | 1 | [Open](./output/countries/TW/) |
+| [🇺🇦 Ukraine](./output/countries/UA/) | UA | 1 | [Open](./output/countries/UA/) |
+| [🇺🇸 United States](./output/countries/US/) | US | 192 | [Open](./output/countries/US/) |
+| [🇿🇦 South Africa](./output/countries/ZA/) | ZA | 3 | [Open](./output/countries/ZA/) |
 <!-- PROXYAGGREGATOR: country index end -->
 
 The table above reflects the current healthy-proxy distribution and is

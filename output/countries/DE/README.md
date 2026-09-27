@@ -1,6 +1,6 @@
 # 🇩🇪 Germany
 
-18 healthy proxies.
+10 healthy proxies.
 
 ## 📋 All Protocols
 
@@ -17,7 +17,5 @@
 | VLESS Base64 | [Open](./vless-base64.txt) | `https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/countries/DE/vless-base64.txt` |
 | Shadowsocks | [Open](./shadowsocks.txt) | `https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/countries/DE/shadowsocks.txt` |
 | Shadowsocks Base64 | [Open](./shadowsocks-base64.txt) | `https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/countries/DE/shadowsocks-base64.txt` |
-| HTTP | [Open](./http.txt) | `https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/countries/DE/http.txt` |
-| HTTP Base64 | [Open](./http-base64.txt) | `https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/countries/DE/http-base64.txt` |
 | HTTPS | [Open](./https.txt) | `https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/countries/DE/https.txt` |
 | HTTPS Base64 | [Open](./https-base64.txt) | `https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/countries/DE/https-base64.txt` |
