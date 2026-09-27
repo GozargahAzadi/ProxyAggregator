@@ -199,10 +199,6 @@ See [docs/CONFIGURATION.md](docs/CONFIGURATION.md) for all available settings.
 
 See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the full architectural overview.
 
-## Roadmap
-
-See [ROADMAP.md](ROADMAP.md) for the development plan.
-
 ## License
 
 MIT

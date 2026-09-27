@@ -199,10 +199,6 @@ uv run ruff check src/ tests/
 
 نمای کلی معماری در [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) (به انگلیسی).
 
-## نقشه راه
-
-برنامهٔ توسعه در [ROADMAP.md](ROADMAP.md) (به انگلیسی).
-
 ## مجوز
 
 MIT
