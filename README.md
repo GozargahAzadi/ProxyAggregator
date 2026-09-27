@@ -70,32 +70,36 @@ HTTPS:
 - https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/https.txt
 - https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/https-base64.txt
 
-### Proxies by country
+<!-- PROXYAGGREGATOR: country index start -->
+## 🌍 Proxies by Country
 
-Browse the auto-generated country index:
-- [output/countries/README.md](https://github.com/GozargahAzadi/ProxyAggregator/blob/main/output/countries/README.md)
+Click a country to open its subscription links.
 
-It is a Markdown table — flag, country name, ISO code, proxy count, and a
-clickable link to each country's directory — and is **regenerated automatically
-by every Publish run**, so it always reflects the current healthy-proxy
-distribution. Do not edit it by hand.
+| Country | Code | Proxies | Links |
+| --- | --- | ---: | --- |
+| [🇨🇦 Canada](./output/countries/CA/) | CA | 13 | [Open](./output/countries/CA/) |
+| [🇩🇪 Germany](./output/countries/DE/) | DE | 7 | [Open](./output/countries/DE/) |
+| [🇫🇷 France](./output/countries/FR/) | FR | 16 | [Open](./output/countries/FR/) |
+| [🇬🇧 United Kingdom](./output/countries/GB/) | GB | 77 | [Open](./output/countries/GB/) |
+| [🇺🇸 United States](./output/countries/US/) | US | 117 | [Open](./output/countries/US/) |
+<!-- PROXYAGGREGATOR: country index end -->
 
-Start at the index, click a country (e.g. 🇺🇸 United States), and each country
-page (`output/countries/{CC}/README.md`) exposes copyable raw subscription URLs
-for its `all` feed and every available protocol feed.
+The table above reflects the current healthy-proxy distribution and is
+**regenerated automatically by every Publish run** from the same deduplicated
+and health-checked proxy set used for the feeds above — the content between the
+markers is never edited by hand. Each country link opens its generated
+directory under `output/countries/{CC}/` (uppercase ISO 3166-1 alpha-2),
+containing:
 
-Country feeds are generated from the same deduplicated and health-checked
-proxy set, so they contain only verified proxies. Each non-empty country gets
-its own directory under `output/countries/{CC}/` (uppercase ISO 3166-1
-alpha-2), containing:
-
-- `README.md` — a human-readable country page with raw subscription links
+- `README.md` — a human-readable country page with copyable raw subscription
+  URLs for the `all` feed and every available protocol feed
 - `all.txt` / `all-base64.txt` — every protocol of that country, plain and base64
 - `{protocol}.txt` / `{protocol}-base64.txt` — per-protocol feeds, only when
   that protocol has healthy proxies from that country
 
 Unknown or unrecognized countries are grouped under `XX` (`🌐`) when non-empty;
-otherwise that group is omitted.
+otherwise that group is omitted. A stable prose index with the same information
+is maintained at [output/countries/README.md](https://github.com/GozargahAzadi/ProxyAggregator/blob/main/output/countries/README.md).
 
 Stable examples (a directory per country; plain and base64 variants exist for each):
 - https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/countries/DE/README.md

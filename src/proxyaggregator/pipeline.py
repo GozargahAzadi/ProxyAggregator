@@ -26,6 +26,7 @@ import asyncio
 import logging
 import time
 from dataclasses import dataclass, replace
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 from proxyaggregator.config.settings import Settings
@@ -52,7 +53,11 @@ from proxyaggregator.parsers.detect import detect_protocol
 from proxyaggregator.parsers.extract import extract_uris
 from proxyaggregator.parsers.registry import get_registry as get_parser_registry
 from proxyaggregator.publishing import DEFAULT_OUTPUT_DIR
-from proxyaggregator.publishing.countries import build_country_artifacts
+from proxyaggregator.publishing.countries import (
+    build_country_artifacts,
+    country_index_entries,
+    update_root_country_index,
+)
 from proxyaggregator.publishing.feeds import build_protocol_subscriptions, build_subscription
 from proxyaggregator.publishing.models import (
     RankedProxy,
@@ -76,7 +81,6 @@ from proxyaggregator.sources.registry import (
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Sequence
-    from pathlib import Path
 
     from sqlalchemy.orm import Session
 
@@ -576,6 +580,12 @@ async def run_pipeline(session: Session, cfg: PipelineConfig) -> PipelineStats:
     stage_start = time.perf_counter()
     releases = _publish(feeds, cfg.output_dir)
     publish_seconds = time.perf_counter() - stage_start
+
+    root_readme = Path(cfg.output_dir).parent / "README.md"
+    entries = country_index_entries(ranked_proxies, max_items=cfg.max_items)
+    if update_root_country_index(root_readme, entries):
+        logger.info("[PIPELINE] root README country index updated: %s", root_readme)
+
     total_seconds = time.perf_counter() - total_start
     stats = replace(
         stats,

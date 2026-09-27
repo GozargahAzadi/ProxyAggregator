@@ -21,7 +21,8 @@ env:
   # GeoIP database location. The country-level MMDB (database_type
   # "country ipvAll", no MaxMind account or secrets needed) is downloaded
   # fresh into `.runtime/geoip/` (inside the workspace) on every run: it is
-  # never committed (git add is scoped to `output` and *.mmdb is gitignored).
+  # never committed (git add is scoped to `output` + the generated root
+  # README country index and *.mmdb is gitignored).
   PA_GEOIP_DB_PATH: ${{ github.workspace }}/.runtime/geoip/user-country.mmdb
 
 jobs:
@@ -151,7 +152,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add output
+          git add output README.md
           if git diff --cached --quiet; then
             echo "No subscription changes to commit."
             exit 0

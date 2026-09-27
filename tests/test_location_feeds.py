@@ -29,6 +29,10 @@ Contracts under test:
   directory when nothing is unknown) are never emitted.
 - Existing combined/protocol feeds are byte-for-byte unchanged (additive-only,
   captured as a regression test).
+- The repository-root ``README.md`` gains a ``## 🌍 Proxies by Country`` table
+  between sentinel markers; it is regenerated on every publish from the same
+  country list and never goes stale, while content outside the markers is
+  preserved verbatim.
 - Generated artifact paths are always traversal-safe.
 - Country generation performs no network/I/O and the pipeline re-runs no
   health/GeoIP/DNS work; repeated generation is byte-identical.
@@ -58,15 +62,20 @@ from proxyaggregator.publishing import (
     COUNTRIES_DIR,
     COUNTRY_RAW_SUBSCRIPTIONS_BASE_URL,
     COUNTRY_UNKNOWN_BUCKET,
+    ROOT_README_COUNTRY_END_MARKER,
+    ROOT_README_COUNTRY_START_MARKER,
     SubscriptionFormat,
     build_country_artifacts,
     build_protocol_subscriptions,
     build_subscription,
     country_bucket,
     country_code_to_flag,
+    country_index_entries,
     country_index_path,
     country_protocol_path,
     default_filename,
+    render_root_country_index_block,
+    update_root_country_index,
 )
 from proxyaggregator.publishing.models import RankedProxy, Subscription
 from proxyaggregator.publishing.publisher import (
@@ -156,6 +165,23 @@ def _index_rows(index: str) -> list[tuple[str, int]]:
             continue
         cells = [cell.strip() for cell in line.strip("|").split("|")]
         link_code = cells[3].rsplit("(", 1)[1].rstrip(")").removeprefix("./").removesuffix("/")
+        rows.append((link_code, int(cells[2])))
+    return rows
+
+
+def _root_rows(block: str) -> list[tuple[str, int]]:
+    """Parse root-README country table data rows into ``(code, count)`` pairs.
+
+    Root links point at ``./output/countries/{CC}/``, so the code is read from
+    the last path segment of the Open-link cell (the root table uses a
+    flag-free ``[Open](...)`` label).
+    """
+    rows = []
+    for line in block.splitlines():
+        if not line.startswith("| ") or "[Open](" not in line:
+            continue
+        cells = [cell.strip() for cell in line.strip("|").split("|")]
+        link_code = cells[3].rsplit("(", 1)[1].rstrip(")").rsplit("/", 1)[0].rsplit("/", 1)[1]
         rows.append((link_code, int(cells[2])))
     return rows
 
@@ -733,6 +759,21 @@ class TestPipelinePurity:
             .startswith("# \U0001f30d ProxyAggregator \u2014 Proxies by Country")
         )
 
+    def test_root_readme_country_index_generated_when_readme_present(self, db_session, tmp_path):
+        readme = tmp_path / "README.md"
+        readme.write_text("# Test\n\nSome prose.\n\n## Quick Start\nrest\n", encoding="utf-8")
+        stats = self._run(db_session, tmp_path, _enricher, _CountingHealthRunner())
+        text = readme.read_text(encoding="utf-8")
+        assert "## \U0001f30d Proxies by Country" in text
+        assert (
+            "| [\U0001f1fa\U0001f1f8 United States](./output/countries/US/) | US | 3 "
+            "| [Open](./output/countries/US/) |"
+        ) in text
+        assert text.index("## \U0001f30d Proxies by Country") < text.index("## Quick Start")
+        assert "Some prose." in text
+        assert "rest" in text
+        assert stats.published_artifacts == 20
+
 
 # K. Pipeline-level x-country dependency tests ----------------------------------
 
@@ -759,3 +800,112 @@ class TestCountryProtocolPaths:
 
     def test_country_index_constant_is_used_by_builders(self):
         assert country_index_path() == "countries/README.md"
+
+
+# L. Root README country index ------------------------------------------------
+
+
+class TestRootReadmeCountryIndex:
+    def test_render_block_is_delimited_by_markers(self):
+        block = render_root_country_index_block(country_index_entries(_country_candidates()))
+        assert block.startswith(ROOT_README_COUNTRY_START_MARKER + "\n")
+        assert block.rstrip().endswith(ROOT_README_COUNTRY_END_MARKER)
+        assert "## \U0001f30d Proxies by Country" in block
+        assert "Click a country to open its subscription links." in block
+        assert "| Country | Code | Proxies | Links |" in block
+        assert "| --- | --- | ---: | --- |" in block
+
+    def test_render_block_names_flags_counts_links(self):
+        block = render_root_country_index_block(country_index_entries(_country_candidates()))
+        assert (
+            "| [\U0001f1e9\U0001f1ea Germany](./output/countries/DE/) | DE | 1 "
+            "| [Open](./output/countries/DE/) |"
+        ) in block
+        assert (
+            "| [\U0001f1fa\U0001f1f8 United States](./output/countries/US/) | US | 3 "
+            "| [Open](./output/countries/US/) |"
+        ) in block
+        assert (
+            "| [\U0001f310 Unknown](./output/countries/XX/) | XX | 1 "
+            "| [Open](./output/countries/XX/) |"
+        ) in block
+        assert "[Open \U0001f310](./output/countries/XX/) |" not in block
+
+    def test_render_block_sorted_by_iso_code(self):
+        block = render_root_country_index_block(country_index_entries(_country_candidates()))
+        rows = _root_rows(block)
+        assert rows == [("DE", 1), ("US", 3), ("XX", 1)]
+
+    def test_render_block_counts_equal_all_feed_counts(self):
+        candidates = _country_candidates()
+        artifacts = _artifacts(candidates)
+        block = render_root_country_index_block(country_index_entries(candidates))
+        for code, count in _root_rows(block):
+            assert artifacts[f"countries/{code}/all.txt"].count == count
+
+    def test_render_block_empty_entries_render_header_only(self):
+        block = render_root_country_index_block(())
+        assert "| Country | Code | Proxies | Links |" in block
+        assert _root_rows(block) == []
+        assert "XX" not in block
+
+    def test_render_block_xx_only_when_non_empty(self):
+        us_only = [_ranked(1, "vless", VLESS, "vless.example.com", 443, country_code="US")]
+        block = render_root_country_index_block(country_index_entries(us_only))
+        rows = _root_rows(block)
+        assert [code for code, _ in rows] == ["US"]
+        assert "XX" not in block
+
+    def test_root_table_matches_country_index_counts(self):
+        candidates = _country_candidates()
+        artifacts = _artifacts(candidates)
+        index = artifacts["countries/README.md"].content
+        root = render_root_country_index_block(country_index_entries(candidates))
+        assert _root_rows(root) == _index_rows(index)
+
+    def test_update_root_readme_replaces_only_marker_region(self, tmp_path):
+        readme = tmp_path / "README.md"
+        readme.write_text(
+            "# Test\n\n## Subscriptions\n\ncombined\n\n"
+            + ROOT_README_COUNTRY_START_MARKER
+            + "\nSTALE TABLE\n"
+            + ROOT_README_COUNTRY_END_MARKER
+            + "\n\nprose after\n\n## Quick Start\n",
+            encoding="utf-8",
+        )
+        assert (
+            update_root_country_index(readme, country_index_entries(_country_candidates())) is True
+        )
+        text = readme.read_text(encoding="utf-8")
+        assert text.startswith("# Test\n\n## Subscriptions\n\ncombined\n\n")
+        assert "STALE TABLE" not in text
+        assert (
+            "| [\U0001f1e9\U0001f1ea Germany](./output/countries/DE/) | DE | 1 "
+            "| [Open](./output/countries/DE/) |"
+        ) in text
+        assert text.endswith("\n\nprose after\n\n## Quick Start\n")
+
+    def test_update_root_readme_inserts_when_markers_missing(self, tmp_path):
+        readme = tmp_path / "README.md"
+        readme.write_text("# Test\n\nsome content\n\n## Quick Start\nrest\n", encoding="utf-8")
+        assert update_root_country_index(readme, country_index_entries([])) is True
+        text = readme.read_text(encoding="utf-8")
+        assert "## \U0001f30d Proxies by Country" in text
+        assert text.index("## \U0001f30d Proxies by Country") < text.index("## Quick Start")
+        assert "rest" in text and "some content" in text
+
+    def test_update_root_readme_is_byte_identical_on_repeat(self, tmp_path):
+        readme = tmp_path / "README.md"
+        readme.write_text("# T\n\n## Quick Start\n", encoding="utf-8")
+        entries = country_index_entries(_country_candidates())
+        update_root_country_index(readme, entries)
+        first = readme.read_text(encoding="utf-8")
+        update_root_country_index(readme, entries)
+        second = readme.read_text(encoding="utf-8")
+        assert second == first
+
+    def test_update_root_readme_missing_file_is_noop(self, tmp_path):
+        missing = tmp_path / "does-not-exist" / "README.md"
+        entries = country_index_entries(_country_candidates())
+        assert update_root_country_index(missing, entries) is False
+        assert not missing.exists()

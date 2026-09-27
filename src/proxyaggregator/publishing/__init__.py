@@ -12,7 +12,13 @@ publishing is likewise deferred.
 
 from proxyaggregator.publishing.countries import (
     COUNTRY_RAW_SUBSCRIPTIONS_BASE_URL,
+    ROOT_README_COUNTRY_END_MARKER,
+    ROOT_README_COUNTRY_LINK_PREFIX,
+    ROOT_README_COUNTRY_START_MARKER,
     build_country_artifacts,
+    country_index_entries,
+    render_root_country_index_block,
+    update_root_country_index,
 )
 from proxyaggregator.publishing.errors import SubscriptionError
 from proxyaggregator.publishing.feeds import (
@@ -78,6 +84,9 @@ __all__ = [
     "MANIFEST_FILENAME",
     "PROTOCOL_DISPLAY_NAMES",
     "REMARK_AUTHOR",
+    "ROOT_README_COUNTRY_END_MARKER",
+    "ROOT_README_COUNTRY_LINK_PREFIX",
+    "ROOT_README_COUNTRY_START_MARKER",
     "SUPPORTED_PROTOCOLS",
     "PublishError",
     "RankedProxy",
@@ -102,6 +111,7 @@ __all__ = [
     "country_dir_name",
     "country_dir_path",
     "country_flag",
+    "country_index_entries",
     "country_index_path",
     "country_protocol_path",
     "country_readme_path",
@@ -112,6 +122,8 @@ __all__ = [
     "protocol_display_name",
     "publish_release",
     "publish_subscriptions",
+    "render_root_country_index_block",
+    "update_root_country_index",
     "verify_release",
     "write_artifact",
     "write_release_manifest",
