@@ -1,6 +1,6 @@
 # 🇮🇹 Italy
 
-2 healthy proxies.
+3 healthy proxies.
 
 ## 📋 All Protocols
 
