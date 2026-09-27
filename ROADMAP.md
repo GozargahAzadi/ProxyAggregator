@@ -107,7 +107,8 @@
 - [x] `record-publish` writes the timestamp only after a successful output guard (failed runs never advance the gate)
 - [x] `concurrency.group: publish` + `cancel-in-progress: false` kept so overlapping triggers serialize and never race
 - [x] Deterministic freshness tests (threshold, UTC safety, failure semantics)
-- [ ] *(observe a real scheduled / dispatched GitHub run and confirm the gate + publish cadence)*
+- [x] *Verified live*: a real run executed the gate (`Decision: RUN`), published, committed `output/published_at.json` (`2026-09-27T18:56:09Z`), and a request 95 s later correctly produced `Decision: SKIP` with every expensive step skipped
+- [ ] *(a scheduled `*/5` run has still never been observed firing on time; GitHub's scheduler remains best-effort)*
 
 ## Phase 20 — GitHub-Native Trigger Reliability
 
@@ -118,7 +119,15 @@
 - [x] Least-privilege permissions (`contents: write` for the dispatch endpoint, `actions: read` for the active-run check); separate concurrency group with `cancel-in-progress: true` so production is never cancelled
 - [x] Workflow contract tests pin the offset schedule, the repository-dispatch (never forced) path, the guard, and the isolation from the `publish` concurrency group
 - [x] No application, parser, pipeline, health, GeoIP, database, or Phase 18 freshness logic changed
-- [ ] *(observe a real watchdog-scheduled / requested run; GitHub cron stays best-effort and no cadence is guaranteed)*
+- [x] *Verified live*: GitHub registered the workflow as `active` and a real `repository_dispatch` request published end-to-end (run `36341771327`, bot commit `c37eade`), confirming the watchdog's exact API path works
+- [x] *Verified live*: a watchdog-style request is **not** forced — it was gated (`SKIP`), so machine triggers can never bypass the cadence
+- [ ] *(a watchdog-scheduled run has not yet been observed: GitHub has not started its first tick, 22 min after it was due — GitHub cron stays best-effort and no cadence is guaranteed)*
+
+## Phase 21 — Publisher Push Resilience (identified, not started)
+
+- [ ] **Blocking defect**: the commit step does a bare `git push`. Any commit landing during the ~11.5-minute run makes the push non-fast-forward and the whole publication is lost — reproduced twice (runs `36340267647`, `36340424631`, both `! [rejected] main -> main (fetch first)`), each after ~11 min of runner work
+- [ ] Make the push resilient (fetch/rebase onto `origin/main` before pushing) so an unrelated commit cannot discard a successful publication
+- [ ] The publication also *deletes* previously published files when a country has no eligible proxies (a publish commit removed ~28 tracked files); confirm that shrinkage is intended
 
 ## Phase 10 — API (Optional)
 
