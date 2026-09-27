@@ -543,6 +543,55 @@ class TestRepositoryContract:
         assert "cancel-in-progress: false" in text
         assert "Guard against empty or invalid output" in text
 
+    def test_watchdog_request_stays_subject_to_the_freshness_gate(self):
+        text = (ROOT_DIR / ".github" / "workflows" / "publish.yml").read_text(encoding="utf-8")
+        # A machine-triggered run must arrive as a repository dispatch, and the
+        # forced path must stay manual-only, so a watchdog can never publish
+        # outside the 13-minute cadence.
+        assert "repository_dispatch:" in text
+        assert "types: [publish-request]" in text
+        assert 'if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then' in text
+        assert 'flag="--force"' in text
+
+    def test_watchdog_adds_an_independent_offset_schedule(self):
+        text = (ROOT_DIR / ".github" / "workflows" / "publish-watchdog.yml").read_text(
+            encoding="utf-8"
+        )
+        # Assertions run against the executable body: comments document the
+        # invariants, so they must not be what satisfies them.
+        body = "\n".join(line for line in text.splitlines() if not line.lstrip().startswith("#"))
+        # A separate workflow on a separate cron is a second scheduling
+        # opportunity; the offset keeps it from colliding with `*/5`.
+        assert 'cron: "3,8,13,18,23,28,33,38,43,48,53,58 * * * *"' in body
+        assert 'cron: "*/5 * * * *"' not in body
+        # It requests a *gated* run: repository_dispatch, never the
+        # workflow-dispatch endpoint that the freshness gate forces.
+        assert 'gh api --method POST "repos/$REPO/dispatches"' in body
+        assert "-f event_type=publish-request" in body
+        assert "actions/workflows/publish.yml/dispatches" not in body
+        # GitHub requires contents:write for repository dispatch; the watchdog
+        # never uses it to write repository content.
+        assert "contents: write" in body
+        assert "actions/checkout" not in body
+        assert "git push" not in body
+        # A request is skipped while a publish run is active or queued, so two
+        # requests can never end up serialized behind each other.
+        assert "actions: read" in body
+        assert "status=in_progress" in body
+        assert "status=queued" in body
+        assert "group: publish-watchdog" in body
+        assert "cancel-in-progress: true" in body
+
+    def test_watchdog_does_not_share_the_publish_concurrency_group(self):
+        root = ROOT_DIR / ".github" / "workflows"
+        watchdog = (root / "publish-watchdog.yml").read_text(encoding="utf-8")
+        publish = (root / "publish.yml").read_text(encoding="utf-8")
+        # Serialization of publication runs stays in publish.yml; the watchdog
+        # must not cancel or join that group or it could cancel production.
+        assert "group: publish\n" in publish
+        assert "group: publish\n" not in watchdog
+        assert "publish-watchdog" not in publish
+
     def test_default_geoip_db_path_setting(self):
         assert Settings().geoip_db_path == "GeoLite2-City.mmdb"
 

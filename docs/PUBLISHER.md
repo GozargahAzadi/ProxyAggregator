@@ -94,17 +94,63 @@ output — this validates the Phase 9 chain locally.
 
 ## GitHub Actions workflow (`.github/workflows/publish.yml`)
 
-- Triggers: `workflow_dispatch` (manual) and `schedule` every `5` minutes
-  (Phase 18). The 5-minute trigger gives GitHub many opportunities to start a
-  run, but real publications are capped at ~once per 15 minutes by the
-  freshness gate below, so the cadence is a *reliability* improvement, never
-  more frequent output.
+- Triggers: `workflow_dispatch` (manual), `repository_dispatch` (Phase 20
+  watchdog request), and `schedule` every `5` minutes (Phase 18). The 5-minute
+  trigger gives GitHub many opportunities to start a run, but real publications
+  are capped at ~once per 15 minutes by the freshness gate below, so the
+  cadence is a *reliability* improvement, never more frequent output.
 - `permissions: contents: write` — least-privilege scope.
 - `concurrency.group: publish` with `cancel-in-progress: false` so scheduled
   runs never race each other on the same branch: an overlapping trigger is
   queued until the active run finishes and then reads the committed state, so
   the freshness gate is always evaluated against the latest successful
   publication and the pipeline can never be killed by a newer run.
+
+### Phase 20 — publish watchdog (`.github/workflows/publish-watchdog.yml`)
+
+GitHub's scheduler is best-effort: a `schedule` run may be delayed or dropped
+when GitHub is under load, and the delay can be long. Measured on this
+repository, the Phase 18 `*/5` cron produced only **~0.3 runs per hour** — the
+gaps between scheduled runs were 2.3 to 5.8 hours — so the intended
+15-minute cadence degraded to a multi-hour cadence even though twelve
+opportunities per hour were nominally configured.
+
+The watchdog is a second, independent scheduled entry point:
+
+- `schedule: "3,8,13,18,23,28,33,38,43,48,53,58 * * * *"` — the 5-minute
+  GitHub minimum, offset by three minutes from the production `*/5` cron so the
+  two never target the same minute. Two workflows are two separate scheduling
+  opportunities: a tick missed by one still has the other. `workflow_dispatch`
+  is also accepted so the dispatch path can be verified by hand.
+- It publishes nothing. Its single job checks whether a `publish.yml` run is
+  already `in_progress` or `queued` and, only when none is, `POST`s a
+  `repository_dispatch` event (`event_type: publish-request`) to start one.
+- `permissions: contents: write` (required by GitHub for the repository
+  dispatch endpoint) plus `actions: read` (the active-run check). The workflow
+  has no checkout and never writes repository content.
+- `concurrency.group: publish-watchdog` with `cancel-in-progress: true` — a
+  superseded tick is a single API call that publishes nothing, and this
+  guarantees at most one request at a time, so two requests can never queue
+  behind each other.
+
+Two safety properties are deliberate:
+
+1. **A watchdog request stays gated.** The freshness step forces `RUN` only for
+   `workflow_dispatch`, i.e. a human asking for an immediate publication. The
+   watchdog therefore uses `repository_dispatch`, which the gate treats exactly
+   like a scheduled run: it can add scheduling *opportunities* but can never
+   publish outside the 13-minute cadence.
+2. **No request is ever queued behind a live publication.** A queued run starts
+   from the tree that was current when it was requested, which can predate the
+   previous publication's commit, so its freshness gate could read a stale
+   `output/published_at.json` and allow a second publication inside the
+   threshold window. The active-run check skips such requests and the next tick
+   asks again.
+
+Honest limit: this multiplies the number of GitHub-native scheduling
+opportunities; it does not make GitHub's scheduler reliable. Both crons remain
+best-effort, so no cadence is guaranteed — the freshness gate remains the only
+thing that actually caps how often output is published.
 
 ### Phase 18 — freshness gate
 

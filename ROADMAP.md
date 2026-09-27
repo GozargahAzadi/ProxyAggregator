@@ -109,6 +109,17 @@
 - [x] Deterministic freshness tests (threshold, UTC safety, failure semantics)
 - [ ] *(observe a real scheduled / dispatched GitHub run and confirm the gate + publish cadence)*
 
+## Phase 20 — GitHub-Native Trigger Reliability
+
+- [x] Measured the real scheduler behaviour: the `*/5` cron produced only ~0.3 runs/hour (gaps of 2.3–5.8 h), so the 15-minute cadence degraded to hours
+- [x] `publish-watchdog.yml`: a second scheduled entry point on a cron offset by 3 minutes from `*/5`, so a missed tick has an independent second chance
+- [x] Watchdog only *requests* a run (`repository_dispatch` `publish-request`) and never publishes, so the 13-minute freshness gate still caps real publications
+- [x] Watchdog skips its request while a `publish` run is `in_progress`/`queued`, so a request is never serialized behind a live publication (which would read a pre-publication `published_at.json`)
+- [x] Least-privilege permissions (`contents: write` for the dispatch endpoint, `actions: read` for the active-run check); separate concurrency group with `cancel-in-progress: true` so production is never cancelled
+- [x] Workflow contract tests pin the offset schedule, the repository-dispatch (never forced) path, the guard, and the isolation from the `publish` concurrency group
+- [x] No application, parser, pipeline, health, GeoIP, database, or Phase 18 freshness logic changed
+- [ ] *(observe a real watchdog-scheduled / requested run; GitHub cron stays best-effort and no cadence is guaranteed)*
+
 ## Phase 10 — API (Optional)
 
 - [ ] FastAPI endpoints

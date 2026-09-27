@@ -2,6 +2,14 @@ name: Publish
 
 on:
   workflow_dispatch:
+  # Phase 20: the publish watchdog asks for a run with this event. It is
+  # deliberately *not* `workflow_dispatch`: the freshness gate below forces
+  # Decision RUN only for `workflow_dispatch` (a human asking for an immediate
+  # publication), so a watchdog request stays subject to the same 13-minute
+  # gate as a scheduled run. A watchdog can therefore add scheduling
+  # opportunities without ever bypassing the publication cadence.
+  repository_dispatch:
+    types: [publish-request]
   schedule:
     # Trigger every 5 minutes (Phase 18): scheduled workflows are best-effort
     # and may be delayed, so a 5-minute trigger gives many opportunities to

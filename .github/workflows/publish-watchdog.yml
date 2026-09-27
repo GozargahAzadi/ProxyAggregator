@@ -1,0 +1,83 @@
+name: Publish Watchdog
+
+on:
+  # Phase 20. GitHub's scheduler is best-effort: runs queued by `schedule` may
+  # be delayed or dropped during periods of high load. Measured on this
+  # repository, the production `*/5` cron produced only ~0.3 runs per hour
+  # (observed gaps of 2.3-5.8 hours between scheduled runs), so the intended
+  # 15-minute publication cadence degraded to a multi-hour cadence.
+  #
+  # This workflow is a second, independent scheduled entry point on a cron
+  # offset by three minutes from the production cron. Two separate workflows
+  # are two separate scheduling opportunities, so a tick missed by one of them
+  # still has the other one to start a run. The interval is the 5-minute
+  # GitHub minimum; the offset keeps the two crons from firing at the same
+  # minute.
+  schedule:
+    - cron: "3,8,13,18,23,28,33,38,43,48,53,58 * * * *"
+  # Manual trigger so the dispatch path can be verified without waiting for a
+  # cron tick.
+  workflow_dispatch:
+
+permissions:
+  # GitHub requires `contents: write` for the repository dispatch endpoint.
+  # This workflow only ever *requests* a run; it never writes repository
+  # content (no checkout, no `git push`).
+  contents: write
+  # Read-only, used to avoid requesting a run while one is already queued or
+  # running. Concurrency serializes publication runs
+  # (`cancel-in-progress: false` in publish.yml), so a request sent while a
+  # run is active would simply queue. A queued run starts from the tree that
+  # was current when it was requested, which can predate the previous
+  # publication's commit, so the freshness gate could read a stale
+  # `output/published_at.json` and allow a second publication inside the
+  # threshold window. Skipping the request avoids that path entirely; the
+  # next tick asks again.
+  actions: read
+
+concurrency:
+  group: publish-watchdog
+  # The job is a single API call and publishes nothing, so a superseded tick
+  # is safe to drop. This also guarantees at most one request at a time, so
+  # two requests can never queue behind each other.
+  cancel-in-progress: true
+
+jobs:
+  request-publication:
+    name: Request publication
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check for an active publish run
+        id: check
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PUBLISH_WORKFLOW: publish.yml
+          REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          running="$(gh api "repos/$REPO/actions/workflows/$PUBLISH_WORKFLOW/runs?status=in_progress&per_page=1" --jq '.total_count')"
+          queued="$(gh api "repos/$REPO/actions/workflows/$PUBLISH_WORKFLOW/runs?status=queued&per_page=1" --jq '.total_count')"
+          echo "publish runs: in_progress=$running queued=$queued"
+          if [ "$running" -gt 0 ] || [ "$queued" -gt 0 ]; then
+            echo "dispatch=false" >> "$GITHUB_OUTPUT"
+            echo "A publish run is already active or queued; skipping this request."
+          else
+            echo "dispatch=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      # `repository_dispatch`, not `workflow_dispatch`: the publish workflow
+      # forces its freshness gate to RUN for `workflow_dispatch`, which would
+      # let a machine-triggered request bypass the 13-minute publication
+      # cadence. A repository dispatch is gated exactly like a scheduled run.
+      - name: Request publish run
+        if: steps.check.outputs.dispatch == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          gh api --method POST "repos/$REPO/dispatches" \
+            -f event_type=publish-request \
+            --fail
+          echo "Requested a publish run (event_type=publish-request)."
