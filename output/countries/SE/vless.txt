@@ -1,1 +1,1 @@
-vless://97532b08-357e-4140-a6f0-8e07f2ed3327@103.177.249.40:2083?host=yf.962456.xyz&network=ws&path=%2Fproxyip%3Dkr.william.us.ci&security=tls&sni=yf.962456.xyz#%F0%9F%87%B8%F0%9F%87%AA%20SE%20%7C%20VLESS%20%7C%201720ms%20%7C%20GozargahAzadi
+vless://97532b08-357e-4140-a6f0-8e07f2ed3327@103.177.249.40:2083?host=yf.962456.xyz&network=ws&path=%2Fproxyip%3Dkr.william.us.ci&security=tls&sni=yf.962456.xyz#%F0%9F%87%B8%F0%9F%87%AA%20SE%20%7C%20VLESS%20%7C%201913ms%20%7C%20GozargahAzadi
