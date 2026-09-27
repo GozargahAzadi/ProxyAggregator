@@ -174,6 +174,12 @@ HTTPS — Base64
 https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/https-base64.txt
 ```
 
+## 🌍 پروکسی بر اساس کشور
+
+<br/>
+
+🦋 **برای دریافت پروکسی از یک کشور خاص کلیک کنید** 👉 [🌍 کشورهای موجود (Available Countries)](./output/countries/README.md)
+
 ## شروع سریع
 
 ```bash

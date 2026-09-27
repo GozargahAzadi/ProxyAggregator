@@ -174,6 +174,12 @@ HTTPS — Base64
 https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/https-base64.txt
 ```
 
+## 🌍 Proxies by Country
+
+<br/>
+
+🦋 **Click here to get proxies from a specific country** 👉 [🌍 Available Countries](./output/countries/README.md)
+
 ## Quick Start
 
 ```bash
