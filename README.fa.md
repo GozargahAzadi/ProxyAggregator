@@ -21,34 +21,158 @@
 فیدهای اشتراک تولیدشده در پوشهٔ `output/` منتشر می‌شوند؛ هم به‌صورت ساده
 (URIهای جدا شده با خط جدید)، هم به‌صورت base64 (نسخهٔ استاندارد Base64 فید
 ساده) و هم فیدهای مستقل برای هر پروتکل. همهٔ فایل‌ها قطعی (deterministic)
-هستند و در هر اجرای pipeline از نو تولید می‌شوند؛ هر URL قابل استفاده در
-جدول‌های زیر آمده است.
+هستند و در هر اجرای pipeline از نو تولید می‌شوند. هر URL قابل استفاده در زیر
+داخل یک code block جدا قرار دارد تا GitHub دکمهٔ Copy کنار آن نمایش دهد.
 
 ### فیدهای ترکیبی
 
-| فید (Feed) | لینک اشتراک (Subscription URL) |
-| --- | --- |
-| ProxyAggregator | `https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/proxyaggregator.txt` |
-| ProxyAggregator Base64 | `https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/proxyaggregator-base64.txt` |
-| ProxyAggregator JSON | `https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/proxyaggregator.json` |
-| Manifest (JSON) | `https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/manifest.json` |
+ProxyAggregator — ساده (Plain)
+
+```text
+https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/proxyaggregator.txt
+```
+
+ProxyAggregator — Base64
+
+```text
+https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/proxyaggregator-base64.txt
+```
+
+ProxyAggregator — JSON
+
+```text
+https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/proxyaggregator.json
+```
+
+Manifest — JSON
+
+```text
+https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/manifest.json
+```
 
 ### فیدهای پروتکل
 
 هر پروتکل در زیر، هم فید ساده دارد و هم نسخهٔ base64 آن.
 
-| پروتکل (Protocol) | ساده (Plain) | Base64 |
-| --- | --- | --- |
-| VLESS | `https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/vless.txt` | `https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/vless-base64.txt` |
-| VMess | `https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/vmess.txt` | `https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/vmess-base64.txt` |
-| Trojan | `https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/trojan.txt` | `https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/trojan-base64.txt` |
-| Shadowsocks | `https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/shadowsocks.txt` | `https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/shadowsocks-base64.txt` |
-| Hysteria | `https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/hysteria.txt` | `https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/hysteria-base64.txt` |
-| Hysteria2 | `https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/hysteria2.txt` | `https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/hysteria2-base64.txt` |
-| SOCKS4 | `https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/socks4.txt` | `https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/socks4-base64.txt` |
-| SOCKS5 | `https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/socks5.txt` | `https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/socks5-base64.txt` |
-| HTTP | `https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/http.txt` | `https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/http-base64.txt` |
-| HTTPS | `https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/https.txt` | `https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/https-base64.txt` |
+VLESS — ساده (Plain)
+
+```text
+https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/vless.txt
+```
+
+VLESS — Base64
+
+```text
+https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/vless-base64.txt
+```
+
+VMess — ساده (Plain)
+
+```text
+https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/vmess.txt
+```
+
+VMess — Base64
+
+```text
+https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/vmess-base64.txt
+```
+
+Trojan — ساده (Plain)
+
+```text
+https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/trojan.txt
+```
+
+Trojan — Base64
+
+```text
+https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/trojan-base64.txt
+```
+
+Shadowsocks — ساده (Plain)
+
+```text
+https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/shadowsocks.txt
+```
+
+Shadowsocks — Base64
+
+```text
+https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/shadowsocks-base64.txt
+```
+
+Hysteria — ساده (Plain)
+
+```text
+https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/hysteria.txt
+```
+
+Hysteria — Base64
+
+```text
+https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/hysteria-base64.txt
+```
+
+Hysteria2 — ساده (Plain)
+
+```text
+https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/hysteria2.txt
+```
+
+Hysteria2 — Base64
+
+```text
+https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/hysteria2-base64.txt
+```
+
+SOCKS4 — ساده (Plain)
+
+```text
+https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/socks4.txt
+```
+
+SOCKS4 — Base64
+
+```text
+https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/socks4-base64.txt
+```
+
+SOCKS5 — ساده (Plain)
+
+```text
+https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/socks5.txt
+```
+
+SOCKS5 — Base64
+
+```text
+https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/socks5-base64.txt
+```
+
+HTTP — ساده (Plain)
+
+```text
+https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/http.txt
+```
+
+HTTP — Base64
+
+```text
+https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/http-base64.txt
+```
+
+HTTPS — ساده (Plain)
+
+```text
+https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/https.txt
+```
+
+HTTPS — Base64
+
+```text
+https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/https-base64.txt
+```
 
 ## شروع سریع
 
