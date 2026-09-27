@@ -1,30 +1,30 @@
-# ProxyAggregator
+# پروکسی‌اگریگیتور (ProxyAggregator)
 
-**English** | [فارسی](./README.fa.md)
+[English](./README.md) | **فارسی**
 
-Public V2Ray/Proxy Config Aggregator that collects, parses, normalizes,
-deduplicates, and health-checks public proxy configurations, then publishes
-them as subscription files via GitHub.
+جمع‌آوری‌کنندهٔ عمومی کانفیگ‌های V2Ray/Proxy: کانفیگ‌های عمومی را جمع‌آوری،
+تحلیل (parse)، نرمال‌سازی، حذف تکراری و بررسی سلامت می‌کند و سپس آن‌ها را
+به‌صورت فایل‌های اشتراک (Subscription) از طریق GitHub منتشر می‌کند.
 
-## Features
+## امکانات
 
-- **Multi-protocol support**: VLESS, VMess, Trojan, Shadowsocks, Hysteria, Hysteria2, SOCKS4, SOCKS5, HTTP, HTTPS
-- **Real IP resolution**: Resolves actual endpoint IPs for accurate GeoIP lookup
-- **GeoIP enrichment**: MaxMind GeoLite2-based geolocation
-- **Health checking**: Latency and connectivity verification
-- **Deduplication**: Removes duplicate configurations
-- **Subscription output**: Standard proxy subscription formats
-- **GitHub Actions native**: Designed to run entirely in CI/CD
+- **پشتیبانی از چند پروتکل**: VLESS، VMess، Trojan، Shadowsocks، Hysteria، Hysteria2، SOCKS4، SOCKS5، HTTP، HTTPS
+- **تشخیص IP واقعی**: IP واقعی سرورها را برای جست‌وجوی دقیق GeoIP شناسایی می‌کند
+- **افزوده‌شدن اطلاعات جغرافیایی (GeoIP)**: مکان‌یابی بر پایهٔ MaxMind GeoLite2
+- **بررسی سلامت**: بررسی تاخیر (Latency) و اتصال‌پذیری
+- **حذف تکراری‌ها**: حذف کانفیگ‌های تکراری (Deduplication)
+- **خروجی اشتراک**: خروجی در قالب استاندارد فایل‌های Subscription
+- **ساخته‌شده برای GitHub Actions**: طراحی‌شده تا کاملاً در CI/CD اجرا شود
 
-## Subscriptions
+## اشتراک‌ها
 
-Generated subscription feeds are published to the `output/` directory as plain
-(newline-delimited URIs), base64 (standard Base64 of the plain feed), and
-per-protocol feeds. All files are deterministic and re-generated on every
-pipeline run. Every usable URL below sits in its own fenced code block, so
-GitHub shows a native Copy button next to it.
+فیدهای اشتراک تولیدشده در پوشهٔ `output/` منتشر می‌شوند؛ هم به‌صورت ساده
+(URIهای جدا شده با خط جدید)، هم به‌صورت base64 (نسخهٔ استاندارد Base64 فید
+ساده) و هم فیدهای مستقل برای هر پروتکل. همهٔ فایل‌ها قطعی (deterministic)
+هستند و در هر اجرای pipeline از نو تولید می‌شوند. هر URL قابل استفاده در زیر
+داخل یک code block جدا قرار دارد تا GitHub دکمهٔ Copy کنار آن نمایش دهد.
 
-### Combined feeds
+### فیدهای ترکیبی
 
 ProxyAggregator:
 
@@ -50,9 +50,9 @@ Manifest (JSON):
 https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/manifest.json
 ```
 
-### Protocol feeds
+### فیدهای پروتکل
 
-Each protocol below ships a plain feed and its base64 variant.
+هر پروتکل در زیر، هم فید ساده دارد و هم نسخهٔ base64 آن.
 
 VLESS:
 
@@ -174,35 +174,35 @@ HTTPS Base64:
 https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/https-base64.txt
 ```
 
-## Quick Start
+## شروع سریع
 
 ```bash
-# Clone the repository
+# کلون کردن مخزن
 git clone https://github.com/YOUR_USERNAME/ProxyAggregator.git
 cd ProxyAggregator
 
-# Install dependencies
+# نصب وابستگی‌ها
 uv sync
 
-# Run tests
+# اجرای تست‌ها
 uv run pytest
 
-# Run linter
+# اجرای لینتر
 uv run ruff check src/ tests/
 ```
 
-## Configuration
+## پیکربندی
 
-See [docs/CONFIGURATION.md](docs/CONFIGURATION.md) for all available settings.
+همهٔ تنظیمات موجود در [docs/CONFIGURATION.md](docs/CONFIGURATION.md) (به انگلیسی).
 
-## Architecture
+## معماری
 
-See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the full architectural overview.
+نمای کلی معماری در [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) (به انگلیسی).
 
-## Roadmap
+## نقشه راه
 
-See [ROADMAP.md](ROADMAP.md) for the development plan.
+برنامهٔ توسعه در [ROADMAP.md](ROADMAP.md) (به انگلیسی).
 
-## License
+## مجوز
 
 MIT
