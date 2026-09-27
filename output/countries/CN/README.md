@@ -13,5 +13,5 @@
 
 | Protocol | GitHub | Raw |
 |---|---|---|
-| Socks5 | [Open](./socks5.txt) | `https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/countries/CN/socks5.txt` |
-| Socks5 Base64 | [Open](./socks5-base64.txt) | `https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/countries/CN/socks5-base64.txt` |
+| Shadowsocks | [Open](./shadowsocks.txt) | `https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/countries/CN/shadowsocks.txt` |
+| Shadowsocks Base64 | [Open](./shadowsocks-base64.txt) | `https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/countries/CN/shadowsocks-base64.txt` |
