@@ -21,158 +21,33 @@ them as subscription files via GitHub.
 Generated subscription feeds are published to the `output/` directory as plain
 (newline-delimited URIs), base64 (standard Base64 of the plain feed), and
 per-protocol feeds. All files are deterministic and re-generated on every
-pipeline run. Every usable URL below sits in its own fenced code block, so
-GitHub shows a native Copy button next to it.
+pipeline run; every usable URL is listed in the tables below.
 
 ### Combined feeds
 
-ProxyAggregator:
-
-```text
-https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/proxyaggregator.txt
-```
-
-ProxyAggregator Base64:
-
-```text
-https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/proxyaggregator-base64.txt
-```
-
-ProxyAggregator JSON:
-
-```text
-https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/proxyaggregator.json
-```
-
-Manifest (JSON):
-
-```text
-https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/manifest.json
-```
+| Feed | Subscription URL |
+| --- | --- |
+| ProxyAggregator | `https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/proxyaggregator.txt` |
+| ProxyAggregator Base64 | `https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/proxyaggregator-base64.txt` |
+| ProxyAggregator JSON | `https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/proxyaggregator.json` |
+| Manifest (JSON) | `https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/manifest.json` |
 
 ### Protocol feeds
 
 Each protocol below ships a plain feed and its base64 variant.
 
-VLESS:
-
-```text
-https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/vless.txt
-```
-
-VLESS Base64:
-
-```text
-https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/vless-base64.txt
-```
-
-VMess:
-
-```text
-https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/vmess.txt
-```
-
-VMess Base64:
-
-```text
-https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/vmess-base64.txt
-```
-
-Trojan:
-
-```text
-https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/trojan.txt
-```
-
-Trojan Base64:
-
-```text
-https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/trojan-base64.txt
-```
-
-Shadowsocks:
-
-```text
-https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/shadowsocks.txt
-```
-
-Shadowsocks Base64:
-
-```text
-https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/shadowsocks-base64.txt
-```
-
-Hysteria:
-
-```text
-https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/hysteria.txt
-```
-
-Hysteria Base64:
-
-```text
-https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/hysteria-base64.txt
-```
-
-Hysteria2:
-
-```text
-https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/hysteria2.txt
-```
-
-Hysteria2 Base64:
-
-```text
-https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/hysteria2-base64.txt
-```
-
-SOCKS4:
-
-```text
-https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/socks4.txt
-```
-
-SOCKS4 Base64:
-
-```text
-https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/socks4-base64.txt
-```
-
-SOCKS5:
-
-```text
-https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/socks5.txt
-```
-
-SOCKS5 Base64:
-
-```text
-https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/socks5-base64.txt
-```
-
-HTTP:
-
-```text
-https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/http.txt
-```
-
-HTTP Base64:
-
-```text
-https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/http-base64.txt
-```
-
-HTTPS:
-
-```text
-https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/https.txt
-```
-
-HTTPS Base64:
-
-```text
-https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/https-base64.txt
-```
+| Protocol | Plain | Base64 |
+| --- | --- | --- |
+| VLESS | `https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/vless.txt` | `https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/vless-base64.txt` |
+| VMess | `https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/vmess.txt` | `https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/vmess-base64.txt` |
+| Trojan | `https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/trojan.txt` | `https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/trojan-base64.txt` |
+| Shadowsocks | `https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/shadowsocks.txt` | `https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/shadowsocks-base64.txt` |
+| Hysteria | `https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/hysteria.txt` | `https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/hysteria-base64.txt` |
+| Hysteria2 | `https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/hysteria2.txt` | `https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/hysteria2-base64.txt` |
+| SOCKS4 | `https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/socks4.txt` | `https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/socks4-base64.txt` |
+| SOCKS5 | `https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/socks5.txt` | `https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/socks5-base64.txt` |
+| HTTP | `https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/http.txt` | `https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/http-base64.txt` |
+| HTTPS | `https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/https.txt` | `https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/https-base64.txt` |
 
 ## Quick Start
 
