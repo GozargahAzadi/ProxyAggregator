@@ -606,6 +606,8 @@ class TestPublishRelease:
         )
 
     def test_stale_protocol_file_removed_from_surviving_directory(self, tmp_path):
+        from proxyaggregator import pipeline as pipeline_module
+
         de_dir = tmp_path / COUNTRIES_DIR / "DE"
         de_dir.mkdir(parents=True)
         (de_dir / "socks5.txt").write_text("stale")
@@ -880,4 +882,3 @@ class TestVerifyRelease:
             verify_release(tmp_path)
         assert secret not in str(exc_info.value)
         assert "SecretNode" not in str(exc_info.value)
-                                                                 
