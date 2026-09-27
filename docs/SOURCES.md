@@ -87,6 +87,61 @@ checkout → uv sync → mkdir output → alembic upgrade head
 Seeding runs **before** the pipeline so the pipeline's `no_configured_sources`
 fast-fail reflects the real, version-controlled definitions.
 
+## Source content taxonomy
+
+The `type: "http"` collector fetches whatever a URL returns; the pipeline then
+feeds the response through the shared extractor (source text → per-node URIs).
+Whether a URL can be added to `config/sources.json` today depends on the
+**container format** of the payload it returns, not on the transport. Sources
+are triaged into three tiers, and this triage is deliberate — it does **not**
+copy whatever NiREvil's own source list looks like.
+
+### Tier 1 — directly ingestible (no new code)
+
+Feed lines are already `scheme://…` node URIs understood by the existing
+extractor:
+
+- VLESS, VMess, Trojan, Shadowsocks, Hysteria / Hysteria2
+- SOCKS (SOCKS4 / SOCKS5)
+- HTTP / HTTPS
+
+These map directly onto the ten canonical protocols (`SUPPORTED_PROTOCOLS`) and
+flow through parse → dedup → DNS/GeoIP → health → scoring → publishing with zero
+changes.
+
+### Tier 2 — requires a new parser
+
+The source ships the *same* proxies inside a wrapper format that must first be
+translated into per-node URIs:
+
+- Clash / Mihomo YAML (`proxies:`)
+- sing-box JSON (`outbounds` / `inbounds`)
+- other subscription envelope formats (Base64-wrapped lists, etc.)
+
+Adding one of these means writing a parser that emits the existing node model;
+dedup, health, GeoIP, scoring, and publishing are then reused unchanged. None
+is implemented yet — see `docs/SUBSCRIPTION.md`.
+
+### Tier 3 — deliberately excluded for now
+
+Sources whose content needs pipeline capability that does not exist yet, so
+they are **not** added to `config/sources.json`:
+
+- bare `IP:PORT` lines (e.g. `1.2.3.4:443`) — no scheme, no protocol identity,
+  no auth, so a node cannot be built without per-endpoint probing /
+  TLS-fingerprinting that is out of scope today
+- ProxyIP-style geo-IP sweep services (bulk IP/port listings, not subscription
+  payloads)
+- Cloudflare IP ranges (raw CIDR lists, not proxy nodes)
+- WireGuard configurations (`interface`/`peer` key material, not a single-node
+  URI)
+- raw HTML pages (no subscription payload; HTML scraping is explicitly out of
+  scope)
+
+Tier 1 entries are safe to add at any time; Tier 2 is tracked as a follow-up
+feature; Tier 3 is a documented non-goal until the corresponding capability
+(probing, WireGuard support, scraping) lands.
+
 ## Tests
 
 `tests/test_seeding.py` covers definition loading/validation, credential

@@ -38,6 +38,7 @@ from proxyaggregator.publishing.feeds import (
 from proxyaggregator.publishing.models import Subscription, SubscriptionFormat
 from proxyaggregator.publishing.naming import (
     COUNTRY_UNKNOWN_BUCKET,
+    all_country_records,
     country_bucket,
     country_code_to_flag,
     country_code_to_name,
@@ -270,22 +271,48 @@ def render_root_country_index_block(
 ) -> str:
     """Render the auto-synchronized country section for the root ``README.md``.
 
-    The returned block is delimited by the start/end markers and contains the
-    ``## 🌍 Proxies by Country`` heading, the copy hint, and one collapsed
-    GitHub ``<details>`` section per country ordered by ISO code. Each country
-    shows its flag + name and healthy-proxy count in the summary, then — for
-    every feed that actually exists — a label followed by a ``text`` fenced
-    code block holding exactly one raw subscription URL, so GitHub renders a
-    native Copy button per URL. No Markdown link is used for any raw URL, and
-    no URL is emitted for a file that was not published. Piping this through
-    :func:`update_root_country_index` keeps the root README's live list
-    byte-identical for identical inputs and never stale after a publish.
+    The returned block is delimited by the start/end markers and contains two
+    deliberately separate concepts:
+
+    - a **full flag map** — one ``- {flag} {name}`` line per ISO-3166-1
+      country (from :func:`all_country_records`, ISO-code order), collapsed
+      behind a single ``<details>``; a line links to ``./output/countries/{CC}/``
+      only when that country produced healthy proxies this run, so no dead
+      link is ever emitted;
+    - the **available countries** — one collapsed ``<details>`` section per
+      country that actually has output this run, ordered by ISO code, listing
+      only the feeds that exist. Each country shows its flag + name and
+      healthy-proxy count in the summary, then — for every feed that actually
+      exists — a label followed by a ``text`` fenced code block holding exactly
+      one raw subscription URL, so GitHub renders a native Copy button per URL.
+
+    No Markdown link is used for any raw URL, and no URL is emitted for a file
+    that was not published. Piping this through :func:`update_root_country_index`
+    keeps the root README's live list byte-identical for identical inputs and
+    never stale after a publish.
     """
+    available = {bucket for bucket, _count, _protocols in entries}
     lines = [
         ROOT_README_COUNTRY_START_MARKER,
-        "## 🌍 Proxies by Country",
+        "## \U0001f30d Proxies by Country",
         "",
-        "🦋 Click here to get proxies from a specific country",
+        "Full flag map of every ISO-3166-1 country — a country links to its "
+        "page only when it has healthy proxies in the current publish run:",
+        "",
+        "<details>",
+        "<summary>\U0001f310 All countries \u2014 full ISO flag map</summary>",
+        "",
+    ]
+    for code, flag, name in all_country_records():
+        if code.lower() in available:
+            lines.append(f"- {flag} [{name}](./output/countries/{code}/)")
+        else:
+            lines.append(f"- {flag} {name}")
+    lines += [
+        "",
+        "</details>",
+        "",
+        "\U0001f98b Click here to get proxies from a specific country",
         "",
     ]
     for bucket, count, protocols in entries:

@@ -381,6 +381,20 @@ def country_code_to_flag(country_code: object) -> str:
     return "".join(_regional_indicator(ch) for ch in code)
 
 
+def all_country_records() -> tuple[tuple[str, str, str], ...]:
+    """Return every ISO-3166-1 alpha-2 country as ``(code, flag, name)``.
+
+    A deterministic snapshot of :data:`COUNTRY_NAMES` ordered by ISO code —
+    purely for presentation (full flag maps in READMEs). ``XX`` (the
+    unknown-country bucket) is not an assigned ISO code and is deliberately
+    excluded, matching :data:`COUNTRY_NAMES`.
+    """
+    return tuple(
+        (code, country_code_to_flag(code), country_code_to_name(code))
+        for code in sorted(COUNTRY_NAMES)
+    )
+
+
 def country_code_to_name(country_code: object) -> str:
     """Return the deterministic English name for an ISO-3166-1 alpha-2 code.
 

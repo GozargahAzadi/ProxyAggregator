@@ -66,6 +66,7 @@ from proxyaggregator.publishing import (
     ROOT_README_COUNTRY_END_MARKER,
     ROOT_README_COUNTRY_START_MARKER,
     SubscriptionFormat,
+    all_country_records,
     build_country_artifacts,
     build_protocol_subscriptions,
     build_subscription,
@@ -182,6 +183,9 @@ def _root_countries(block: str) -> list[tuple[str, int]]:
     for line in block.splitlines():
         if line.startswith("<summary>"):
             count_part = line[len("<summary>") :].rsplit("\u2014", 1)[1].strip()
+            if not count_part[:1].isdigit():
+                pending = None
+                continue
             pending = int(count_part.split()[0])
         elif pending is not None and line.startswith(
             COUNTRY_RAW_SUBSCRIPTIONS_BASE_URL + "countries/"
@@ -831,13 +835,35 @@ class TestRootReadmeCountryIndex:
         details_open = block.count("<details>")
         details_close = block.count("</details>")
         summaries = sum(line.startswith("<summary>") for line in block.splitlines())
-        assert details_open == 3 == details_close == summaries
+        # one summary/<details> per available country, plus the flag map
+        assert details_open == len(_root_countries(block)) + 1 == details_close == summaries
 
     def test_render_block_sorted_by_iso_code(self):
         block = render_root_country_index_block(country_feed_entries(_country_candidates()))
         rows = _root_countries(block)
         assert rows == [("DE", 1), ("US", 3), ("XX", 1)]
         assert [code for code, _ in rows] == sorted([code for code, _ in rows])
+
+    def test_render_block_flag_map_lists_every_iso_country(self):
+        block = render_root_country_index_block(country_feed_entries(_country_candidates()))
+        records = all_country_records()
+        codes = [code for code, _flag, _name in records]
+        assert codes == sorted(codes)
+        assert "xx" not in codes and "XX" not in codes
+        for code, flag, name in records:
+            assert (
+                f"- {flag} {name}" in block
+                or f"- {flag} [{name}](./output/countries/{code}/)" in block
+            )
+
+    def test_render_block_flag_map_links_only_available_countries(self):
+        block = render_root_country_index_block(country_feed_entries(_country_candidates()))
+        records = {code: (flag, name) for code, flag, name in all_country_records()}
+        assert f"- {records['DE'][0]} [{records['DE'][1]}](./output/countries/DE/)" in block
+        assert f"- {records['US'][0]} [{records['US'][1]}](./output/countries/US/)" in block
+        assert f"- {records['AD'][0]} {records['AD'][1]}" in block
+        assert "./output/countries/AD/" not in block
+        assert "./output/countries/XX/" not in block
 
     def test_render_block_counts_equal_all_feed_counts(self):
         candidates = _country_candidates()
@@ -889,8 +915,8 @@ class TestRootReadmeCountryIndex:
     def test_render_block_empty_entries_render_header_only(self):
         block = render_root_country_index_block(())
         assert "## \U0001f30d Proxies by Country" in block
+        assert "<summary>\U0001f310 All countries \u2014 full ISO flag map</summary>" in block
         assert "XX" not in block
-        assert "<details>" not in block
         assert _root_countries(block) == []
 
     def test_render_block_xx_only_when_non_empty(self):
