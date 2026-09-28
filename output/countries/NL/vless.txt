@@ -1,6 +1,6 @@
-vless://97532b08-357e-4140-a6f0-8e07f2ed3327@38.180.225.247:2053?host=yf.962456.xyz&network=ws&path=%2Fproxyip%3Dkr.william.us.ci&security=tls&sni=yf.962456.xyz#%F0%9F%87%B3%F0%9F%87%B1%20NL%20%7C%20VLESS%20%7C%20553ms%20%7C%20GozargahAzadi
-vless://97532b08-357e-4140-a6f0-8e07f2ed3327@38.180.100.80:443?host=yf.962456.xyz&network=ws&path=%2Fproxyip%3Dkr.william.us.ci&security=tls&sni=yf.962456.xyz#%F0%9F%87%B3%F0%9F%87%B1%20NL%20%7C%20VLESS%20%7C%201913ms%20%7C%20GozargahAzadi
-vless://c21631d5-36c9-4664-b575-97eca17456be@neth8.lunariai.ru:443?host=neth8.lunariai.ru&network=ws&path=%2F#%F0%9F%87%B3%F0%9F%87%B1%20NL%20%7C%20VLESS%20%7C%204502ms%20%7C%20GozargahAzadi
-vless://05caca6c-9e97-4c0f-8edf-7b88a6e572c5@mypanel.unixzone.us:12068?host=mypanel.unixzone.us&network=ws&path=%2F&security=none#%F0%9F%87%B3%F0%9F%87%B1%20NL%20%7C%20VLESS%20%7C%205647ms%20%7C%20GozargahAzadi
-vless://05caca6c-9e97-4c0f-8edf-7b88a6e572c5@85.17.145.65:12068?host=mypanel.unixzone.us&network=ws&path=%2F&security=none#%F0%9F%87%B3%F0%9F%87%B1%20NL%20%7C%20VLESS%20%7C%205679ms%20%7C%20GozargahAzadi
-vless://c21631d5-36c9-4664-b575-97eca17456be@2.27.205.59:443?host=neth8.lunariai.ru&network=ws&path=%2F#%F0%9F%87%B3%F0%9F%87%B1%20NL%20%7C%20VLESS%20%7C%205859ms%20%7C%20GozargahAzadi
+vless://97532b08-357e-4140-a6f0-8e07f2ed3327@38.180.225.247:2053?host=yf.962456.xyz&network=ws&path=%2Fproxyip%3Dkr.william.us.ci&security=tls&sni=yf.962456.xyz#%F0%9F%87%B3%F0%9F%87%B1%20NL%20%7C%20VLESS%20%7C%20536ms%20%7C%20GozargahAzadi
+vless://97532b08-357e-4140-a6f0-8e07f2ed3327@38.180.100.80:443?host=yf.962456.xyz&network=ws&path=%2Fproxyip%3Dkr.william.us.ci&security=tls&sni=yf.962456.xyz#%F0%9F%87%B3%F0%9F%87%B1%20NL%20%7C%20VLESS%20%7C%20586ms%20%7C%20GozargahAzadi
+vless://05caca6c-9e97-4c0f-8edf-7b88a6e572c5@85.17.145.65:12068?network=ws&path=%2F&security=none#%F0%9F%87%B3%F0%9F%87%B1%20NL%20%7C%20VLESS%20%7C%204270ms%20%7C%20GozargahAzadi
+vless://05caca6c-9e97-4c0f-8edf-7b88a6e572c5@mypanel.unixzone.us:12068?host=mypanel.unixzone.us&network=ws&path=%2F&security=none#%F0%9F%87%B3%F0%9F%87%B1%20NL%20%7C%20VLESS%20%7C%204289ms%20%7C%20GozargahAzadi
+vless://c21631d5-36c9-4664-b575-97eca17456be@2.27.205.59:443?network=ws&security=none#%F0%9F%87%B3%F0%9F%87%B1%20NL%20%7C%20VLESS%20%7C%204347ms%20%7C%20GozargahAzadi
+vless://c21631d5-36c9-4664-b575-97eca17456be@neth8.lunariai.ru:443?host=neth8.lunariai.ru&network=ws&path=%2F#%F0%9F%87%B3%F0%9F%87%B1%20NL%20%7C%20VLESS%20%7C%204369ms%20%7C%20GozargahAzadi
