@@ -1,190 +1,85 @@
-# پروکسی‌اگریگیتور (ProxyAggregator)
+# 🚀 پروکسی‌اگریگیتور (ProxyAggregator)
 
 [English](./README.md) | **فارسی**
 
-جمع‌آوری‌کنندهٔ عمومی کانفیگ‌های V2Ray/Proxy: کانفیگ‌های عمومی را جمع‌آوری،
-تحلیل (parse)، نرمال‌سازی، حذف تکراری و بررسی سلامت می‌کند و سپس آن‌ها را
-به‌صورت فایل‌های اشتراک (Subscription) از طریق GitHub منتشر می‌کند.
+> جمع‌آوری‌کننده رایگان و خودکار کانفیگ‌های عمومی V2Ray و پروکسی  
+> جمع‌آوری → پارس → حذف تکراری → بررسی سلامت واقعی → انتشار اشتراک‌ها هر حدود ۱۵ دقیقه
 
-## امکانات
+[![GitHub stars](https://img.shields.io/github/stars/GozargahAzadi/ProxyAggregator?style=social)](https://github.com/GozargahAzadi/ProxyAggregator)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Last Publish](https://img.shields.io/badge/Last%20Publish-2026--09--28-brightgreen)](https://github.com/GozargahAzadi/ProxyAggregator/commits/main)
+[![Python](https://img.shields.io/badge/Python-3.12+-blue)](https://www.python.org/)
 
-- **پشتیبانی از چند پروتکل**: VLESS، VMess، Trojan، Shadowsocks، Hysteria، Hysteria2، SOCKS4، SOCKS5، HTTP، HTTPS
-- **تشخیص IP واقعی**: IP واقعی سرورها را برای جست‌وجوی دقیق GeoIP شناسایی می‌کند
-- **افزوده‌شدن اطلاعات جغرافیایی (GeoIP)**: مکان‌یابی بر پایهٔ MaxMind GeoLite2
-- **بررسی سلامت**: بررسی تاخیر (Latency) و اتصال‌پذیری
-- **حذف تکراری‌ها**: حذف کانفیگ‌های تکراری (Deduplication)
-- **خروجی اشتراک**: خروجی در قالب استاندارد فایل‌های Subscription
-- **ساخته‌شده برای GitHub Actions**: طراحی‌شده تا کاملاً در CI/CD اجرا شود
+---
 
-## اشتراک‌ها
+## 🔥 لینک‌های آماده اشتراک (کپی و استفاده)
 
-فیدهای اشتراک تولیدشده در پوشهٔ `output/` منتشر می‌شوند؛ هم به‌صورت ساده
-(URIهای جدا شده با خط جدید)، هم به‌صورت base64 (نسخهٔ استاندارد Base64 فید
-ساده) و هم فیدهای مستقل برای هر پروتکل. همهٔ فایل‌ها قطعی (deterministic)
-هستند و در هر اجرای pipeline از نو تولید می‌شوند. هر URL قابل استفاده در زیر
-داخل یک code block جدا قرار دارد تا GitHub دکمهٔ Copy کنار آن نمایش دهد.
+### پیشنهادی (همه پروتکل‌ها)
 
-### فیدهای ترکیبی
+| فرمت | لینک |
+|------|------|
+| **ساده (Plain)** | ```https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/proxyaggregator.txt``` |
+| **Base64** | ```https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/proxyaggregator-base64.txt``` |
+| **JSON** | ```https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/proxyaggregator.json``` |
+| **Manifest** | ```https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/manifest.json``` |
 
-ProxyAggregator — ساده (Plain)
+### بر اساس پروتکل
 
-```text
-https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/proxyaggregator.txt
-```
+<details>
+<summary>کلیک کنید تا لینک‌های جداگانه هر پروتکل را ببینید</summary>
 
-ProxyAggregator — Base64
+| پروتکل | ساده (Plain) | Base64 |
+|--------|--------------|--------|
+| **VLESS** | [vless.txt](https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/vless.txt) | [vless-base64.txt](https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/vless-base64.txt) |
+| **VMess** | [vmess.txt](https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/vmess.txt) | [vmess-base64.txt](https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/vmess-base64.txt) |
+| **Trojan** | [trojan.txt](https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/trojan.txt) | [trojan-base64.txt](https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/trojan-base64.txt) |
+| **Shadowsocks** | [shadowsocks.txt](https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/shadowsocks.txt) | [shadowsocks-base64.txt](https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/shadowsocks-base64.txt) |
+| **Hysteria** | [hysteria.txt](https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/hysteria.txt) | [hysteria-base64.txt](https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/hysteria-base64.txt) |
+| **Hysteria2** | [hysteria2.txt](https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/hysteria2.txt) | [hysteria2-base64.txt](https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/hysteria2-base64.txt) |
+| **SOCKS4** | [socks4.txt](https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/socks4.txt) | [socks4-base64.txt](https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/socks4-base64.txt) |
+| **SOCKS5** | [socks5.txt](https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/socks5.txt) | [socks5-base64.txt](https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/socks5-base64.txt) |
+| **HTTP** | [http.txt](https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/http.txt) | [http-base64.txt](https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/http-base64.txt) |
+| **HTTPS** | [https.txt](https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/https.txt) | [https-base64.txt](https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/https-base64.txt) |
 
-```text
-https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/proxyaggregator-base64.txt
-```
+</details>
 
-ProxyAggregator — JSON
+### بر اساس کشور
 
-```text
-https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/proxyaggregator.json
-```
+🦋 **[مشاهده همه کشورها و پروکسی‌های سالم →](./output/countries/README.md)**
 
-Manifest — JSON
+---
 
-```text
-https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/manifest.json
-```
+## 📱 چطور استفاده کنم؟
 
-### فیدهای پروتکل
+1. یکی از لینک‌های بالا را کپی کنید.
+2. اپلیکیشن خود را باز کنید (v2rayNG، Nekobox، Hiddify، Streisand، Clash Meta، Sing-box و ...).
+3. به بخش **اشتراک (Subscription)** یا **Profiles** بروید و اشتراک جدید اضافه کنید.
+4. لینک را Paste کرده و Update بزنید.
+5. وصل شوید و لذت ببرید.
 
-هر پروتکل در زیر، هم فید ساده دارد و هم نسخهٔ base64 آن.
+> فقط پروکسی‌هایی که از بررسی سلامت واقعی عبور کرده‌اند در خروجی قرار می‌گیرند.
 
-VLESS — ساده (Plain)
+---
 
-```text
-https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/vless.txt
-```
+## ✨ امکانات
 
-VLESS — Base64
+- پشتیبانی از بیش از ۱۰ پروتکل محبوب
+- تشخیص IP واقعی سرور برای GeoIP دقیق
+- مکان‌یابی با MaxMind GeoLite2
+- بررسی سلامت واقعی (TCP + TLS + سطح پروتکل + اندازه‌گیری latency)
+- حذف هوشمند کانفیگ‌های تکراری
+- خروجی تمیز و استاندارد (Plain، Base64، JSON)
+- فیدهای جداگانه بر اساس کشور
+- اجرای کامل و خودکار روی GitHub Actions (بدون نیاز به سرور شخصی)
+- ساخت deterministic و قابل بازتولید
 
-```text
-https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/vless-base64.txt
-```
+---
 
-VMess — ساده (Plain)
-
-```text
-https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/vmess.txt
-```
-
-VMess — Base64
-
-```text
-https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/vmess-base64.txt
-```
-
-Trojan — ساده (Plain)
-
-```text
-https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/trojan.txt
-```
-
-Trojan — Base64
-
-```text
-https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/trojan-base64.txt
-```
-
-Shadowsocks — ساده (Plain)
-
-```text
-https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/shadowsocks.txt
-```
-
-Shadowsocks — Base64
-
-```text
-https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/shadowsocks-base64.txt
-```
-
-Hysteria — ساده (Plain)
-
-```text
-https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/hysteria.txt
-```
-
-Hysteria — Base64
-
-```text
-https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/hysteria-base64.txt
-```
-
-Hysteria2 — ساده (Plain)
-
-```text
-https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/hysteria2.txt
-```
-
-Hysteria2 — Base64
-
-```text
-https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/hysteria2-base64.txt
-```
-
-SOCKS4 — ساده (Plain)
-
-```text
-https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/socks4.txt
-```
-
-SOCKS4 — Base64
-
-```text
-https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/socks4-base64.txt
-```
-
-SOCKS5 — ساده (Plain)
-
-```text
-https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/socks5.txt
-```
-
-SOCKS5 — Base64
-
-```text
-https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/socks5-base64.txt
-```
-
-HTTP — ساده (Plain)
-
-```text
-https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/http.txt
-```
-
-HTTP — Base64
-
-```text
-https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/http-base64.txt
-```
-
-HTTPS — ساده (Plain)
-
-```text
-https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/https.txt
-```
-
-HTTPS — Base64
-
-```text
-https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/https-base64.txt
-```
-
-## 🌍 پروکسی بر اساس کشور
-
-<br/>
-
-🦋 **برای دریافت پروکسی از یک کشور خاص کلیک کنید** 👉 [🌍 کشورهای موجود (Available Countries)](./output/countries/README.md)
-
-## شروع سریع
+## 🛠️ برای توسعه‌دهندگان
 
 ```bash
 # کلون کردن مخزن
-git clone https://github.com/YOUR_USERNAME/ProxyAggregator.git
+git clone https://github.com/GozargahAzadi/ProxyAggregator.git
 cd ProxyAggregator
 
 # نصب وابستگی‌ها
@@ -193,18 +88,24 @@ uv sync
 # اجرای تست‌ها
 uv run pytest
 
-# اجرای لینتر
-uv run ruff check src/ tests/
+# اجرای کامل پایپ‌لاین به صورت محلی
+uv run python -m proxyaggregator pipeline
 ```
 
-## پیکربندی
+### مستندات
 
-همهٔ تنظیمات موجود در [docs/CONFIGURATION.md](docs/CONFIGURATION.md) (به انگلیسی).
+| سند | توضیح |
+|-----|-------|
+| [معماری](docs/ARCHITECTURE.md) | طراحی کلی سیستم |
+| [پیکربندی](docs/CONFIGURATION.md) | تنظیمات و متغیرهای محیطی |
+| [منابع](docs/SOURCES.md) | مدیریت منابع ورودی |
+| [ناشر](docs/PUBLISHER.md) | فرآیند انتشار و ریلیز |
+| [امتیازدهی](docs/SCORING.md) | الگوریتم رتبه‌بندی |
+| [اشتراک](docs/SUBSCRIPTION.md) | فرمت‌های خروجی |
+| [دیتابیس](docs/DATABASE.md) | ساختار و مایگریشن‌ها |
 
-## معماری
+---
 
-نمای کلی معماری در [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) (به انگلیسی).
+## 📄 مجوز
 
-## مجوز
-
-MIT
+MIT License — رایگان برای استفاده شخصی و تجاری.
