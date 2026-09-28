@@ -209,6 +209,77 @@ generating, the retry's gate correctly decides `SKIP`, which closes the
 stale-timestamp window the Phase 20 watchdog had to work around by skipping
 requests.
 
+### Phase 22 — production run summary
+
+Every publication run ends with a compact report in the GitHub Actions **job
+summary** (`$GITHUB_STEP_SUMMARY`), so a run can be judged from the run page
+without opening raw logs. It is written by
+`python -m proxyaggregator publish-summary`
+(`publishing/summary.py`) as the composite action's last step, guarded with
+`if: always()`, so a **published**, **skipped**, **race-discarded**, and
+**failed** run are all reported.
+
+The summary is strictly observability: it never influences what is collected,
+parsed, deduplicated, health-checked, scored, or published, and the command
+always exits `0` so it cannot fail a run that already published.
+
+**Nothing is estimated.** Every value comes from a source of truth that already
+exists, and an unavailable one renders as `unavailable` rather than as a zero or
+a guess:
+
+| Reported | Source |
+| --- | --- |
+| Trigger, attempt, base commit | the run's own workflow context / `git rev-parse HEAD` |
+| Threshold, decision, previous publication, previous age | the freshness gate's `$GITHUB_OUTPUT` (Phase 18) |
+| Stage counters and per-stage durations | `PipelineStats`, serialised by `pipeline --stats-file` |
+| Artifact, country, protocol, and published-proxy counts | `output/manifest.json`, read through `verify_release` |
+| Race result, guard result, publication result | the action's own step outputs (Phase 21 / Phase 19 / commit-push) |
+
+`pipeline --stats-file <path>` writes the *already computed* `PipelineStats`
+verbatim (`asdict`); it recomputes nothing and writes only after a successful
+run, so a file that exists always describes a complete run. The default path is
+`.runtime/pipeline_stats.json` — outside `output/`, gitignored via `.runtime/`,
+and never staged (`git add output README.md`), so it can never enter a release.
+A stats write failure is logged and ignored.
+
+**Statuses.** Exactly one terminal state is reported, derived in this order:
+
+1. `SKIPPED` — the freshness gate decided `SKIP`. No pipeline ran, so no
+   pipeline or output counts are shown (the previous release is *not* presented
+   as this run's output).
+2. `DISCARDED` — the Phase 21 stale-tree guard detected a race. The release was
+   built from a stale tree and was not published; any counts shown are labelled
+   as the discarded release.
+3. `FAILED` — the output guard failed, or the commit/push step did not confirm a
+   publication. `published_at.json` is unchanged.
+4. `PUBLISHED` — **only** when the commit/push step reported success. This is
+   the single authority for "the release reached `main`", so a lost step output
+   can never manufacture a success.
+
+Because the verdict comes from the step that actually pushed, a skipped or
+raced attempt can never report that it published. When both bounded attempts
+are discarded, the workflow appends a final `FAILED (attempts exhausted)` note
+to the job summary as well.
+
+**Structural sanity only.** Phase 22 reuses the existing Phase 19
+`verify_release` guard for both the publication decision and the summary's
+release facts — manifest present and valid, every listed artifact present with
+its recorded byte size and SHA-256, and at least one non-empty feed. It
+deliberately adds **no** new threshold: the repository commits no per-release
+metric (the manifest is overwritten on every run and there is no history file),
+so a comparative "count dropped by X%" rule would be ungrounded. A sanity
+failure happens *before* `record-publish` and the push, so it can neither commit
+output nor advance `output/published_at.json`.
+
+Deliberate non-solutions:
+
+- **No comparative count thresholds.** Without a versioned previous-release
+  metric, any percentage rule would be arbitrary.
+- **No re-derivation of metrics.** The summary reports what the pipeline and the
+  guard measured; it never recomputes a count from the artifacts.
+- **No credentials or URIs.** The summary contains counters and canonical
+  artifact names only — never a proxy URI, host, or source URL.
+
 ### Phase 18 — freshness gate
 
 The scheduled workflow fires every 5 minutes, but before doing any expensive
@@ -227,18 +298,22 @@ step `python -m proxyaggregator freshness-gate`.
   seeding, pipeline, output guard, stale-tree guard, commit/push) is guarded with
   `if: steps.freshness.outputs.decision == 'RUN'`, so a `SKIP` finishes the
   job green without running the pipeline. The gate itself is unguarded, so it
-  is also re-evaluated by the Phase 21 retry.
+  is also re-evaluated by the Phase 21 retry. The Phase 22 run summary is the
+  one exception: it is guarded with `if: always()` so a `SKIP` is also reported.
 - Failure semantics: if the pipeline, the output guard, a detected race, or the
   push fails, the timestamp is **not** advanced — scheduled runs keep retrying
   until a genuinely successful publication lands.
 
 Steps (when `RUN`): checkout → uv/Python 3.12 → `uv sync --all-extras` →
-`mkdir output` → freshness gate → GeoIP provisioning + SHA-256 checksum +
-`verify-geoip` → `alembic upgrade head` (SQLite at `output/proxyaggregator.db`,
-gitignored via `*.db`) → **seed production sources** → **run production
-pipeline** → empty-output guard → **stale-tree guard** → `record-publish` →
+`mkdir output` → record base commit (Phase 22) → freshness gate → GeoIP
+provisioning + SHA-256 checksum + `verify-geoip` → `alembic upgrade head`
+(SQLite at `output/proxyaggregator.db`, gitignored via `*.db`) → **seed
+production sources** → **run production pipeline** (`--stats-file`, Phase 22) →
+empty-output guard → **stale-tree guard** → `record-publish` →
 `git add output README.md` → commit & push
-(`chore: update generated subscriptions`).
+(`chore: update generated subscriptions`) → **write run summary** (Phase 22,
+`if: always()`). The run summary is the only step after the push, and it is
+read-only.
 
 The empty-output guard fails the job when no artifacts were produced, so
 stale or empty subscriptions are **never** published. The commit step exits

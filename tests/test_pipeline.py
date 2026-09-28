@@ -18,6 +18,7 @@ import logging
 import os
 import subprocess
 import sys
+from dataclasses import fields
 from datetime import UTC, datetime
 from pathlib import Path
 from unittest import mock
@@ -1129,3 +1130,79 @@ class TestDbFailureIsolation:
 
         assert published["ran"] is False
         assert not out.exists()
+
+
+class TestPipelineStatsFile:
+    """Phase 22 stats handoff: the run summary reads measured values only."""
+
+    @staticmethod
+    def _patch_session(monkeypatch):
+        # `proxyaggregator.db.engine` is shadowed by the re-exported Engine
+        # object, so the module itself is fetched from sys.modules.
+        engine_module = sys.modules["proxyaggregator.db.engine"]
+
+        class _Session:
+            def __enter__(self):
+                return None
+
+            def __exit__(self, *exc):
+                return False
+
+        monkeypatch.setattr(engine_module, "SessionLocal", _Session)
+        monkeypatch.setattr(pipeline, "load_configured_sources", lambda _session: ())
+
+    def test_stats_are_serialised_verbatim(self, tmp_path):
+        stats = pipeline.PipelineStats(
+            sources_discovered=6,
+            sources_fetched=6,
+            parse_candidates=12934,
+            parsed_proxies=12555,
+            healthy_proxies=1657,
+            total_seconds=706.4,
+        )
+        target = pipeline.write_pipeline_stats(stats, tmp_path / "nested" / "stats.json")
+        payload = json.loads(target.read_text(encoding="utf-8"))
+        assert payload["parse_candidates"] == 12934
+        assert payload["healthy_proxies"] == 1657
+        assert payload["total_seconds"] == 706.4
+        # Every dataclass field is present: the summary never guesses a key.
+        assert set(payload) == {f.name for f in fields(pipeline.PipelineStats)}
+
+    def test_write_failure_is_swallowed(self, tmp_path):
+        # A stats write must never turn a successful publication into a failure.
+        unwritable = tmp_path / "file"
+        unwritable.write_text("x", encoding="utf-8")
+        target = pipeline.write_pipeline_stats(pipeline.PipelineStats(), unwritable / "stats.json")
+        assert target == unwritable / "stats.json"
+
+    def test_cli_writes_stats_after_a_successful_run(self, tmp_path, monkeypatch):
+        async def fake_run(_session, _cfg):
+            return pipeline.PipelineStats(parsed_proxies=7)
+
+        monkeypatch.setattr(pipeline, "run_pipeline", fake_run)
+        self._patch_session(monkeypatch)
+        stats_path = tmp_path / "stats.json"
+
+        assert pipeline.run_pipeline_cli(stats_path=stats_path) == 0
+        assert json.loads(stats_path.read_text(encoding="utf-8"))["parsed_proxies"] == 7
+
+    def test_cli_writes_nothing_when_the_pipeline_fails(self, tmp_path, monkeypatch):
+        async def boom(_session, _cfg):
+            raise pipeline.PipelineError("no_eligible_proxies", "no healthy proxies")
+
+        monkeypatch.setattr(pipeline, "run_pipeline", boom)
+        self._patch_session(monkeypatch)
+        stats_path = tmp_path / "stats.json"
+
+        assert pipeline.run_pipeline_cli(stats_path=stats_path) == 1
+        assert not stats_path.exists()
+
+    def test_cli_without_a_stats_path_writes_nothing(self, tmp_path, monkeypatch):
+        async def fake_run(_session, _cfg):
+            return pipeline.PipelineStats(healthy_proxies=3)
+
+        monkeypatch.setattr(pipeline, "run_pipeline", fake_run)
+        self._patch_session(monkeypatch)
+
+        assert pipeline.run_pipeline_cli() == 0
+        assert list(tmp_path.iterdir()) == []

@@ -37,6 +37,11 @@ uv.lock
 # GeoIP
 *.mmdb
 
+# Per-run scratch space inside the workspace. Holds the downloaded GeoIP MMDB
+# and the Phase 22 pipeline stats JSON that feeds the GitHub step summary.
+# Never part of a release: it lives outside output/ and is never staged.
+.runtime/
+
 # Logs
 *.log
 

@@ -50,6 +50,7 @@ jobs:
     outputs:
       decision: ${{ steps.publish.outputs.decision }}
       raced: ${{ steps.publish.outputs.raced }}
+      published: ${{ steps.publish.outputs.published }}
     steps:
       - uses: actions/checkout@v4
 
@@ -64,11 +65,17 @@ jobs:
       - name: Install dependencies
         run: uv sync --all-extras
 
+      # Phase 22: the action always appends a run summary to the job summary
+      # from its own step outputs (published / skipped / race-discarded /
+      # failed) and hands the freshness decision and publication result back to
+      # this job. The triggers, the concurrency group, and the attempt-2 gate
+      # are unchanged.
       - name: Generate, verify, and publish subscriptions
         id: publish
         uses: ./.github/actions/publish
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
+          attempt: "1"
 
   # Bounded to a single retry. It checks out the current main rather than the
   # commit that triggered the workflow, so the release is built from the newest
@@ -104,9 +111,21 @@ jobs:
         uses: ./.github/actions/publish
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
+          attempt: "2"
 
+      # The job summary already carries attempt 2's DISCARDED run summary; this
+      # final note states the job-level outcome so an exhausted retry can never
+      # be read as a successful publication.
       - name: Report exhausted publication attempts
         if: steps.publish.outputs.raced == 'true'
         run: |
           echo "::error::origin/main moved again while the regenerated release was being built. The stale release was discarded, nothing was pushed, and output/published_at.json was not advanced. Both bounded attempts are exhausted; the next scheduled or watchdog trigger will retry from the latest main."
+          {
+            echo "## Publication — FAILED (attempts exhausted)"
+            echo
+            echo "Attempt 1 detected a stale tree and was discarded; attempt 2 detected a"
+            echo "second stale tree and was also discarded. No release was published,"
+            echo "no output was committed, and \`output/published_at.json\` was not advanced."
+            echo "The next scheduled or watchdog trigger retries from the latest main."
+          } >> "$GITHUB_STEP_SUMMARY"
           exit 1

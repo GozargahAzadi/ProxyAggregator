@@ -26,10 +26,13 @@ RUN_CONDITION = "steps.freshness.outputs.decision == 'RUN'"
 NO_RACE_CONDITION = f"{RUN_CONDITION} && steps.race.outputs.raced == 'false'"
 
 GATE_STEP = "Freshness gate"
+BASE_STEP = "Record base commit"
+PIPELINE_STEP = "Run production pipeline"
 RACE_STEP = "Verify base commit is still origin/main"
 GUARD_STEP = "Guard against empty or invalid output"
 RECORD_STEP = "Record successful publication time"
 COMMIT_STEP = "Commit & push generated subscriptions"
+SUMMARY_STEP = "Write run summary"
 
 
 @pytest.fixture(scope="module")
@@ -105,25 +108,27 @@ class TestExistingWorkflowIsIntact:
         names = [step["name"] for step in steps]
         assert names == [
             "Create output directory",
+            BASE_STEP,
             GATE_STEP,
             "Provision GeoIP database",
             "Verify GeoIP database checksum",
             "Verify GeoIP database",
             "Apply database migrations",
             "Seed production sources",
-            "Run production pipeline",
+            PIPELINE_STEP,
             GUARD_STEP,
             RACE_STEP,
             RECORD_STEP,
             COMMIT_STEP,
+            SUMMARY_STEP,
         ]
         assert _step(action, "Apply database migrations")["run"] == ("uv run alembic upgrade head")
         assert _step(action, "Seed production sources")["run"] == (
             "uv run python -m proxyaggregator seed-sources"
         )
-        assert _step(action, "Run production pipeline")["run"] == (
-            "uv run python -m proxyaggregator pipeline"
-        )
+        pipeline_run = _step(action, PIPELINE_STEP)["run"]
+        assert "uv run python -m proxyaggregator pipeline" in pipeline_run
+        assert '--stats-file "${{ inputs.stats-file }}"' in pipeline_run
         assert _step(action, "Verify GeoIP database")["run"] == (
             "uv run python -m proxyaggregator verify-geoip"
         )
@@ -200,6 +205,12 @@ class TestExistingWorkflowIsIntact:
         assert "Output guard passed" in script
         assert guard["if"] == RUN_CONDITION
 
+    def test_base_commit_is_reported_before_generation(self, action):
+        base = _step(action, BASE_STEP)
+        assert base["id"] == "base"
+        assert base.get("if") is None, "a freshness SKIP must still report the base commit"
+        assert "git rev-parse HEAD" in base["run"]
+
 
 class TestNoStalePublication:
     def test_base_commit_is_compared_against_origin_main(self, action):
@@ -249,9 +260,14 @@ class TestNoStalePublication:
         assert "git diff --cached --quiet" in script
         assert 'git commit -m "chore: update generated subscriptions"' in script
         assert commit["env"] == {"GITHUB_TOKEN": "${{ inputs.token }}"}
-        # The commit is the last step in the action, so nothing can be staged
+        # The commit is the last step that can touch the tree: the only step
+        # after it is the read-only run summary, so nothing can be staged
         # between the race decision and the push.
-        assert action["runs"]["steps"][-1]["name"] == COMMIT_STEP
+        trailing = action["runs"]["steps"][_step_index(action, COMMIT_STEP) + 1 :]
+        assert [step["name"] for step in trailing] == [SUMMARY_STEP]
+        for step in trailing:
+            for forbidden in ("git add", "git commit", "git push", "git checkout"):
+                assert forbidden not in step["run"]
 
 
 class TestBoundedRetries:
@@ -270,6 +286,7 @@ class TestBoundedRetries:
         assert first["outputs"] == {
             "decision": "${{ steps.publish.outputs.decision }}",
             "raced": "${{ steps.publish.outputs.raced }}",
+            "published": "${{ steps.publish.outputs.published }}",
         }
 
     def test_attempt_1_uses_the_triggering_commit(self, workflow):
@@ -290,7 +307,10 @@ class TestBoundedRetries:
             publish = steps[4]
             assert publish["uses"] == "./.github/actions/publish"
             assert publish["id"] == "publish"
-            assert publish["with"] == {"token": "${{ secrets.GITHUB_TOKEN }}"}
+            assert publish["with"] == {
+                "token": "${{ secrets.GITHUB_TOKEN }}",
+                "attempt": "1" if job_name == "attempt-1" else "2",
+            }
         # The shared action reruns the output guard and the freshness gate on
         # the retry, so a regenerated release is never published unguarded.
         assert _step(action, GUARD_STEP)["if"] == RUN_CONDITION
@@ -315,6 +335,153 @@ class TestBoundedRetries:
         for forbidden in ("secrets.PAT", "PERSONAL_ACCESS", "PAT:"):
             assert forbidden not in combined
         assert "secrets.GITHUB_TOKEN" in workflow_text
+
+
+class TestProductionRunSummary:
+    """Phase 22: every outcome is summarised, and none can publish falsely."""
+
+    def test_summary_runs_for_every_outcome(self, action):
+        step = _step(action, SUMMARY_STEP)
+        assert step["if"] == "always()", (
+            "a SKIP, a discarded race, and a failure must all be summarised"
+        )
+        assert step.get("continue-on-error") is None
+
+    def test_summary_is_not_gated_on_the_freshness_decision(self, action):
+        script = _step(action, SUMMARY_STEP)["run"]
+        assert "publish-summary" in script
+        # The freshness decision is passed *in*, not used as a guard.
+        assert RUN_CONDITION not in script
+        assert _step(action, SUMMARY_STEP)["if"] == "always()"
+
+    def test_summary_reports_every_decision_input(self, action):
+        step = _step(action, SUMMARY_STEP)
+        env = step["env"]
+        assert env == {
+            "PA_DECISION": "${{ steps.freshness.outputs.decision }}",
+            "PA_THRESHOLD": "${{ steps.freshness.outputs.threshold_minutes }}",
+            "PA_PREVIOUS_PUBLISHED_AT": "${{ steps.freshness.outputs.published_at }}",
+            "PA_AGE_SECONDS": "${{ steps.freshness.outputs.age_seconds }}",
+            "PA_BASE_SHA": "${{ steps.base.outputs.sha }}",
+            "PA_RACE": "${{ steps.race.outputs.raced }}",
+            "PA_SANITY": "${{ steps.guard.outputs.sanity }}",
+            "PA_PUBLISHED": "${{ steps.push.outputs.published }}",
+        }
+        for flag in (
+            "--attempt",
+            "--base-sha",
+            "--decision",
+            "--threshold-minutes",
+            "--age-seconds",
+            "--previous-published-at",
+            "--race",
+            "--sanity",
+            "--published",
+        ):
+            assert flag in step["run"]
+
+    def test_summary_reports_the_push_result(self, action):
+        # A failed push must be summarised as FAILED, so the publication verdict
+        # is taken from the push step's own output.
+        step = _step(action, SUMMARY_STEP)
+        assert step["env"]["PA_PUBLISHED"] == "${{ steps.push.outputs.published }}"
+        assert '--published "$PA_PUBLISHED"' in step["run"]
+
+    def test_summary_runs_after_the_publish_decision(self, action):
+        assert _step_index(action, SUMMARY_STEP) > _step_index(action, COMMIT_STEP)
+        assert _step_index(action, SUMMARY_STEP) > _step_index(action, GUARD_STEP)
+
+    def test_summary_cannot_fail_a_run(self, action):
+        script = _step(action, SUMMARY_STEP)["run"]
+        assert "continue-on-error" not in script
+        # The command itself always exits 0 (pinned in tests/test_summary.py), so
+        # the only failure mode is a runner/interpreter crash.
+        assert "|| true" not in script
+        assert "exit 1" not in script
+
+    def test_summary_does_not_write_the_publication_timestamp(self, action):
+        script = _step(action, SUMMARY_STEP)["run"]
+        assert "record-publish" not in script
+        assert "published_at" not in script.replace("steps.push.outputs.published", "").replace(
+            "PA_PUBLISHED", ""
+        )
+
+    def test_action_exposes_the_publication_and_sanity_results(self, action):
+        assert set(action["outputs"]) == {"decision", "raced", "sanity", "published"}
+        values = {name: spec["value"] for name, spec in action["outputs"].items()}
+        assert values == {
+            "decision": "${{ steps.freshness.outputs.decision }}",
+            "raced": "${{ steps.race.outputs.raced }}",
+            "sanity": "${{ steps.guard.outputs.sanity }}",
+            "published": "${{ steps.push.outputs.published }}",
+        }
+        for name, spec in action["outputs"].items():
+            assert spec["description"].strip(), f"{name} must document its value"
+
+    def test_guard_reports_success_only_after_verification(self, action):
+        guard = _step(action, GUARD_STEP)
+        assert guard["id"] == "guard"
+        assert guard["run"].index('verify_release("output")') < guard["run"].index(
+            'echo "sanity=passed" >> "$GITHUB_OUTPUT"'
+        )
+        # A failing guard exits before exporting sanity, so the summary can only
+        # ever report the guard's own verified outcome.
+        assert 'echo "sanity=passed" >> "$GITHUB_OUTPUT"' in guard["run"]
+
+    def test_push_reports_publication_only_after_a_successful_push(self, action):
+        push = _step(action, COMMIT_STEP)
+        assert push["id"] == "push"
+        # The last statement, so a failed push can never report a publication.
+        assert push["run"].rstrip().endswith('echo "published=true" >> "$GITHUB_OUTPUT"')
+        # The idempotent "nothing to commit" path still means main already
+        # carries this release.
+        assert "No subscription changes to commit." in push["run"]
+
+    def test_stats_file_stays_out_of_the_published_tree(self, action):
+        stats = action["inputs"]["stats-file"]["default"]
+        assert stats == ".runtime/pipeline_stats.json"
+        assert not stats.startswith("output/")
+        assert action["inputs"]["stats-file"]["required"] is False
+        commit = _step(action, COMMIT_STEP)
+        assert "git add output README.md" in commit["run"]
+        assert ".runtime" not in commit["run"]
+
+    def test_both_attempts_produce_a_summary(self, workflow, action):
+        for job in ("attempt-1", "attempt-2"):
+            steps = _job(workflow, job)["steps"]
+            publish = next(s for s in steps if s.get("uses") == "./.github/actions/publish")
+            assert publish["with"]["attempt"] in {"1", "2"}
+        assert _step(action, SUMMARY_STEP)["if"] == "always()"
+
+    def test_exhausted_retry_states_failure_in_the_job_summary(self, workflow):
+        step = _job(workflow, "attempt-2")["steps"][-1]
+        assert step["name"] == "Report exhausted publication attempts"
+        assert "GITHUB_STEP_SUMMARY" in step["run"]
+        assert "FAILED" in step["run"]
+        assert "no output was committed" in step["run"].lower()
+
+    def test_no_new_release_threshold_is_introduced(self, action_text, workflow_text):
+        # Structural sanity only: no count, ratio, or percentage gate.
+        combined = action_text + workflow_text
+        for forbidden in (
+            "0.5",
+            "50%",
+            "MIN_",
+            "THRESHOLD_COUNT",
+            "MIN_PROXIES",
+            "assert_count",
+        ):
+            assert forbidden not in combined, f"arbitrary release threshold: {forbidden}"
+
+    def test_sanity_still_runs_before_the_publish_steps(self, action):
+        guard = _step_index(action, GUARD_STEP)
+        assert guard < _step_index(action, RECORD_STEP) < _step_index(action, COMMIT_STEP)
+        assert _step_index(action, PIPELINE_STEP) < guard
+
+    def test_health_and_dns_concurrency_are_untouched(self, workflow):
+        env = workflow["env"]
+        assert "PA_HEALTH_CONCURRENCY" not in env
+        assert "PA_DNS_CONCURRENCY" not in env
 
 
 class TestRaceCheckScript:

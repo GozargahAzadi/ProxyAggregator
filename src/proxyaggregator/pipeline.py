@@ -23,9 +23,10 @@ ever logged.
 from __future__ import annotations
 
 import asyncio
+import json
 import logging
 import time
-from dataclasses import dataclass, replace
+from dataclasses import asdict, dataclass, replace
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -618,8 +619,15 @@ async def run_pipeline(session: Session, cfg: PipelineConfig) -> PipelineStats:
     return stats
 
 
-def run_pipeline_cli() -> int:
-    """CLI entry: run the production pipeline and return a process exit code."""
+def run_pipeline_cli(stats_path: str | Path | None = None) -> int:
+    """CLI entry: run the production pipeline and return a process exit code.
+
+    When ``stats_path`` is given, the already-computed
+    :class:`PipelineStats` are serialised there as JSON for the Phase 22 run
+    summary. Nothing is recomputed for that purpose, and the file is written
+    only after the pipeline succeeded, so a file that exists always describes a
+    complete run.
+    """
     from proxyaggregator.db.engine import SessionLocal
 
     settings = Settings()
@@ -637,4 +645,27 @@ def run_pipeline_cli() -> int:
         logger.error("pipeline fatal error")
         return 1
     logger.info("pipeline complete: %s", stats.summarize())
+    if stats_path is not None:
+        write_pipeline_stats(stats, stats_path)
     return 0
+
+
+def write_pipeline_stats(stats: PipelineStats, path: str | Path) -> Path:
+    """Serialise ``stats`` to ``path`` as JSON and return the path.
+
+    Values are the dataclass fields verbatim, so the summary reports exactly
+    what the pipeline measured. The parent directory is created when missing.
+    A write failure is logged and swallowed: the summary is observability
+    only and must never turn a successful publication into a failed run.
+    """
+    target = Path(path)
+    try:
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text(
+            json.dumps(asdict(stats), indent=2, sort_keys=True) + "\n",
+            encoding="utf-8",
+        )
+    except OSError as exc:
+        logger.warning("could not write pipeline stats to %s: %s", target, exc.strerror)
+        return target
+    return target

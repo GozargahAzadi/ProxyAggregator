@@ -143,6 +143,23 @@
 - [ ] *(a watchdog-scheduled run has not yet been observed: GitHub has not started its first tick, 22 min after it was due — GitHub cron stays best-effort and no cadence is guaranteed)*
 - [ ] The publication also *deletes* previously published files when a country has no eligible proxies (a publish commit removed ~28 tracked files); confirm that shrinkage is intended
 
+## Phase 22 — Production Run Summary & Release Sanity
+
+- [x] Audited what already exists before changing anything: the pipeline computes and logs every counter (`PipelineStats`), the freshness gate already exports its decision/threshold/previous publication/age to `$GITHUB_OUTPUT`, the release manifest already records every artifact's filename, format, count, byte size, and SHA-256, and `verify_release` already enforces every structural invariant. The only real gap was machine readability: `run_pipeline_cli()` discarded the stats it had just computed, and no `GITHUB_STEP_SUMMARY` existed anywhere
+- [x] `publishing/summary.py`: one pure renderer plus thin loaders. It reuses `verify_release` and `format_age` and derives nothing a caller has not already measured
+- [x] `pipeline --stats-file <path>` serialises the *already computed* `PipelineStats` verbatim and writes only after a successful run, so a file that exists always describes a complete run; a write failure is logged and ignored and can never fail a publication
+- [x] New `publish-summary` CLI command appends the report to `$GITHUB_STEP_SUMMARY` (stdout when unset) and **always exits 0**; every flag is coerced, so an empty step output becomes `unavailable` instead of a parse error
+- [x] Wired as the composite action's last step with `if: always()`, fed only by the run's own step outputs (`decision`, `threshold_minutes`, `published_at`, `age_seconds`, `base_sha`, `raced`, guard `sanity`, push `published`), so a published, skipped, race-discarded, and failed run are all reported
+- [x] Exactly one terminal status, derived in order: `SKIPPED` → `DISCARDED` (Phase 21 race) → `FAILED` (guard failure or no confirmed push) → `PUBLISHED` **only** when the commit/push step confirmed it. A skipped or raced attempt can never claim it published, and a lost step output can never manufacture a success
+- [x] No fabricated numbers: an unavailable source of truth renders as `unavailable`, a skipped run shows no pipeline/output counts at all (the previous release is never presented as this run's output), a raced run labels its counts as the discarded release, and an unreported guard is shown as *not verified* rather than re-deriving a pass from the stale release still in `output/`
+- [x] Release sanity is the existing Phase 19 structural guard (manifest valid, every artifact present with the recorded byte size and SHA-256, at least one non-empty feed), reported rather than duplicated. No new gate, because the audit found no invariant that was not already enforced
+- [x] No arbitrary threshold added: the repository commits no per-release metric (the manifest is overwritten every run and no history file exists), so a comparative "count dropped X%" rule would be ungrounded — a relative comparison is out of scope until a versioned metric exists
+- [x] Nothing published from the summary path: the stats file lives in `.runtime/` (now gitignored), outside `output/`, and `git add output README.md` is unchanged. The summary never writes `published_at.json`, never stages, and never runs before the guard
+- [x] Safety invariants unchanged: `*/5` cron, gated `repository_dispatch`, `workflow_dispatch` force, 13-minute threshold, `concurrency.group: publish` + `cancel-in-progress: false`, `contents: write`, no PAT, no rebase, no force push, no self-dispatch, and no parser/protocol/health/GeoIP/dedup/scoring/serialization/publication-transaction change
+- [x] Tests: new `tests/test_summary.py` (status matrix including a race and an unreported guard, rendered safety claims, no-URI guarantee, counter fidelity, manifest-derived output facts, protocol counts that never sum base64 mirrors, and CLI tests proving it exits 0 on broken input and never mutates `published_at.json`), five `PipelineStats`-handoff tests in `tests/test_pipeline.py`, and a `TestProductionRunSummary` contract class pinning the `if: always()` summary, its inputs, the guard-before-push ordering, and the absence of any new threshold
+- [x] Verified locally: 1141 tests pass, `ruff check src/ tests/` and `ruff format --check src/ tests/` clean, `git diff --check` clean, single alembic head `d4e5f6a7b8c9`
+- [ ] *Live verification pending*: normal publish + freshness `SKIP` on GitHub Actions (see `PHASE22_REPORT.md`)
+
 ## Phase 10 — API (Optional)
 
 - [ ] FastAPI endpoints

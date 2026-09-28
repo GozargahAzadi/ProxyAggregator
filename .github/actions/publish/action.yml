@@ -6,6 +6,8 @@ description: >-
   timestamp and pushes. If origin/main moved while the pipeline was running,
   nothing is committed and no publication timestamp is recorded; the action
   reports the race so the caller can regenerate from the newest main.
+  Whatever the outcome - published, skipped, raced, or failed - a run summary
+  is always appended to the job summary from the step's own outputs.
 
 inputs:
   token:
@@ -13,6 +15,16 @@ inputs:
       Token used for the commit/push step (normally the workflow GITHUB_TOKEN
       with contents: write).
     required: true
+  attempt:
+    description: 1-based publication attempt number (shown in the run summary).
+    required: false
+    default: "1"
+  stats-file:
+    description: >-
+      Path for the pipeline's measured PipelineStats JSON, consumed by the run
+      summary. Must stay outside output/ so it is never published.
+    required: false
+    default: .runtime/pipeline_stats.json
 
 outputs:
   decision:
@@ -23,6 +35,16 @@ outputs:
       "true" when origin/main moved during generation. Empty or "false" means
       the output was published, or the gate decided to skip.
     value: ${{ steps.race.outputs.raced }}
+  sanity:
+    description: >-
+      "passed" when the structural output guard verified the release. Empty when
+      the guard did not complete or the gate skipped.
+    value: ${{ steps.guard.outputs.sanity }}
+  published:
+    description: >-
+      "true" when this attempt committed and pushed a release to main. Always
+      empty when the gate skipped or a race discarded the release.
+    value: ${{ steps.push.outputs.published }}
 
 runs:
   using: composite
@@ -30,6 +52,14 @@ runs:
     - name: Create output directory
       shell: bash
       run: mkdir -p output
+
+    # Reported in the run summary for every outcome, including a freshness SKIP
+    # where no base-relative build happens. `git rev-parse HEAD` on the checked
+    # out commit; never contacts the network.
+    - name: Record base commit
+      id: base
+      shell: bash
+      run: echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
 
     # Phase 18 freshness gate. The schedule fires every 5 minutes, but a real
     # publication must not happen more than ~once per 15 minutes. This step
@@ -139,12 +169,27 @@ runs:
     # configured or no proxy is eligible, so empty/stale feeds are never
     # published. Production sources are registered in the `sources` table by
     # the seed step above; the pipeline never invents sources.
+    #
+    # Phase 22: `--stats-file` serialises the PipelineStats the pipeline has
+    # already computed and logged, so the run summary reports measured values
+    # instead of re-deriving them. The file lives outside output/ and is never
+    # staged; a stats write failure is logged and ignored by the pipeline.
     - name: Run production pipeline
       if: steps.freshness.outputs.decision == 'RUN'
       shell: bash
-      run: uv run python -m proxyaggregator pipeline
+      run: |
+        set -euo pipefail
+        uv run python -m proxyaggregator pipeline --stats-file "${{ inputs.stats-file }}"
 
+    # Structural release sanity (Phase 22). This is the existing Phase 19 guard,
+    # unchanged: manifest.json must exist, be valid JSON, list at least one
+    # non-empty feed, and every listed artifact must exist with the exact
+    # recorded byte_size and SHA-256. It runs *before* record-publish and the
+    # push, so a failure here can never advance output/published_at.json or
+    # commit output. `sanity=passed` is exported only on success; the run summary
+    # reports whatever this step last proved.
     - name: Guard against empty or invalid output
+      id: guard
       if: steps.freshness.outputs.decision == 'RUN'
       shell: bash
       run: |
@@ -167,6 +212,7 @@ runs:
             print(f"ERROR: output guard failed: {exc}", file=sys.stderr)
             sys.exit(1)
         PY
+        echo "sanity=passed" >> "$GITHUB_OUTPUT"
         echo "Output guard passed"
 
     # Phase 21 stale-tree guard. A queued run starts from the commit that
@@ -211,17 +257,53 @@ runs:
       run: uv run python -m proxyaggregator record-publish
 
     - name: Commit & push generated subscriptions
+      id: push
       if: steps.freshness.outputs.decision == 'RUN' && steps.race.outputs.raced == 'false'
       shell: bash
       env:
         GITHUB_TOKEN: ${{ inputs.token }}
       run: |
+        set -euo pipefail
         git config user.name "github-actions[bot]"
         git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
         git add output README.md
         if git diff --cached --quiet; then
           echo "No subscription changes to commit."
+          echo "published=true" >> "$GITHUB_OUTPUT"
           exit 0
         fi
         git commit -m "chore: update generated subscriptions"
         git push
+        echo "published=true" >> "$GITHUB_OUTPUT"
+
+    # Phase 22 run summary. `always()` so every outcome is reported: a
+    # published release, a freshness SKIP, a Phase 21 race that discarded the
+    # release, or a failure (pipeline, guard, or push). Every value is either
+    # read from this job's own step outputs or from a file this run produced;
+    # nothing is estimated, and an unavailable value is rendered as
+    # "unavailable" instead of a zero or a guess. The command always exits 0,
+    # so it can never fail a run that already published.
+    - name: Write run summary
+      if: always()
+      shell: bash
+      env:
+        PA_DECISION: ${{ steps.freshness.outputs.decision }}
+        PA_THRESHOLD: ${{ steps.freshness.outputs.threshold_minutes }}
+        PA_PREVIOUS_PUBLISHED_AT: ${{ steps.freshness.outputs.published_at }}
+        PA_AGE_SECONDS: ${{ steps.freshness.outputs.age_seconds }}
+        PA_BASE_SHA: ${{ steps.base.outputs.sha }}
+        PA_RACE: ${{ steps.race.outputs.raced }}
+        PA_SANITY: ${{ steps.guard.outputs.sanity }}
+        PA_PUBLISHED: ${{ steps.push.outputs.published }}
+      run: |
+        uv run python -m proxyaggregator publish-summary \
+          --attempt "${{ inputs.attempt }}" \
+          --base-sha "$PA_BASE_SHA" \
+          --decision "$PA_DECISION" \
+          --threshold-minutes "$PA_THRESHOLD" \
+          --age-seconds "$PA_AGE_SECONDS" \
+          --previous-published-at "$PA_PREVIOUS_PUBLISHED_AT" \
+          --race "$PA_RACE" \
+          --sanity "$PA_SANITY" \
+          --published "$PA_PUBLISHED" \
+          --stats-file "${{ inputs.stats-file }}"
