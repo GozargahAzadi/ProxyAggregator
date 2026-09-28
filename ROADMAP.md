@@ -108,7 +108,7 @@
 - [x] `concurrency.group: publish` + `cancel-in-progress: false` kept so overlapping triggers serialize and never race
 - [x] Deterministic freshness tests (threshold, UTC safety, failure semantics)
 - [x] *Verified live*: a real run executed the gate (`Decision: RUN`), published, committed `output/published_at.json` (`2026-09-27T18:56:09Z`), and a request 95 s later correctly produced `Decision: SKIP` with every expensive step skipped
-- [ ] *(a scheduled `*/5` run has still never been observed firing on time; GitHub's scheduler remains best-effort)*
+- [x] *Verified live (2026-09-28)*: the `*/5` cron did fire on its own — scheduled runs `36360194767`, `36371053260`, and `36400609363` all started and completed without any manual request. Gaps between firings are still 1–4 h rather than 5 min, so the scheduler is *better* than the Phase 20 measurement suggested but still far coarser than configured; the freshness gate remains the only cap that is actually enforced
 
 ## Phase 20 — GitHub-Native Trigger Reliability
 
@@ -137,7 +137,9 @@
 - [x] No application, parser, pipeline, health, GeoIP, database, or publishing Python logic changed (`git diff` over `src/`, `scripts/`, `alembic/`, `config/` is empty)
 - [x] Contract tests pin the triggers, env, toolchain, step order, `verify_release` guard, race decision, timestamp/push guards, job graph, retry bound, and the absence of force/rebase/self-dispatch; a functional test executes the real race-check script against throwaway git repos (unchanged main → `raced=false`, moved main → `raced=true`)
 - [x] Verified locally: 1042 tests pass, `ruff check src/ tests/` and `ruff format --check src/ tests/` clean, `git diff --check` clean, single alembic head
-- [ ] *Verified live*: a real race has not been provoked end-to-end on GitHub; the race path is covered by the functional script test and contract tests only
+- [x] *Verified live (2026-09-28)*: three production runs on the Phase 21 two-job workflow (`36366848328` via `repository_dispatch`, `36371053260` and `36400609363` via `schedule`) published end-to-end. The composite action's stale-tree guard reported `generated_from == origin_main` (`raced=false`) in each, and the bounded retry job was correctly `skipped` because no race occurred
+- [ ] *Verified live*: no run has yet hit a real race on GitHub, so the retry path is covered by the functional race-check test and contract tests rather than by a live run. Provoking one on purpose requires committing to `main` during a running generation
+- [ ] *(a watchdog-scheduled run has not yet been observed: GitHub has not started its first tick, 22 min after it was due — GitHub cron stays best-effort and no cadence is guaranteed)*
 - [ ] The publication also *deletes* previously published files when a country has no eligible proxies (a publish commit removed ~28 tracked files); confirm that shrinkage is intended
 
 ## Phase 10 — API (Optional)
