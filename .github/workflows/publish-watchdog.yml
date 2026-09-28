@@ -127,6 +127,12 @@ jobs:
           REQUEST_EPOCH: ${{ steps.request.outputs.request_epoch }}
         run: |
           set -euo pipefail
+          # An empty epoch would produce a jq syntax error instead of a useful
+          # message, and the filter is what distinguishes a run this request
+          # created from one that already existed.
+          case "$REQUEST_EPOCH" in
+            ""|*[!0-9]*) echo "::error::request_epoch missing or not numeric" >&2; exit 1 ;;
+          esac
           for attempt in 1 2 3 4 5 6; do
             found="$(gh api "repos/$REPO/actions/workflows/$PUBLISH_WORKFLOW/runs?event=repository_dispatch&per_page=10" \
               --jq "[.workflow_runs[] | select(.created_at | fromdateiso8601 > $REQUEST_EPOCH) | .id] | first // empty")"
