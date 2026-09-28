@@ -41,6 +41,18 @@ if TYPE_CHECKING:
 
 ROOT_DIR = Path(__file__).resolve().parents[1]
 
+PUBLISH_WORKFLOW = ROOT_DIR / ".github" / "workflows" / "publish.yml"
+# Phase 21 moved the generation sequence into a shared composite action so the
+# bounded retry can rerun it verbatim on a fresh checkout. Contract tests that
+# describe the publication pipeline must read the workflow *and* that action.
+PUBLISH_ACTION = ROOT_DIR / ".github" / "actions" / "publish" / "action.yml"
+
+
+def publish_pipeline_text() -> str:
+    """Return the workflow plus the shared publish action it delegates to."""
+    return PUBLISH_WORKFLOW.read_text(encoding="utf-8") + PUBLISH_ACTION.read_text(encoding="utf-8")
+
+
 DEFINITION_A = {
     "name": "alpha",
     "type": "http",
@@ -532,7 +544,7 @@ class TestRepositoryContract:
         assert parser.parse_args(["seed-sources"]).sources_file is None
 
     def test_workflow_schedules_freshness_gate_and_stays_serialized(self):
-        text = (ROOT_DIR / ".github" / "workflows" / "publish.yml").read_text(encoding="utf-8")
+        text = publish_pipeline_text()
         assert 'cron: "*/5 * * * *"' in text
         assert "workflow_dispatch" in text
         assert "Freshness gate" in text
@@ -544,7 +556,7 @@ class TestRepositoryContract:
         assert "Guard against empty or invalid output" in text
 
     def test_watchdog_request_stays_subject_to_the_freshness_gate(self):
-        text = (ROOT_DIR / ".github" / "workflows" / "publish.yml").read_text(encoding="utf-8")
+        text = publish_pipeline_text()
         # A machine-triggered run must arrive as a repository dispatch, and the
         # forced path must stay manual-only, so a watchdog can never publish
         # outside the 13-minute cadence.
@@ -596,14 +608,14 @@ class TestRepositoryContract:
         assert Settings().geoip_db_path == "GeoLite2-City.mmdb"
 
     def test_workflow_seeds_before_pipeline(self):
-        text = (ROOT_DIR / ".github" / "workflows" / "publish.yml").read_text(encoding="utf-8")
+        text = publish_pipeline_text()
         seed_pos = text.index("Seed production sources")
         pipeline_pos = text.index("Run production pipeline")
         assert seed_pos < pipeline_pos
         assert "PA_SOURCES_FILE: config/sources.json" in text
 
     def test_workflow_provisions_and_verifies_geoip_before_pipeline(self):
-        text = (ROOT_DIR / ".github" / "workflows" / "publish.yml").read_text(encoding="utf-8")
+        text = publish_pipeline_text()
         provision_pos = text.index("Provision GeoIP database")
         checksum_pos = text.index("Verify GeoIP database checksum")
         verify_pos = text.index("name: Verify GeoIP database\n")
@@ -615,7 +627,7 @@ class TestRepositoryContract:
         assert "github.com/sapics/ip-location-db/releases/download/latest/user-country.mmdb" in text
 
     def test_workflow_verifies_geoip_sha256_checksum(self):
-        text = (ROOT_DIR / ".github" / "workflows" / "publish.yml").read_text(encoding="utf-8")
+        text = publish_pipeline_text()
         assert "Verify GeoIP database checksum" in text
         assert "sha256sum" in text
         assert "api.github.com/repos/sapics/ip-location-db/releases/latest" in text

@@ -105,6 +105,10 @@ output — this validates the Phase 9 chain locally.
   queued until the active run finishes and then reads the committed state, so
   the freshness gate is always evaluated against the latest successful
   publication and the pipeline can never be killed by a newer run.
+- Two jobs, `attempt-1` and `attempt-2`, both delegating the generation to the
+  shared composite action `.github/actions/publish`. The retry is bounded to one
+  extra attempt and only exists to recover from `main` moving underneath a
+  running generation; see Phase 21 below.
 
 ### Phase 20 — publish watchdog (`.github/workflows/publish-watchdog.yml`)
 
@@ -145,12 +149,65 @@ Two safety properties are deliberate:
    previous publication's commit, so its freshness gate could read a stale
    `output/published_at.json` and allow a second publication inside the
    threshold window. The active-run check skips such requests and the next tick
-   asks again.
+   asks again. Phase 21 removes the underlying hazard as well: a run that
+   discovers `main` moved regenerates from the newest main and re-evaluates the
+   gate there, so a stale-tree publication is no longer possible even if such a
+   request is ever issued.
 
 Honest limit: this multiplies the number of GitHub-native scheduling
 opportunities; it does not make GitHub's scheduler reliable. Both crons remain
 best-effort, so no cadence is guaranteed — the freshness gate remains the only
 thing that actually caps how often output is published.
+
+### Phase 21 — bounded regeneration when main moves (`.github/actions/publish/action.yml`)
+
+A scheduled run starts from the commit that triggered it, which can predate a
+publication that landed while the run was waiting in the `publish` concurrency
+queue. If `origin/main` moves while the pipeline is running, the release on disk
+is a mixture of two trees: files removed by the newer commit are still present
+and files added by it are missing. Pushing that release would restore deleted
+output and drop newly eligible proxies. The observed symptom of this defect was
+a bare `git push` rejected with `! [rejected] main -> main (fetch first)`
+*after* a full successful generation (~12 minutes of wasted work).
+
+The generation sequence therefore lives in a shared composite action
+(`.github/actions/publish/action.yml`) and the workflow runs **at most two
+attempts**:
+
+- **Attempt 1** checks out the triggering commit and runs the composite action.
+  After the output guard passes, the action's *stale-tree guard* fetches
+  `origin/main` and compares it with the commit the release was built from
+  (`git rev-parse HEAD`). If they are equal, `record-publish` and the commit/push
+  run and the publication lands.
+- **If main moved**, the release is discarded *before* `record-publish` and
+  before any commit, so no stale output is published and
+  `output/published_at.json` is not advanced. The attempt exits green with
+  `raced=true` and a `::warning::` annotation naming both commits.
+- **Attempt 2** runs only when `needs.attempt-1.outputs.raced == 'true'`. It
+  checks out `ref: main` on a fresh runner and reruns the *same* composite
+  action, so the release is rebuilt from the newest tree, the output guard and
+  the freshness gate both run again, and the push is an ordinary fast-forward.
+- **If main moves again**, attempt 2's release is discarded and the job fails
+  with a clear `::error::`. Nothing is published, the timestamp is untouched, and
+  the next scheduled or watchdog trigger retries from scratch.
+
+Deliberate non-solutions:
+
+- **No rebase and no force push.** Rebasing a release that was generated from
+  the older tree would not recreate the removed/added files (git does not
+  replay working-tree content), and force-pushing would rewrite published
+  history. Regenerating from the newest main is the only correct repair.
+- **No self-dispatch.** Attempt 2 is a real dependent job, not a
+  `repository_dispatch` back into the same workflow, so the bounded retry cannot
+  loop and stays observable in one workflow run.
+- **Bounded at two attempts.** A pathological push loop would otherwise keep
+  regenerating; failing loudly lets the next trigger start from a clean state.
+
+Because attempt 2 checks out the *current* main, its freshness gate reads the
+newest `output/published_at.json`. If a publication landed while attempt 1 was
+generating, the retry's gate correctly decides `SKIP`, which closes the
+stale-timestamp window the Phase 20 watchdog had to work around by skipping
+requests.
 
 ### Phase 18 — freshness gate
 
@@ -167,19 +224,21 @@ step `python -m proxyaggregator freshness-gate`.
 - Decision: no previous publication, or `age >= 13 minutes` → `RUN`; younger →
   `SKIP`. `workflow_dispatch` always forces `RUN`.
 - Every expensive step (GeoIP provisioning/checksum/verify, migrations,
-  seeding, pipeline, output guard, commit/push) is guarded with
+  seeding, pipeline, output guard, stale-tree guard, commit/push) is guarded with
   `if: steps.freshness.outputs.decision == 'RUN'`, so a `SKIP` finishes the
-  job green without running the pipeline.
-- Failure semantics: if the pipeline, the output guard, or the push fails, the
-  timestamp is **not** advanced — scheduled runs keep retrying until a
-  genuinely successful publication lands.
+  job green without running the pipeline. The gate itself is unguarded, so it
+  is also re-evaluated by the Phase 21 retry.
+- Failure semantics: if the pipeline, the output guard, a detected race, or the
+  push fails, the timestamp is **not** advanced — scheduled runs keep retrying
+  until a genuinely successful publication lands.
 
 Steps (when `RUN`): checkout → uv/Python 3.12 → `uv sync --all-extras` →
 `mkdir output` → freshness gate → GeoIP provisioning + SHA-256 checksum +
 `verify-geoip` → `alembic upgrade head` (SQLite at `output/proxyaggregator.db`,
 gitignored via `*.db`) → **seed production sources** → **run production
-pipeline** → empty-output guard → `record-publish` → `git add output README.md`
-→ commit & push (`chore: update generated subscriptions`).
+pipeline** → empty-output guard → **stale-tree guard** → `record-publish` →
+`git add output README.md` → commit & push
+(`chore: update generated subscriptions`).
 
 The empty-output guard fails the job when no artifacts were produced, so
 stale or empty subscriptions are **never** published. The commit step exits

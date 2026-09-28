@@ -3,7 +3,7 @@ name: Publish
 on:
   workflow_dispatch:
   # Phase 20: the publish watchdog asks for a run with this event. It is
-  # deliberately *not* `workflow_dispatch`: the freshness gate below forces
+  # deliberately *not* `workflow_dispatch`: the freshness gate forces
   # Decision RUN only for `workflow_dispatch` (a human asking for an immediate
   # publication), so a watchdog request stays subject to the same 13-minute
   # gate as a scheduled run. A watchdog can therefore add scheduling
@@ -13,8 +13,8 @@ on:
   schedule:
     # Trigger every 5 minutes (Phase 18): scheduled workflows are best-effort
     # and may be delayed, so a 5-minute trigger gives many opportunities to
-    # start. A freshness gate (see below) still caps real publications at
-    # ~once per 15 minutes.
+    # start. A freshness gate (see .github/actions/publish/action.yml) still
+    # caps real publications at ~once per 15 minutes.
     - cron: "*/5 * * * *"
 
 permissions:
@@ -36,11 +36,20 @@ env:
   # README country index and *.mmdb is gitignored).
   PA_GEOIP_DB_PATH: ${{ github.workspace }}/.runtime/geoip/user-country.mmdb
 
+# Phase 21. The generation sequence lives in the shared composite action
+# .github/actions/publish so a bounded retry can rerun it verbatim on a fresh
+# checkout of the newest main. The initial attempt always runs from the commit
+# that triggered the workflow; if that commit is no longer origin/main once the
+# pipeline has finished, the attempt discards its release and the retry
+# regenerates it. There is no rebase, no force push, and no self-dispatch.
 jobs:
-  aggregate:
+  attempt-1:
     name: Aggregate & Publish
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    outputs:
+      decision: ${{ steps.publish.outputs.decision }}
+      raced: ${{ steps.publish.outputs.raced }}
     steps:
       - uses: actions/checkout@v4
 
@@ -55,155 +64,49 @@ jobs:
       - name: Install dependencies
         run: uv sync --all-extras
 
-      - name: Create output directory
-        run: mkdir -p output
+      - name: Generate, verify, and publish subscriptions
+        id: publish
+        uses: ./.github/actions/publish
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
 
-      # Phase 18 freshness gate. The schedule fires every 5 minutes, but a real
-      # publication must not happen more than ~once per 15 minutes. This step
-      # compares the last successful publication time (output/published_at.json,
-      # committed only by the successful-publish step below) against the
-      # 13-minute threshold and exits with Decision SKIP/RUN. Every expensive
-      # downstream step is guarded on `decision == 'RUN'`, so a SKIP finishes
-      # the job green without running the pipeline or GeoIP provisioning.
-      # The concurrency group (`publish`, cancel-in-progress: false) queues any
-      # overlapping run, so a later trigger always reads the state committed by
-      # an earlier one - the gate can never create a second concurrent
-      # publisher, and no cross-run lock is needed.
-      - name: Freshness gate
-        id: freshness
+  # Bounded to a single retry. It checks out the current main rather than the
+  # commit that triggered the workflow, so the release is built from the newest
+  # tree and the freshness gate reads the newest output/published_at.json. If
+  # main moves again while this attempt runs, the release is discarded, the job
+  # fails, and the next scheduled or watchdog trigger retries from scratch. A
+  # failed attempt never advances published_at.json and never publishes output
+  # built from a stale tree.
+  attempt-2:
+    name: Aggregate & Publish (regenerate on latest main)
+    needs: attempt-1
+    if: needs.attempt-1.outputs.raced == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          version: "0.12"
+
+      - name: Set up Python
+        run: uv python install 3.12
+
+      - name: Install dependencies
+        run: uv sync --all-extras
+
+      - name: Generate, verify, and publish subscriptions
+        id: publish
+        uses: ./.github/actions/publish
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Report exhausted publication attempts
+        if: steps.publish.outputs.raced == 'true'
         run: |
-          set -euo pipefail
-          flag=""
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            flag="--force"
-          fi
-          uv run python -m proxyaggregator freshness-gate $flag
-
-      # GeoIP provisioning. No credentials are involved: the country MMDB from
-      # the ip-location-db project (database_type "country ipvAll") is fetched
-      # fresh on every run into $PA_GEOIP_DB_PATH (a .runtime/ dir inside the
-      # workspace that is never staged/committed). The release asset is the
-      # raw MMDB, so no archive extraction is needed.
-      - name: Provision GeoIP database
-        if: steps.freshness.outputs.decision == 'RUN'
-        shell: bash
-        run: |
-          set -euo pipefail
-          db_path="$PA_GEOIP_DB_PATH"
-          mkdir -p "$(dirname "$db_path")"
-          curl -fsSL --retry 3 --connect-timeout 30 \
-            -o "$db_path" \
-            "https://github.com/sapics/ip-location-db/releases/download/latest/user-country.mmdb"
-          if [ ! -s "$db_path" ]; then
-            echo "ERROR: downloaded GeoIP database is empty." >&2
-            exit 1
-          fi
-          echo "GeoIP database provisioned at $db_path"
-
-      # SHA-256 integrity check. GitHub publishes an official `digest` for
-      # every release asset (api.github.com .../releases/latest ->
-      # assets[].digest); it is fetched at runtime so it always matches the
-      # current upstream file — nothing is hard-coded.
-      - name: Verify GeoIP database checksum
-        if: steps.freshness.outputs.decision == 'RUN'
-        shell: bash
-        run: |
-          set -euo pipefail
-          db_path="$PA_GEOIP_DB_PATH"
-          test -s "$db_path" || {
-            echo "ERROR: GeoIP database missing or empty: $db_path" >&2
-            exit 1
-          }
-          expected="$(curl -fsSL --retry 3 --connect-timeout 30 \
-            "https://api.github.com/repos/sapics/ip-location-db/releases/latest" \
-            | python3 -c 'import json, sys; data = json.load(sys.stdin); assets = [a for a in data.get("assets", []) if a.get("name") == "user-country.mmdb"]; digest = assets[0].get("digest", "") if assets else ""; print(digest.removeprefix("sha256:") if digest.startswith("sha256:") else "")')"
-          if [ -z "$expected" ]; then
-            echo "ERROR: upstream SHA-256 digest for user-country.mmdb could not be obtained." >&2
-            exit 1
-          fi
-          actual="$(sha256sum "$db_path" | awk '{print $1}')"
-          if [ "$actual" != "$expected" ]; then
-            echo "ERROR: SHA-256 verification failed for $db_path" >&2
-            echo "expected=$expected" >&2
-            echo "actual=$actual" >&2
-            exit 1
-          fi
-          echo "GeoIP database SHA-256 verified ($expected)"
-
-      # Fails fast with a clear error if the provisioned database is missing,
-      # unreadable, invalid, or the wrong type. Never prints credentials.
-      - name: Verify GeoIP database
-        if: steps.freshness.outputs.decision == 'RUN'
-        run: uv run python -m proxyaggregator verify-geoip
-
-      - name: Apply database migrations
-        if: steps.freshness.outputs.decision == 'RUN'
-        run: uv run alembic upgrade head
-
-      # Production source seeding (Phase 9.2). The `seed-sources` command loads
-      # the repository-controlled config/sources.json definition file into the
-      # `sources` table (validated, credential-free, url-keyed upsert). It never
-      # fetches; the pipeline below owns all network I/O. Seed *before* the
-      # pipeline so the empty-table fast-fail reflects the real definitions.
-      - name: Seed production sources
-        if: steps.freshness.outputs.decision == 'RUN'
-        run: uv run python -m proxyaggregator seed-sources
-
-      # Full pipeline integration point (Phase 9.1, roadmap item "Full pipeline
-      # integration"). The `pipeline` command orchestrates sources -> parse ->
-      # dedup -> persist -> geoip -> health -> score -> subscription in
-      # docs/PUBLISHER.md's order and fails fast (non-zero) when no sources are
-      # configured or no proxy is eligible, so empty/stale feeds are never
-      # published. Production sources are registered in the `sources` table by
-      # the seed step above; the pipeline never invents sources.
-      - name: Run production pipeline
-        if: steps.freshness.outputs.decision == 'RUN'
-        run: uv run python -m proxyaggregator pipeline
-
-      - name: Guard against empty or invalid output
-        if: steps.freshness.outputs.decision == 'RUN'
-        shell: bash
-        run: |
-          set -euo pipefail
-          if [ ! -d output ]; then
-            echo "ERROR: output/ missing after pipeline run" >&2
-            exit 1
-          fi
-          # Structural + integrity guard: manifest.json must exist, be valid
-          # JSON, list at least one non-empty feed, and every listed artifact
-          # must exist with the exact recorded byte_size and SHA-256. Database
-          # files are never considered artifacts. A failure here means the
-          # release is incomplete or corrupted, so nothing is published.
-          uv run python - <<'PY'
-          import sys
-          from proxyaggregator.publishing.publisher import verify_release
-          try:
-              verify_release("output")
-          except Exception as exc:
-              print(f"ERROR: output guard failed: {exc}", file=sys.stderr)
-              sys.exit(1)
-          PY
-          echo "Output guard passed"
-
-      # Phase 18: record the successful publication. output/published_at.json is
-      # written only here - never by the pipeline - so a failed pipeline, a
-      # failed output guard, or a failed push all leave the previous timestamp
-      # untouched and later scheduled runs remain free to retry.
-      - name: Record successful publication time
-        if: steps.freshness.outputs.decision == 'RUN'
-        run: uv run python -m proxyaggregator record-publish
-
-      - name: Commit & push generated subscriptions
-        if: steps.freshness.outputs.decision == 'RUN'
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add output README.md
-          if git diff --cached --quiet; then
-            echo "No subscription changes to commit."
-            exit 0
-          fi
-          git commit -m "chore: update generated subscriptions"
-          git push
+          echo "::error::origin/main moved again while the regenerated release was being built. The stale release was discarded, nothing was pushed, and output/published_at.json was not advanced. Both bounded attempts are exhausted; the next scheduled or watchdog trigger will retry from the latest main."
+          exit 1

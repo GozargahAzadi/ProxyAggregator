@@ -123,10 +123,21 @@
 - [x] *Verified live*: a watchdog-style request is **not** forced — it was gated (`SKIP`), so machine triggers can never bypass the cadence
 - [ ] *(a watchdog-scheduled run has not yet been observed: GitHub has not started its first tick, 22 min after it was due — GitHub cron stays best-effort and no cadence is guaranteed)*
 
-## Phase 21 — Publisher Push Resilience (identified, not started)
+## Phase 21 — Publisher Push Resilience
 
-- [ ] **Blocking defect**: the commit step does a bare `git push`. Any commit landing during the ~11.5-minute run makes the push non-fast-forward and the whole publication is lost — reproduced twice (runs `36340267647`, `36340424631`, both `! [rejected] main -> main (fetch first)`), each after ~11 min of runner work
-- [ ] Make the push resilient (fetch/rebase onto `origin/main` before pushing) so an unrelated commit cannot discard a successful publication
+- [x] Root-caused the blocking defect: a run publishes from the commit that triggered it, so a commit landing during the ~11.5-minute run leaves the release as a mixture of two trees (removed files still present, added files missing) and a bare `git push` is rejected — reproduced twice (runs `36340267647`, `36340424631`, both `! [rejected] main -> main (fetch first)`), each after ~11 min of runner work
+- [x] Generation sequence moved verbatim into a shared composite action `.github/actions/publish/action.yml` so a retry can rerun it unchanged
+- [x] Stale-tree guard: after the output guard, fetch `origin/main` and compare it with the release's base commit; on a mismatch the release is discarded **before** `record-publish` and before any commit, so no stale output is published and `published_at.json` is not advanced
+- [x] Bounded regeneration: a single dependent retry job checks out `ref: main` on a fresh runner and reruns the same action (freshness gate, GeoIP, pipeline, output guard, push all run again)
+- [x] Retries are exhausted after two attempts — the second attempt fails loudly with `::error::`, publishes nothing, and lets the next scheduled/watchdog trigger retry from a clean state
+- [x] No rebase and no force push: a rebase cannot recreate working-tree content, and force-pushing would rewrite published history, so regeneration is the only correct repair
+- [x] No self-dispatch and no `workflow_run` retrigger: the retry is a real dependent job, so it cannot loop and stays visible in a single workflow run
+- [x] All Phase 18/20 invariants preserved: `*/5` cron, gated `repository_dispatch`, `workflow_dispatch` force, 13-minute threshold, `concurrency.group: publish` + `cancel-in-progress: false`, `contents: write`, `cancel-in-progress: true` on the watchdog
+- [x] Side benefit: the retry checks out current `main`, so its freshness gate reads the newest `published_at.json` and correctly `SKIP`s if a publication landed meanwhile — closing the stale-timestamp window the watchdog had to work around
+- [x] No application, parser, pipeline, health, GeoIP, database, or publishing Python logic changed (`git diff` over `src/`, `scripts/`, `alembic/`, `config/` is empty)
+- [x] Contract tests pin the triggers, env, toolchain, step order, `verify_release` guard, race decision, timestamp/push guards, job graph, retry bound, and the absence of force/rebase/self-dispatch; a functional test executes the real race-check script against throwaway git repos (unchanged main → `raced=false`, moved main → `raced=true`)
+- [x] Verified locally: 1042 tests pass, `ruff check src/ tests/` and `ruff format --check src/ tests/` clean, `git diff --check` clean, single alembic head
+- [ ] *Verified live*: a real race has not been provoked end-to-end on GitHub; the race path is covered by the functional script test and contract tests only
 - [ ] The publication also *deletes* previously published files when a country has no eligible proxies (a publish commit removed ~28 tracked files); confirm that shrinkage is intended
 
 ## Phase 10 — API (Optional)
