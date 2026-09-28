@@ -250,9 +250,12 @@ class TestWatchdogRequestsAreReal:
         assert "repository_dispatch" in script
         assert "confirmed=true" in script
         assert "confirmed=false" in script
-        # Confirmation is bounded: it cannot poll forever.
+        # Bounded: it cannot poll forever.
         assert "for attempt in" in script
         assert "exit 1" in script
+        # A missing epoch must fail loudly, not become a jq syntax error that
+        # merely looks like "no run was created".
+        assert "*[!0-9]*" in script
         # It runs only after an actual dispatch attempt.
         assert confirm["if"] == "steps.request.outcome == 'success'"
 
