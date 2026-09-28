@@ -4,38 +4,39 @@ Click a country to open its subscriptions.
 
 | Country | Code | Proxies |
 | --- | --- | ---: |
-| [🇦🇪 United Arab Emirates](./AE/) | AE | 1 |
-| [🇧🇬 Bulgaria](./BG/) | BG | 1 |
-| [🇨🇦 Canada](./CA/) | CA | 18 |
+| [🇦🇪 United Arab Emirates](./AE/) | AE | 2 |
+| [🇦🇺 Australia](./AU/) | AU | 1 |
+| [🇧🇬 Bulgaria](./BG/) | BG | 2 |
+| [🇨🇦 Canada](./CA/) | CA | 15 |
 | [🇨🇭 Switzerland](./CH/) | CH | 1 |
-| [🇨🇳 China](./CN/) | CN | 2 |
-| [🇨🇿 Czechia](./CZ/) | CZ | 1 |
-| [🇩🇪 Germany](./DE/) | DE | 10 |
+| [🇨🇳 China](./CN/) | CN | 1 |
+| [🇨🇿 Czechia](./CZ/) | CZ | 2 |
+| [🇩🇪 Germany](./DE/) | DE | 18 |
 | [🇪🇪 Estonia](./EE/) | EE | 2 |
 | [🇪🇸 Spain](./ES/) | ES | 1 |
-| [🇫🇷 France](./FR/) | FR | 15 |
+| [🇫🇮 Finland](./FI/) | FI | 4 |
+| [🇫🇷 France](./FR/) | FR | 20 |
 | [🇬🇧 United Kingdom](./GB/) | GB | 77 |
+| [🇬🇷 Greece](./GR/) | GR | 1 |
 | [🇭🇰 Hong Kong](./HK/) | HK | 8 |
-| [🇭🇷 Croatia](./HR/) | HR | 1 |
 | [🇮🇳 India](./IN/) | IN | 2 |
 | [🇮🇷 Iran](./IR/) | IR | 6 |
 | [🇮🇹 Italy](./IT/) | IT | 1 |
-| [🇯🇵 Japan](./JP/) | JP | 6 |
-| [🇰🇷 Korea, Republic of](./KR/) | KR | 4 |
-| [🇱🇹 Lithuania](./LT/) | LT | 1 |
-| [🇲🇽 Mexico](./MX/) | MX | 1 |
-| [🇳🇱 Netherlands](./NL/) | NL | 31 |
+| [🇯🇵 Japan](./JP/) | JP | 8 |
+| [🇰🇷 Korea, Republic of](./KR/) | KR | 10 |
+| [🇱🇹 Lithuania](./LT/) | LT | 3 |
+| [🇲🇽 Mexico](./MX/) | MX | 2 |
+| [🇳🇱 Netherlands](./NL/) | NL | 28 |
 | [🇵🇦 Panama](./PA/) | PA | 1 |
-| [🇵🇹 Portugal](./PT/) | PT | 1 |
+| [🇵🇱 Poland](./PL/) | PL | 1 |
 | [🇷🇴 Romania](./RO/) | RO | 1 |
-| [🇷🇸 Serbia](./RS/) | RS | 2 |
 | [🇷🇺 Russia](./RU/) | RU | 2 |
 | [🇸🇨 Seychelles](./SC/) | SC | 1 |
-| [🇸🇪 Sweden](./SE/) | SE | 2 |
-| [🇸🇬 Singapore](./SG/) | SG | 2 |
+| [🇸🇪 Sweden](./SE/) | SE | 4 |
+| [🇸🇬 Singapore](./SG/) | SG | 5 |
 | [🇸🇮 Slovenia](./SI/) | SI | 1 |
 | [🇹🇭 Thailand](./TH/) | TH | 2 |
 | [🇹🇷 Turkey](./TR/) | TR | 2 |
-| [🇹🇼 Taiwan](./TW/) | TW | 1 |
-| [🇺🇸 United States](./US/) | US | 82 |
+| [🇹🇼 Taiwan](./TW/) | TW | 2 |
+| [🇺🇸 United States](./US/) | US | 207 |
 | [🇿🇦 South Africa](./ZA/) | ZA | 3 |

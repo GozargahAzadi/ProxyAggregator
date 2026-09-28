@@ -1,6 +1,6 @@
 # 🇱🇹 Lithuania
 
-1 healthy proxy.
+3 healthy proxies.
 
 ## 📋 All Protocols
 
@@ -13,5 +13,5 @@
 
 | Protocol | GitHub | Raw |
 |---|---|---|
-| VLESS | [Open](./vless.txt) | `https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/countries/LT/vless.txt` |
-| VLESS Base64 | [Open](./vless-base64.txt) | `https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/countries/LT/vless-base64.txt` |
+| HTTPS | [Open](./https.txt) | `https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/countries/LT/https.txt` |
+| HTTPS Base64 | [Open](./https-base64.txt) | `https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/countries/LT/https-base64.txt` |
