@@ -1,6 +1,6 @@
 # 🇰🇷 Korea, Republic of
 
-4 healthy proxies.
+6 healthy proxies.
 
 ## 📋 All Protocols
 

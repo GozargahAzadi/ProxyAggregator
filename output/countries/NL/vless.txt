@@ -1,4 +1,4 @@
-vless://c21631d5-36c9-4664-b575-97eca17456be@neth8.lunariai.ru:443?host=neth8.lunariai.ru&network=ws&path=%2F#%F0%9F%87%B3%F0%9F%87%B1%20NL%20%7C%20VLESS%20%7C%205112ms%20%7C%20GozargahAzadi
-vless://05caca6c-9e97-4c0f-8edf-7b88a6e572c5@mypanel.unixzone.us:12068?host=mypanel.unixzone.us&network=ws&path=%2F&security=none#%F0%9F%87%B3%F0%9F%87%B1%20NL%20%7C%20VLESS%20%7C%205962ms%20%7C%20GozargahAzadi
-vless://05caca6c-9e97-4c0f-8edf-7b88a6e572c5@85.17.145.65:12068?host=mypanel.unixzone.us&network=ws&path=%2F&security=none#%F0%9F%87%B3%F0%9F%87%B1%20NL%20%7C%20VLESS%20%7C%205962ms%20%7C%20GozargahAzadi
-vless://c21631d5-36c9-4664-b575-97eca17456be@2.27.205.59:443?network=ws&security=none#%F0%9F%87%B3%F0%9F%87%B1%20NL%20%7C%20VLESS%20%7C%206014ms%20%7C%20GozargahAzadi
+vless://05caca6c-9e97-4c0f-8edf-7b88a6e572c5@85.17.145.65:12068?host=mypanel.unixzone.us&network=ws&path=%2F&security=none&sni=mypanel.unixzone.us#%F0%9F%87%B3%F0%9F%87%B1%20NL%20%7C%20VLESS%20%7C%204416ms%20%7C%20GozargahAzadi
+vless://05caca6c-9e97-4c0f-8edf-7b88a6e572c5@mypanel.unixzone.us:12068?host=mypanel.unixzone.us&network=ws&path=%2F&security=none#%F0%9F%87%B3%F0%9F%87%B1%20NL%20%7C%20VLESS%20%7C%204418ms%20%7C%20GozargahAzadi
+vless://c21631d5-36c9-4664-b575-97eca17456be@2.27.205.59:443?network=ws&security=none#%F0%9F%87%B3%F0%9F%87%B1%20NL%20%7C%20VLESS%20%7C%204433ms%20%7C%20GozargahAzadi
+vless://c21631d5-36c9-4664-b575-97eca17456be@neth8.lunariai.ru:443?host=neth8.lunariai.ru&network=ws&path=%2F#%F0%9F%87%B3%F0%9F%87%B1%20NL%20%7C%20VLESS%20%7C%204491ms%20%7C%20GozargahAzadi

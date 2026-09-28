@@ -1,2 +1,1 @@
-vless://06c4e938-2954-478f-a870-ca1b163e30e9@94.183.170.135:443?network=ws&path=%2F&security=none#%F0%9F%87%AA%F0%9F%87%AA%20EE%20%7C%20VLESS%20%7C%204486ms%20%7C%20GozargahAzadi
-vless://e60bc99b-6630-4799-af84-f90ebdc643b6@94.183.170.65:8081?host=hys2.arkonsoft.top&network=ws&path=%2Fws%2Fgenerate&security=none#%F0%9F%87%AA%F0%9F%87%AA%20EE%20%7C%20VLESS%20%7C%204689ms%20%7C%20GozargahAzadi
+vless://06c4e938-2954-478f-a870-ca1b163e30e9@94.183.170.135:443?network=ws&path=%2F&security=none#%F0%9F%87%AA%F0%9F%87%AA%20EE%20%7C%20VLESS%20%7C%204434ms%20%7C%20GozargahAzadi

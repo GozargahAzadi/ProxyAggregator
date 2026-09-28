@@ -1,4 +1,4 @@
-https://82.147.71.46:443#%F0%9F%87%B7%F0%9F%87%BA%20RU%20%7C%20HTTPS%20%7C%20609ms%20%7C%20GozargahAzadi
-ss://YWVzLTEyOC1nY206ZjkzMDBhOWJmMzlhZTAzNDdjM2EzYmZiYzRkZDc3NTQ=@77.83.247.207:18285#%F0%9F%87%B7%F0%9F%87%BA%20RU%20%7C%20SS%20%7C%201157ms%20%7C%20GozargahAzadi
-vless://bc5ec86c-3e65-4272-994c-59a924c72a68@fbsv6.guardora.pro:443?host=fbsv6.guardora.pro&network=ws&path=%2Fws&security=tls&sni=fbsv6.guardora.pro#%F0%9F%87%B7%F0%9F%87%BA%20RU%20%7C%20VLESS%20%7C%202633ms%20%7C%20GozargahAzadi
-vless://ff0b6ba8-bed0-4c4d-bbc9-23af47582615@91.210.169.181:443?host=wstg.datasynctrue.online&network=ws&path=%2Fapi%2Fconnect&security=tls&sni=wstg.datasynctrue.online#%F0%9F%87%B7%F0%9F%87%BA%20RU%20%7C%20VLESS%20%7C%202751ms%20%7C%20GozargahAzadi
+https://82.147.71.46:443#%F0%9F%87%B7%F0%9F%87%BA%20RU%20%7C%20HTTPS%20%7C%20590ms%20%7C%20GozargahAzadi
+vless://bc5ec86c-3e65-4272-994c-59a924c72a68@fbsv6.guardora.pro:443?network=ws&path=%2Fws&security=tls&sni=fbsv6.guardora.pro#%F0%9F%87%B7%F0%9F%87%BA%20RU%20%7C%20VLESS%20%7C%20969ms%20%7C%20GozargahAzadi
+vless://ff0b6ba8-bed0-4c4d-bbc9-23af47582615@91.210.169.181:443?host=wstg.datasynctrue.online&network=ws&path=%2Fapi%2Fconnect&security=tls&sni=wstg.datasynctrue.online#%F0%9F%87%B7%F0%9F%87%BA%20RU%20%7C%20VLESS%20%7C%201129ms%20%7C%20GozargahAzadi
+ss://YWVzLTEyOC1nY206ZjkzMDBhOWJmMzlhZTAzNDdjM2EzYmZiYzRkZDc3NTQ=@77.83.247.207:18285#%F0%9F%87%B7%F0%9F%87%BA%20RU%20%7C%20SS%20%7C%201142ms%20%7C%20GozargahAzadi
