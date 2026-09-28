@@ -119,9 +119,10 @@
 - [x] Least-privilege permissions (`contents: write` for the dispatch endpoint, `actions: read` for the active-run check); separate concurrency group with `cancel-in-progress: true` so production is never cancelled
 - [x] Workflow contract tests pin the offset schedule, the repository-dispatch (never forced) path, the guard, and the isolation from the `publish` concurrency group
 - [x] No application, parser, pipeline, health, GeoIP, database, or Phase 18 freshness logic changed
-- [x] *Verified live*: GitHub registered the workflow as `active` and a real `repository_dispatch` request published end-to-end (run `36341771327`, bot commit `c37eade`), confirming the watchdog's exact API path works
+- [x] *Verified live*: GitHub registered the workflow as `active` and a real `repository_dispatch` request published end-to-end (run `36341771327`, bot commit `c37eade`), confirming the repository-dispatch API path works
 - [x] *Verified live*: a watchdog-style request is **not** forced — it was gated (`SKIP`), so machine triggers can never bypass the cadence
-- [ ] *(a watchdog-scheduled run has not yet been observed: GitHub has not started its first tick, 22 min after it was due — GitHub cron stays best-effort and no cadence is guaranteed)*
+- [x] *Corrected in Phase 23*: this item previously claimed the watchdog's "exact API path works" on the strength of an **externally** dispatched run. The watchdog's own dispatch step had never executed successfully — see Phase 23
+- [x] *(watchdog-scheduled runs have now been observed: `36352034796`, `36360360469`, `36380836546`, `36417639920` — two green, two red. GitHub cron stays best-effort and no cadence is guaranteed)*
 
 ## Phase 21 — Publisher Push Resilience
 
@@ -140,7 +141,7 @@
 - [x] *Verified live (2026-09-28)*: three production runs on the Phase 21 two-job workflow (`36366848328` via `repository_dispatch`, `36371053260` and `36400609363` via `schedule`) published end-to-end. The composite action's stale-tree guard reported `generated_from == origin_main` (`raced=false`) in each, and the bounded retry job was correctly `skipped` because no race occurred
 - [x] *Verified live (2026-09-28)*: **a real race was provoked on purpose and recovered** (run `36408757722`). A commit pushed 28 s into a running generation moved `main` from `24275780` to `f135f88c`; attempt 1 detected it (`generated_from != origin_main`), skipped `record-publish` and the commit/push, and exited green without advancing `published_at.json`; attempt 2 checked out `f135f88c`, regenerated, re-verified, and published (`a275057`, `published_at.json` = `2026-09-28T10:41:00Z`). The Phase 20 defect that lost a publication twice now costs ~12 min of discarded work instead
 - [ ] *(the `workflow_dispatch` force path is still unexercised live: this environment's credential gets HTTP 403 for workflow_dispatch; the code path is unchanged and pinned by contract test)*
-- [ ] *(a watchdog-scheduled run has not yet been observed: GitHub has not started its first tick, 22 min after it was due — GitHub cron stays best-effort and no cadence is guaranteed)*
+- [x] *(watchdog-scheduled runs have now been observed — see Phase 20; GitHub cron stays best-effort and no cadence is guaranteed)*
 - [ ] The publication also *deletes* previously published files when a country has no eligible proxies (a publish commit removed ~28 tracked files); confirm that shrinkage is intended
 
 ## Phase 22 — Production Run Summary & Release Sanity
@@ -160,6 +161,24 @@
 - [x] Verified locally: 1141 tests pass, `ruff check src/ tests/` and `ruff format --check src/ tests/` clean, `git diff --check` clean, single alembic head `d4e5f6a7b8c9`
 - [x] Verified live: `repository_dispatch` run [`36420843610`](https://github.com/GozargahAzadi/ProxyAggregator/actions/runs/36420843610) reported `PUBLISHED` with `published=true` after a real push and advanced `published_at` to `2026-09-28T12:28:46Z`; its regenerate job published `ba869e3`; a follow-up dispatch [`36422697194`](https://github.com/GozargahAzadi/ProxyAggregator/actions/runs/36422697194) landed 5.8 minutes after that publication and reported `SKIPPED` with `published=false` — both wrote the report to the real `$GITHUB_STEP_SUMMARY`
 - [ ] *Live verification pending*: normal publish + freshness `SKIP` on GitHub Actions (see `PHASE22_REPORT.md`)
+
+## Phase 23 — GitHub Automation Reliability & Watchdog Audit
+
+Status labels used below: **Implemented** (in the repo), **Verified locally** (tests/lint), **Verified live** (a real GitHub Actions run), **Best-effort** (works, but GitHub gives no cadence guarantee), **Platform constraint** (cannot be fixed under the project rules).
+
+- [x] Audited the automation before changing anything: read both workflows, the composite action, the watchdog tests, the publisher docs, the roadmap, and every non-`push` run in the repository's Actions history
+- [x] **Found (evidence)**: the watchdog had *never* dispatched. Both scheduled failures (`36380836546`, `36417639920`) failed with `gh: unknown flag: --fail` — `gh api` has no such flag, so the step died before sending anything; both scheduled successes (`36352034796`, `36360360469`) were green only because a Publish run was already active and the request step was skipped
+- [x] **Found (evidence)**: the Phase 20 "verified live" line was satisfied by an *externally* dispatched run (`36341771327`), not by the watchdog. Corrected in place
+- [x] **Platform constraint, corrected**: `GITHUB_TOKEN` *can* create a `repository_dispatch` run. GitHub documents `workflow_dispatch` and `repository_dispatch` as the explicit exceptions to the "`GITHUB_TOKEN` events do not start new runs" rule (changelog 2022-09-08). Phase 22's claim that the watchdog could never self-trigger was wrong; no PAT is required
+- [x] Removed `--fail`; error detection is preserved because `gh api` already exits non-zero on an HTTP error status and `set -euo pipefail` propagates it
+- [x] **No fake success**: a new *Confirm a publish run was created* step polls for a `repository_dispatch` run created after the request and **fails the job** if none appears within 60 s (the dispatch endpoint returns `204` with an empty body, so the request alone proves nothing)
+- [x] The watchdog job summary now distinguishes *confirmed (run id)* / *skipped, a run was active* / *failed to confirm*, so "green" can never be misread as "a publication was triggered"
+- [x] The active-run check now rejects a non-numeric count: `gh api` does not apply `--jq` to an error body, so a failed call could hand back raw JSON and compare as "nothing active"
+- [x] **Security audit**: no PAT, no external credential, no new secret, no `workflow_run` chaining, no self-dispatch loop, no history rewriting. `permissions` remain `contents: write` + `actions: read`; the watchdog still has no checkout and never pushes
+- [x] README/CI: the failing `test_readme_has_subscriptions_section` was **not** an accidental loss of content. Commit `c5f7fcc` deliberately restructured the README and retitled the section to `## 🔥 Ready-to-use Subscription Links`; the country-index markers the generator owns are intact. The test asserted a stale heading literal, so it was rewritten to assert the real contract — exactly one feed section, carrying the copyable links, above the generated country index
+- [x] **Verified locally**: full suite, `ruff check`, `ruff format --check`, `git diff --check`, single alembic head `d4e5f6a7b8c9`
+- [x] **Verified live**: a watchdog run created a real Publish run, which reported its terminal state through the Phase 22 summary
+- [x] **Best-effort, documented, not claimed otherwise**: GitHub delivered 0.19 runs/hour for `Publish` and 0.28/hour for the watchdog against 12/hour nominal. Schedule *opportunity* ≠ workflow *execution* ≠ *publication*. Under the no-external-scheduler / no-PAT rules no cron can deliver a 15-minute cadence here; that is a platform limit, not a configuration bug
 
 ## Phase 10 — API (Optional)
 

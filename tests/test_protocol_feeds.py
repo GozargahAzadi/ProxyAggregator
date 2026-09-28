@@ -41,6 +41,7 @@ from proxyaggregator.publishing import (
     SubscriptionFormat,
     build_subscription,
 )
+from proxyaggregator.publishing.countries import ROOT_README_COUNTRY_START_MARKER
 from proxyaggregator.publishing.feeds import build_protocol_subscriptions
 from proxyaggregator.publishing.models import RankedProxy
 from proxyaggregator.publishing.publisher import (
@@ -426,8 +427,29 @@ class TestReadmeLinks:
         assert expected <= linked_files
 
     def test_readme_has_subscriptions_section(self):
+        # The contract is that the README has exactly one top-level *feed*
+        # section carrying the copyable subscription links, not that it carries
+        # a particular heading string. The heading is human-owned prose: it was
+        # retitled from "## Subscriptions" to "## 🔥 Ready-to-use Subscription
+        # Links" by a manual README commit, and asserting the old literal made
+        # this test fail on a README that is in fact complete. Asserting the
+        # structure instead keeps the real requirement - one section, holding
+        # the links, above the generated country index - testable across a
+        # retitle, and still fails if the section is removed or duplicated.
         readme = (ROOT_DIR / "README.md").read_text(encoding="utf-8")
-        assert "## Subscriptions" in readme
+        headings = re.findall(r"^## (.+)$", readme, flags=re.MULTILINE)
+        feed_sections = [h for h in headings if "subscription" in h.lower()]
+        assert len(feed_sections) == 1, f"expected one subscriptions section, got {feed_sections}"
+        # The section must actually carry the copyable feed links, and it must
+        # come before the generated per-country index.
+        start = readme.index(f"## {feed_sections[0]}")
+        end = readme.index(ROOT_README_COUNTRY_START_MARKER)
+        assert start < end
+        section = readme[start:end]
+        assert re.search(
+            r"https://raw\.githubusercontent\.com/GozargahAzadi/ProxyAggregator/main/output/proxyaggregator\.txt",
+            section,
+        )
 
 
 # I. Backward compatibility ---------------------------------------------------

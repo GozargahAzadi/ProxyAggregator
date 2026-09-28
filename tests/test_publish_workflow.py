@@ -196,6 +196,133 @@ class TestExistingWorkflowIsIntact:
             assert "uses" not in step
             assert "git push" not in step.get("run", "")
 
+
+class TestWatchdogRequestsAreReal:
+    """Phase 23: a green watchdog run must not be mistaken for a triggered run.
+
+    The watchdog was red for its whole life because ``gh api`` was passed
+    ``--fail``, a flag that does not exist, so the step died before sending a
+    request. Both of its green runs had skipped the dispatch entirely. These
+    tests pin the dispatch to the documented GITHUB_TOKEN/repo_dispatch path
+    and require the run to be *confirmed* rather than assumed.
+    """
+
+    @pytest.fixture(scope="class")
+    def watchdog(self) -> dict:
+        return yaml.safe_load(WATCHDOG_PATH.read_text(encoding="utf-8"))
+
+    @pytest.fixture(scope="class")
+    def steps(self, watchdog) -> list[dict]:
+        return [s for job in watchdog["jobs"].values() for s in job["steps"]]
+
+    def _step(self, steps: list[dict], name: str) -> dict:
+        for step in steps:
+            if step["name"] == name:
+                return step
+        raise AssertionError(f"watchdog step {name!r} not found")
+
+    def test_dispatch_uses_no_unsupported_gh_flags(self, steps):
+        request = self._step(steps, "Request publish run")
+        # `gh api` has no --fail flag; passing it aborts the step before the
+        # request is sent. `gh api` already exits non-zero on an HTTP error.
+        assert "--fail" not in request["run"]
+        assert "gh api --method POST" in request["run"]
+        assert 'gh api --method POST "repos/$REPO/dispatches"' in request["run"]
+        assert "-f event_type=publish-request" in request["run"]
+
+    def test_dispatch_failure_still_fails_the_job(self, steps):
+        request = self._step(steps, "Request publish run")
+        # No unsupported flag, but error detection must not be lost with it.
+        assert "set -euo pipefail" in request["run"]
+
+    def test_watchdog_does_not_use_any_credential_but_the_default_token(self, watchdog):
+        blob = yaml.safe_dump(watchdog)
+        for forbidden in ("secrets.PAT", "secrets.TOKEN", "secrets.ACCESS", "PERSONAL"):
+            assert forbidden not in blob
+        # The only credential is the automatic per-run GITHUB_TOKEN.
+        assert "secrets.GITHUB_TOKEN" in blob
+
+    def test_requested_run_is_confirmed_not_assumed(self, steps):
+        confirm = self._step(steps, "Confirm a publish run was created")
+        script = confirm["run"]
+        # The dispatch endpoint returns 204 with an empty body, so the only way
+        # to know a run exists is to observe one.
+        assert "repository_dispatch" in script
+        assert "confirmed=true" in script
+        assert "confirmed=false" in script
+        # Confirmation is bounded: it cannot poll forever.
+        assert "for attempt in" in script
+        assert "exit 1" in script
+        # It runs only after an actual dispatch attempt.
+        assert confirm["if"] == "steps.request.outcome == 'success'"
+
+    def test_confirmation_cannot_dispatch_another_run(self, steps):
+        confirm = self._step(steps, "Confirm a publish run was created")
+        # Read-only by construction: no POST, no dispatch, no recursion.
+        assert "dispatches" not in confirm["run"]
+        assert "--method POST" not in confirm["run"]
+
+    def test_watchdog_never_publishes_or_checks_out_code(self, steps):
+        for step in steps:
+            script = step.get("run", "")
+            assert "git push" not in script
+            assert "actions/checkout" not in script
+            assert "record-publish" not in script
+
+    def test_both_outcomes_are_reported_distinctly(self, steps):
+        report = self._step(steps, "Report watchdog outcome")
+        # A skipped request and a confirmed request must be told apart in the
+        # job summary, so "no publication was triggered" is never ambiguous.
+        assert report["if"] == "always()"
+        assert "GITHUB_STEP_SUMMARY" in report["run"]
+        assert "DISPATCH: ${{ steps.check.outputs.dispatch }}" in yaml.dump(report)
+        assert "CONFIRMED: ${{ steps.confirm.outputs.confirmed }}" in yaml.dump(report)
+
+    def test_active_run_check_rejects_unparseable_counts(self, steps):
+        check = self._step(steps, "Check for an active publish run")
+        # `gh api` does not apply --jq to an error body, so a failed call can
+        # yield raw JSON. That must fail loudly rather than compare as zero and
+        # dispatch on a guess.
+        assert "*[!0-9]*" in check["run"]
+        assert "exit 1" in check["run"]
+
+    def test_watchdog_does_not_share_publish_concurrency(self, watchdog):
+        assert watchdog["concurrency"]["group"] == "publish-watchdog"
+        assert watchdog["concurrency"]["cancel-in-progress"] is True
+        assert watchdog["permissions"] == {"contents": "write", "actions": "read"}
+
+
+class TestNoForbiddenGitOperations:
+    """Phase 23: no workflow may rewrite history or chain on run completion."""
+
+    @pytest.fixture(scope="class")
+    def all_workflow_files(self) -> list[Path]:
+        return sorted((ROOT_DIR / ".github").rglob("*.yml"))
+
+    def test_workflow_files_exist(self, all_workflow_files):
+        assert all_workflow_files
+
+    def test_no_history_rewriting(self, all_workflow_files):
+        for path in all_workflow_files:
+            text = path.read_text(encoding="utf-8")
+            for forbidden in (
+                "--force-with-lease",
+                "push --force",
+                "git rebase",
+                "pull --rebase",
+                "reset --hard",
+            ):
+                assert forbidden not in text, f"{forbidden!r} found in {path.name}"
+
+    def test_no_workflow_run_chaining(self, all_workflow_files):
+        # `workflow_run` as an event trigger would chain a workflow off another
+        # workflow's completion. The API field `.workflow_runs[]` is unrelated
+        # and must not trip this check, so match the trigger key only.
+        for path in all_workflow_files:
+            parsed = yaml.safe_load(path.read_text(encoding="utf-8"))
+            triggers = parsed.get(True, {}) if isinstance(parsed, dict) else {}
+            assert "workflow_run" not in triggers, f"{path.name} chains on workflow_run"
+
     def test_release_verification_step_is_preserved(self, action):
         guard = _step(action, GUARD_STEP)
         script = guard["run"]

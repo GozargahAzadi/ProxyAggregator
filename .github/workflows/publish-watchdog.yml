@@ -1,11 +1,13 @@
 name: Publish Watchdog
 
 on:
-  # Phase 20. GitHub's scheduler is best-effort: runs queued by `schedule` may
-  # be delayed or dropped during periods of high load. Measured on this
-  # repository, the production `*/5` cron produced only ~0.3 runs per hour
-  # (observed gaps of 2.3-5.8 hours between scheduled runs), so the intended
-  # 15-minute publication cadence degraded to a multi-hour cadence.
+  # Phase 23. GitHub's scheduler is best-effort: a `schedule` run may be
+  # delayed or dropped entirely, and the delay can be many hours. Measured over
+  # the 101.5 hours of schedule history available on 2026-09-28, this
+  # repository's production `*/5` cron started only 19 runs - 0.19 per hour
+  # against 12 nominal opportunities per hour - with gaps of 2.3 to 24.3 hours
+  # (mean 5.6). The intended ~15-minute publication cadence therefore degrades
+  # to a multi-hour cadence, and no configuration of a cron can fix that.
   #
   # This workflow is a second, independent scheduled entry point on a cron
   # offset by three minutes from the production cron. Two separate workflows
@@ -13,6 +15,11 @@ on:
   # still has the other one to start a run. The interval is the 5-minute
   # GitHub minimum; the offset keeps the two crons from firing at the same
   # minute.
+  #
+  # It cannot make the scheduler reliable and does not claim to: measured the
+  # same way, this workflow delivered 0.28 runs/hour. What it does guarantee is
+  # that when a tick does start, a publication is requested and the request is
+  # *verified* (see "Confirm a publish run was created").
   schedule:
     - cron: "3,8,13,18,23,28,33,38,43,48,53,58 * * * *"
   # Manual trigger so the dispatch path can be verified without waiting for a
@@ -59,6 +66,14 @@ jobs:
           running="$(gh api "repos/$REPO/actions/workflows/$PUBLISH_WORKFLOW/runs?status=in_progress&per_page=1" --jq '.total_count')"
           queued="$(gh api "repos/$REPO/actions/workflows/$PUBLISH_WORKFLOW/runs?status=queued&per_page=1" --jq '.total_count')"
           echo "publish runs: in_progress=$running queued=$queued"
+          # `gh api` does not apply --jq to an error response, so a failed call
+          # would hand back raw JSON and fail the numeric test below with a
+          # confusing message. Reject anything that is not a plain integer
+          # first: an unparseable count must fail the step, never silently
+          # look like "no run is active".
+          case "$running$queued" in
+            *[!0-9]*|"") echo "::error::could not read a numeric publish run count" >&2; exit 1 ;;
+          esac
           if [ "$running" -gt 0 ] || [ "$queued" -gt 0 ]; then
             echo "dispatch=false" >> "$GITHUB_OUTPUT"
             echo "A publish run is already active or queued; skipping this request."
@@ -70,14 +85,87 @@ jobs:
       # forces its freshness gate to RUN for `workflow_dispatch`, which would
       # let a machine-triggered request bypass the 13-minute publication
       # cadence. A repository dispatch is gated exactly like a scheduled run.
+      # `gh api` has no `--fail` flag: passing one made this step exit with
+      # `unknown flag: --fail` before it ever sent a request, so the watchdog
+      # has never actually created a run. It is not needed - `gh api` already
+      # exits non-zero on an HTTP error status, which `set -e` turns into a
+      # failed step. The token is the repository GITHUB_TOKEN with
+      # `contents: write`; GitHub documents repository_dispatch as the explicit
+      # exception to GITHUB_TOKEN's "events do not create new runs" rule, so
+      # no PAT or other credential is required.
       - name: Request publish run
+        id: request
         if: steps.check.outputs.dispatch == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPO: ${{ github.repository }}
         run: |
           set -euo pipefail
+          # Recorded before the POST so the confirmation step can distinguish a
+          # run this request created from one that already existed.
+          echo "request_epoch=$(date -u +%s)" >> "$GITHUB_OUTPUT"
           gh api --method POST "repos/$REPO/dispatches" \
-            -f event_type=publish-request \
-            --fail
+            -f event_type=publish-request
           echo "Requested a publish run (event_type=publish-request)."
+
+      # Phase 23. A green watchdog run must never be mistaken for proof that a
+      # publication was triggered. The dispatch endpoint answers 204 with an
+      # empty body and no run id, so this step confirms the *effect*: it polls
+      # the publish workflow's runs for a `repository_dispatch` run created
+      # after the request and fails if none appears. Without it, a silent
+      # regression (an unsupported flag, a permissions change, a renamed
+      # workflow) would look exactly like the healthy "skipped, a run is
+      # already active" path. This step only observes runs; it never
+      # dispatches, never publishes, and never loops.
+      - name: Confirm a publish run was created
+        id: confirm
+        if: steps.request.outcome == 'success'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          PUBLISH_WORKFLOW: publish.yml
+          REQUEST_EPOCH: ${{ steps.request.outputs.request_epoch }}
+        run: |
+          set -euo pipefail
+          for attempt in 1 2 3 4 5 6; do
+            found="$(gh api "repos/$REPO/actions/workflows/$PUBLISH_WORKFLOW/runs?event=repository_dispatch&per_page=10" \
+              --jq "[.workflow_runs[] | select(.created_at | fromdateiso8601 > $REQUEST_EPOCH) | .id] | first // empty")"
+            if [ -n "$found" ]; then
+              echo "run_id=$found" >> "$GITHUB_OUTPUT"
+              echo "confirmed=true" >> "$GITHUB_OUTPUT"
+              echo "Confirmed publish run $found was created by this request."
+              exit 0
+            fi
+            echo "No new publish run yet (attempt $attempt/6); waiting."
+            sleep 10
+          done
+          echo "confirmed=false" >> "$GITHUB_OUTPUT"
+          echo "::error::the dispatch request was accepted but no publish.yml repository_dispatch run appeared within 60s. The watchdog did not start a publication."
+          exit 1
+
+      # Makes the two outcomes distinguishable in the Actions UI. A skipped
+      # request is a normal, healthy outcome, but it is reported explicitly so
+      # it can never be read as "a publication was triggered".
+      - name: Report watchdog outcome
+        if: always()
+        env:
+          DISPATCH: ${{ steps.check.outputs.dispatch }}
+          CONFIRMED: ${{ steps.confirm.outputs.confirmed }}
+          RUN_ID: ${{ steps.confirm.outputs.run_id }}
+        run: |
+          set -euo pipefail
+          {
+            echo "## Publish Watchdog"
+            echo
+            if [ "$DISPATCH" = "true" ] && [ "$CONFIRMED" = "true" ]; then
+              echo "Requested a publication and confirmed Publish run \`$RUN_ID\` was created."
+            elif [ "$DISPATCH" = "false" ]; then
+              echo "No request sent: a Publish run was already active or queued."
+              echo "The next scheduled tick will ask again."
+            else
+              echo "Request sent but **no Publish run was created** - see the failed step."
+            fi
+            echo
+            echo "This workflow only requests a publication. It never publishes and"
+            echo "never guarantees a cadence: GitHub's scheduler is best-effort."
+          } >> "$GITHUB_STEP_SUMMARY"

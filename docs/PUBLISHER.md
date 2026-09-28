@@ -94,11 +94,14 @@ output — this validates the Phase 9 chain locally.
 
 ## GitHub Actions workflow (`.github/workflows/publish.yml`)
 
-- Triggers: `workflow_dispatch` (manual), `repository_dispatch` (Phase 20
-  watchdog request), and `schedule` every `5` minutes (Phase 18). The 5-minute
-  trigger gives GitHub many opportunities to start a run, but real publications
-  are capped at ~once per 15 minutes by the freshness gate below, so the
-  cadence is a *reliability* improvement, never more frequent output.
+- Triggers: `workflow_dispatch` (manual), `repository_dispatch` (Phase 20/23
+  watchdog request or legitimate external trigger), and `schedule` every `5`
+  minutes (Phase 18). The 5-minute trigger gives GitHub many opportunities to
+  start a run, but real publications are capped at ~once per 13 minutes by the
+  freshness gate below, so the cadence is a *reliability* improvement, never
+  more frequent output. The configured cron and the rate GitHub actually
+  delivers are very different numbers — see the Phase 23 watchdog section for
+  the measured figures.
 - `permissions: contents: write` — least-privilege scope.
 - `concurrency.group: publish` with `cancel-in-progress: false` so scheduled
   runs never race each other on the same branch: an overlapping trigger is
@@ -110,54 +113,69 @@ output — this validates the Phase 9 chain locally.
   extra attempt and only exists to recover from `main` moving underneath a
   running generation; see Phase 21 below.
 
-### Phase 20 — publish watchdog (`.github/workflows/publish-watchdog.yml`)
+### Phase 23 — publish watchdog audit (`.github/workflows/publish-watchdog.yml`)
 
-GitHub's scheduler is best-effort: a `schedule` run may be delayed or dropped
-when GitHub is under load, and the delay can be long. Measured on this
-repository, the Phase 18 `*/5` cron produced only **~0.3 runs per hour** — the
-gaps between scheduled runs were 2.3 to 5.8 hours — so the intended
-15-minute cadence degraded to a multi-hour cadence even though twelve
-opportunities per hour were nominally configured.
+Phase 20 introduced this workflow as a second scheduled entry point. Phase 23
+audited it against real GitHub behaviour rather than against the assumptions
+that introduced it, and the audit changed the picture substantially.
 
-The watchdog is a second, independent scheduled entry point:
+**It had never actually dispatched anything.** Both of its scheduled failures
+(`36380836546`, `36417639920`) died in the request step with
+`gh: unknown flag: --fail`. `gh api` has no `--fail` flag, so the step aborted
+*before* sending a request. Both of its scheduled successes
+(`36352034796`, `36360360469`) were green for the opposite reason: a Publish
+run was already `in_progress`, so the request step was skipped. In other words,
+no watchdog run had ever exercised the dispatch path — the earlier
+"verified live" note in the roadmap had been satisfied by an *externally*
+dispatched run, not by the watchdog.
 
-- `schedule: "3,8,13,18,23,28,33,38,43,48,53,58 * * * *"` — the 5-minute
-  GitHub minimum, offset by three minutes from the production `*/5` cron so the
-  two never target the same minute. Two workflows are two separate scheduling
-  opportunities: a tick missed by one still has the other. `workflow_dispatch`
-  is also accepted so the dispatch path can be verified by hand.
-- It publishes nothing. Its single job checks whether a `publish.yml` run is
-  already `in_progress` or `queued` and, only when none is, `POST`s a
-  `repository_dispatch` event (`event_type: publish-request`) to start one.
-- `permissions: contents: write` (required by GitHub for the repository
-  dispatch endpoint) plus `actions: read` (the active-run check). The workflow
-  has no checkout and never writes repository content.
-- `concurrency.group: publish-watchdog` with `cancel-in-progress: true` — a
-  superseded tick is a single API call that publishes nothing, and this
-  guarantees at most one request at a time, so two requests can never queue
-  behind each other.
+**The `--fail` flag is removed, not replaced.** `gh api` already exits
+non-zero when a request returns an HTTP error status, so `set -euo pipefail`
+still turns a failed dispatch into a failed step. Nothing about error
+detection is lost.
 
-Two safety properties are deliberate:
+**`GITHUB_TOKEN` is sufficient — a Phase 22 claim to the contrary was wrong.**
+GitHub's documented rule is that events triggered by `GITHUB_TOKEN` do not
+create new workflow runs, *with the exception of `workflow_dispatch` and
+`repository_dispatch`, which always do*. The changelog entry that introduced
+the exception (2022-09-08) states it explicitly: these are "explicit calls
+made by the customer and not likely to end up in a loop." So the watchdog
+needs no PAT and no external credential, and a no-op watchdog was never
+forced by platform rules. No anti-recursion risk exists here either: the
+watchdog dispatches `Publish`, and `Publish` triggers on nothing the watchdog
+sends.
 
-1. **A watchdog request stays gated.** The freshness step forces `RUN` only for
-   `workflow_dispatch`, i.e. a human asking for an immediate publication. The
-   watchdog therefore uses `repository_dispatch`, which the gate treats exactly
-   like a scheduled run: it can add scheduling *opportunities* but can never
-   publish outside the 13-minute cadence.
-2. **No request is ever queued behind a live publication.** A queued run starts
-   from the tree that was current when it was requested, which can predate the
-   previous publication's commit, so its freshness gate could read a stale
-   `output/published_at.json` and allow a second publication inside the
-   threshold window. The active-run check skips such requests and the next tick
-   asks again. Phase 21 removes the underlying hazard as well: a run that
-   discovers `main` moved regenerates from the newest main and re-evaluates the
-   gate there, so a stale-tree publication is no longer possible even if such a
-   request is ever issued.
+**A green watchdog run now means something.** The dispatch endpoint answers
+`204` with an empty body and no run id, so the request alone proves nothing.
+A new *Confirm a publish run was created* step polls the Publish workflow's
+runs for a `repository_dispatch` run created after the request and **fails the
+job** if none appears within 60 s. The final step writes an explicit job
+summary distinguishing the three outcomes: confirmed (with the run id),
+skipped-because-a-run-was-active, and failed-to-confirm. This is what makes
+"the watchdog is green" evidence rather than an appearance; before this phase a
+broken watchdog and a healthy idle one were indistinguishable from the run
+list.
 
-Honest limit: this multiplies the number of GitHub-native scheduling
-opportunities; it does not make GitHub's scheduler reliable. Both crons remain
-best-effort, so no cadence is guaranteed — the freshness gate remains the only
-thing that actually caps how often output is published.
+**Measured scheduler behaviour, over 101.5 h of history (2026-09-28):**
+
+| Workflow | Scheduled runs | Actual rate | Nominal | Mean gap | Max gap |
+| --- | --- | --- | --- | --- | --- |
+| `Publish` (`*/5`) | 19 | 0.19 /h | 12 /h | 5.6 h | 24.3 h |
+| `Publish Watchdog` (offset) | 4 | 0.28 /h | 12 /h | 4.8 h | 6.6 h |
+
+Three different things must not be conflated:
+
+1. **Schedule opportunity** — the configured cron. Twelve per hour each.
+2. **Actual workflow execution** — what GitHub actually starts, ~0.2/hour here.
+3. **Actual publication** — a run that reached the push, further capped at one
+   per 13 minutes by the freshness gate.
+
+The watchdog multiplies (1); it cannot influence (2), which is entirely
+GitHub's scheduler. Under the project's constraints — no external scheduler,
+no VPS, no PAT — **no cron configuration can deliver a 15-minute cadence on
+this repository**, and the honest statement is that publication is
+best-effort with a multi-hour typical gap. The freshness gate remains the only
+*enforced* bound, and it is an upper bound, not a delivery guarantee.
 
 ### Phase 21 — bounded regeneration when main moves (`.github/actions/publish/action.yml`)
 
