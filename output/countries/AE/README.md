@@ -1,6 +1,6 @@
 # 🇦🇪 United Arab Emirates
 
-3 healthy proxies.
+8 healthy proxies.
 
 ## 📋 All Protocols
 
