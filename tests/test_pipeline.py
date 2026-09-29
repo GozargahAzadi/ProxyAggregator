@@ -335,7 +335,7 @@ class TestPhaseOrder:
             "feeds",
             "publish",
         ]
-        assert stats.published_artifacts == 2
+        assert stats.published_artifacts == 1
 
 
 # C. Source collection failure isolation --------------------------------------
@@ -818,7 +818,7 @@ class TestEndToEndRun:
         assert stats.healthy_proxies == 3
         assert stats.ranked_proxies == 3
         assert stats.subscription_count == 19
-        assert stats.published_artifacts == 20
+        assert stats.published_artifacts == 19
 
         files = sorted(str(path.relative_to(out)) for path in out.rglob("*") if path.is_file())
         assert files == [
@@ -1085,7 +1085,7 @@ class TestFullRunSourceFailure:
         assert stats.sources_fetched == 1
         assert stats.healthy_proxies == 2
         assert stats.subscription_count == 15
-        assert stats.published_artifacts == 16
+        assert stats.published_artifacts == 15
         assert (out / "manifest.json").exists()
         plain = (out / "proxyaggregator.txt").read_text(encoding="utf-8")
         assert "secretpass" not in plain

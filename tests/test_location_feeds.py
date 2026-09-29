@@ -29,11 +29,10 @@ Contracts under test:
   directory when nothing is unknown) are never emitted.
 - Existing combined/protocol feeds are byte-for-byte unchanged (additive-only,
   captured as a regression test).
-- The repository-root ``README.md`` gains a ``## 🌍 Proxies by Country`` list
-  of collapsed ``<details>`` sections (one per non-empty country) between
-  sentinel markers; it is regenerated on every publish from the same country
-  list and never goes stale, while content outside the markers is preserved
-  verbatim.
+- The repository-root ``README.md`` is stable: the publisher never writes it.
+  It carries no generated country list and no sentinel markers; the live
+  country documentation lives solely in ``countries/README.md`` and the
+  per-country pages, and the root README only links to the index.
 - Generated artifact paths are always traversal-safe.
 - Country generation performs no network/I/O and the pipeline re-runs no
   health/GeoIP/DNS work; repeated generation is byte-identical.
@@ -46,6 +45,7 @@ from __future__ import annotations
 import asyncio
 import base64
 import inspect
+from pathlib import Path
 from unittest import mock
 from urllib.parse import urlparse
 
@@ -63,21 +63,15 @@ from proxyaggregator.publishing import (
     COUNTRIES_DIR,
     COUNTRY_RAW_SUBSCRIPTIONS_BASE_URL,
     COUNTRY_UNKNOWN_BUCKET,
-    ROOT_README_COUNTRY_END_MARKER,
-    ROOT_README_COUNTRY_START_MARKER,
     SubscriptionFormat,
-    all_country_records,
     build_country_artifacts,
     build_protocol_subscriptions,
     build_subscription,
     country_bucket,
     country_code_to_flag,
-    country_feed_entries,
     country_index_path,
     country_protocol_path,
     default_filename,
-    render_root_country_index_block,
-    update_root_country_index,
 )
 from proxyaggregator.publishing.models import RankedProxy, Subscription
 from proxyaggregator.publishing.publisher import (
@@ -88,6 +82,8 @@ from proxyaggregator.publishing.publisher import (
     country_readme_path,
     default_protocol_filename,
 )
+
+ROOT_DIR = Path(__file__).resolve().parents[1]
 
 UUID = "d98d1c36-ccc8-4c77-9e9f-81c1b7584277"
 
@@ -755,7 +751,7 @@ class TestPipelinePurity:
         countries_dir = out / COUNTRIES_DIR
         assert countries_dir.is_dir()
         assert {p.name for p in countries_dir.iterdir()} == {"README.md", "US"}
-        assert stats.published_artifacts == 20
+        assert stats.published_artifacts == 19
         assert COUNTRY_UNKNOWN_BUCKET.upper() not in {p.name for p in countries_dir.iterdir()}
         assert (
             (countries_dir / "README.md")
@@ -763,18 +759,36 @@ class TestPipelinePurity:
             .startswith("# \U0001f30d ProxyAggregator \u2014 Proxies by Country")
         )
 
-    def test_root_readme_country_index_generated_when_readme_present(self, db_session, tmp_path):
+    def test_pipeline_does_not_modify_root_readme(self, db_session, tmp_path):
+        """The root README is hand-maintained: a run must leave it untouched.
+
+        The country index is generated, but it lives in
+        ``output/countries/README.md``. This is the regression test for the
+        separation - a run that publishes several countries must not rewrite
+        the root README, otherwise it would change on every publication.
+        """
         readme = tmp_path / "README.md"
-        readme.write_text("# Test\n\nSome prose.\n\n## Quick Start\nrest\n", encoding="utf-8")
-        stats = self._run(db_session, tmp_path, _enricher, _CountingHealthRunner())
-        text = readme.read_text(encoding="utf-8")
-        assert "## \U0001f30d Proxies by Country" in text
-        assert "Click here to get proxies from a specific country" in text
-        assert "<summary>\U0001f1fa\U0001f1f8 United States \u2014 3 proxies</summary>" in text
-        assert text.index("## \U0001f30d Proxies by Country") < text.index("## Quick Start")
-        assert "Some prose." in text
-        assert "rest" in text
-        assert stats.published_artifacts == 20
+        original = (
+            "# Test\n\nSome prose.\n\n"
+            "## \U0001f525 Ready-to-use Subscription Links\n\n"
+            "see ./output/countries/README.md\n\n## Quick Start\nrest\n"
+        )
+        readme.write_text(original, encoding="utf-8")
+        self._run(db_session, tmp_path, _enricher, _CountingHealthRunner())
+        assert readme.read_text(encoding="utf-8") == original
+
+    def test_country_index_and_country_pages_still_generated(self, db_session, tmp_path):
+        """The dedicated country index and per-country pages are unaffected."""
+        out = tmp_path / "out"
+        self._run(db_session, tmp_path, _enricher, _CountingHealthRunner())
+        countries_dir = out / COUNTRIES_DIR
+        assert (
+            (countries_dir / "README.md")
+            .read_text(encoding="utf-8")
+            .startswith("# \U0001f30d ProxyAggregator \u2014 Proxies by Country")
+        )
+        assert (countries_dir / "US" / "README.md").is_file()
+        assert (countries_dir / "US" / "all.txt").is_file()
 
 
 # K. Pipeline-level x-country dependency tests ----------------------------------
@@ -804,182 +818,41 @@ class TestCountryProtocolPaths:
         assert country_index_path() == "countries/README.md"
 
 
-# L. Root README country index ------------------------------------------------
+# L. Root README stability ---------------------------------------------------
 
 
-class TestRootReadmeCountryIndex:
-    def test_render_block_is_delimited_by_markers(self):
-        block = render_root_country_index_block(country_feed_entries(_country_candidates()))
-        assert block.startswith(ROOT_README_COUNTRY_START_MARKER + "\n")
-        assert block.rstrip().endswith(ROOT_README_COUNTRY_END_MARKER)
-        assert "## \U0001f30d Proxies by Country" in block
-        assert "\U0001f98b Click here to get proxies from a specific country" in block
+class TestRootReadmeStability:
+    """The repository-root ``README.md`` must stay hand-maintained.
 
-    def test_render_block_names_flags_counts(self):
-        block = render_root_country_index_block(country_feed_entries(_country_candidates()))
-        assert "<summary>\U0001f1e9\U0001f1ea Germany \u2014 1 proxy</summary>" in block
-        assert "<summary>\U0001f1fa\U0001f1f8 United States \u2014 3 proxies</summary>" in block
-        assert "<summary>\U0001f310 Unknown (XX) \u2014 1 proxy</summary>" in block
-        assert "### \U0001f1e9\U0001f1ea Germany" in block
-        assert "### \U0001f310 Unknown (XX)" in block
-        assert "### \U0001f1fa\U0001f1f8 United States" in block
+    The country index is generated, but it lives in
+    ``output/countries/README.md`` - not in the root README. Nothing in the
+    publisher may write the root README, so it stops changing on every
+    successful publication.
+    """
 
-    def test_render_block_country_collapsible_structure(self):
-        block = render_root_country_index_block(country_feed_entries(_country_candidates()))
-        details_open = block.count("<details>")
-        details_close = block.count("</details>")
-        summaries = sum(line.startswith("<summary>") for line in block.splitlines())
-        # one summary/<details> per available country, plus the flag map
-        assert details_open == len(_root_countries(block)) + 1 == details_close == summaries
+    def test_root_readme_has_no_generated_country_index(self):
+        """The root README carries no generated country list or markers."""
+        readme = (ROOT_DIR / "README.md").read_text(encoding="utf-8")
+        assert "PROXYAGGREGATOR" not in readme
+        assert "## \U0001f30d Proxies by Country" not in readme
+        assert "Click here to get proxies from a specific country" not in readme
+        # per-country raw subscription URLs belong to the country index only
+        assert "/output/countries/" not in readme.replace("./output/countries/README.md", "")
 
-    def test_render_block_sorted_by_iso_code(self):
-        block = render_root_country_index_block(country_feed_entries(_country_candidates()))
-        rows = _root_countries(block)
-        assert rows == [("DE", 1), ("US", 3), ("XX", 1)]
-        assert [code for code, _ in rows] == sorted([code for code, _ in rows])
+    def test_root_readme_links_to_live_country_index(self):
+        """The stable root README keeps its pointer to the live index."""
+        readme = (ROOT_DIR / "README.md").read_text(encoding="utf-8")
+        assert "./output/countries/README.md" in readme
 
-    def test_render_block_flag_map_lists_every_iso_country(self):
-        block = render_root_country_index_block(country_feed_entries(_country_candidates()))
-        records = all_country_records()
-        codes = [code for code, _flag, _name in records]
-        assert codes == sorted(codes)
-        assert "xx" not in codes and "XX" not in codes
-        for code, flag, name in records:
-            assert (
-                f"- {flag} {name}" in block
-                or f"- {flag} [{name}](./output/countries/{code}/)" in block
-            )
-
-    def test_render_block_flag_map_links_only_available_countries(self):
-        block = render_root_country_index_block(country_feed_entries(_country_candidates()))
-        records = {code: (flag, name) for code, flag, name in all_country_records()}
-        assert f"- {records['DE'][0]} [{records['DE'][1]}](./output/countries/DE/)" in block
-        assert f"- {records['US'][0]} [{records['US'][1]}](./output/countries/US/)" in block
-        assert f"- {records['AD'][0]} {records['AD'][1]}" in block
-        assert "./output/countries/AD/" not in block
-        assert "./output/countries/XX/" not in block
-
-    def test_render_block_counts_equal_all_feed_counts(self):
-        candidates = _country_candidates()
-        artifacts = _artifacts(candidates)
-        block = render_root_country_index_block(country_feed_entries(candidates))
-        for code, count in _root_countries(block):
-            assert artifacts[f"countries/{code}/all.txt"].count == count
-
-    def test_render_block_urls_are_code_fenced(self):
-        block = render_root_country_index_block(country_feed_entries(_country_candidates()))
-        lines = block.splitlines()
-        for index, line in enumerate(lines):
-            if not line.startswith(COUNTRY_RAW_SUBSCRIPTIONS_BASE_URL):
-                continue
-            assert lines[index - 1] == "```text", f"URL not inside a text fence: {line}"
-            assert lines[index + 1] == "```", f"URL not closed by a fence: {line}"
-        assert (
-            "](https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/"
-            not in block
-        )
-
-    def test_render_block_no_url_for_missing_feed(self):
-        candidates = _country_candidates()
-        artifacts = _artifacts(candidates)
-        block = render_root_country_index_block(country_feed_entries(candidates))
-        for line in block.splitlines():
-            if line.startswith(COUNTRY_RAW_SUBSCRIPTIONS_BASE_URL + "countries/"):
-                rel = line.split("/output/")[1]
-                assert rel in artifacts, f"URL references an ungenerated feed: {rel}"
-
-    def test_render_block_urls_use_existing_files(self):
-        candidates = _country_candidates()
-        artifacts = _artifacts(candidates)
-        block = render_root_country_index_block(country_feed_entries(candidates))
-        asserted = set()
-        for line in block.splitlines():
-            if line.startswith(COUNTRY_RAW_SUBSCRIPTIONS_BASE_URL + "countries/"):
-                asserted.add(line.split("/output/")[1])
-        # every generated per-country feed appears in the root list (READMEs
-        # are country pages, not subscription URLs)
-        generated = {
-            path
-            for path in artifacts
-            if path.startswith("countries/") and not path.endswith("README.md")
-        }
-        assert not generated - asserted
-        assert not asserted - generated
-
-    def test_render_block_empty_entries_render_header_only(self):
-        block = render_root_country_index_block(())
-        assert "## \U0001f30d Proxies by Country" in block
-        assert "<summary>\U0001f310 All countries \u2014 full ISO flag map</summary>" in block
-        assert "XX" not in block
-        assert _root_countries(block) == []
-
-    def test_render_block_xx_only_when_non_empty(self):
-        us_only = [_ranked(1, "vless", VLESS, "vless.example.com", 443, country_code="US")]
-        block = render_root_country_index_block(country_feed_entries(us_only))
-        rows = _root_countries(block)
-        assert [code for code, _ in rows] == ["US"]
-        assert "XX" not in block
-        assert "Unknown" not in block
-
-    def test_render_block_protocol_lines_only_for_present_protocols(self):
-        de = _artifacts([_ranked(1, "ss", SS, "ss.example.com", 8388, country_code="DE")])
-        block = render_root_country_index_block(
-            country_feed_entries([_ranked(1, "ss", SS, "ss.example.com", 8388, country_code="DE")])
-        )
-        assert "Shadowsocks:" in block
-        assert "Shadowsocks Base64:" in block
-        raw_shadowsocks = f"{COUNTRY_RAW_SUBSCRIPTIONS_BASE_URL}countries/DE/shadowsocks.txt"
-        assert raw_shadowsocks in block
-        assert f"{COUNTRY_RAW_SUBSCRIPTIONS_BASE_URL}countries/DE/vless.txt" not in block
-        assert "countries/DE/shadowsocks.txt" in de
-
-    def test_root_list_matches_country_index_counts(self):
-        candidates = _country_candidates()
-        artifacts = _artifacts(candidates)
-        index = artifacts["countries/README.md"].content
-        root = render_root_country_index_block(country_feed_entries(candidates))
-        assert _root_countries(root) == _index_rows(index)
-
-    def test_update_root_readme_replaces_only_marker_region(self, tmp_path):
-        readme = tmp_path / "README.md"
-        readme.write_text(
-            "# Test\n\n## Subscriptions\n\ncombined\n\n"
-            + ROOT_README_COUNTRY_START_MARKER
-            + "\nSTALE TABLE\n"
-            + ROOT_README_COUNTRY_END_MARKER
-            + "\n\nprose after\n\n## Quick Start\n",
-            encoding="utf-8",
-        )
-        assert (
-            update_root_country_index(readme, country_feed_entries(_country_candidates())) is True
-        )
-        text = readme.read_text(encoding="utf-8")
-        assert text.startswith("# Test\n\n## Subscriptions\n\ncombined\n\n")
-        assert "STALE TABLE" not in text
-        assert "<summary>\U0001f1e9\U0001f1ea Germany \u2014 1 proxy</summary>" in text
-        assert text.endswith("\n\nprose after\n\n## Quick Start\n")
-
-    def test_update_root_readme_inserts_when_markers_missing(self, tmp_path):
-        readme = tmp_path / "README.md"
-        readme.write_text("# Test\n\nsome content\n\n## Quick Start\nrest\n", encoding="utf-8")
-        assert update_root_country_index(readme, country_feed_entries([])) is True
-        text = readme.read_text(encoding="utf-8")
-        assert "## \U0001f30d Proxies by Country" in text
-        assert text.index("## \U0001f30d Proxies by Country") < text.index("## Quick Start")
-        assert "rest" in text and "some content" in text
-
-    def test_update_root_readme_is_byte_identical_on_repeat(self, tmp_path):
-        readme = tmp_path / "README.md"
-        readme.write_text("# T\n\n## Quick Start\n", encoding="utf-8")
-        entries = country_feed_entries(_country_candidates())
-        update_root_country_index(readme, entries)
-        first = readme.read_text(encoding="utf-8")
-        update_root_country_index(readme, entries)
-        second = readme.read_text(encoding="utf-8")
-        assert second == first
-
-    def test_update_root_readme_missing_file_is_noop(self, tmp_path):
-        missing = tmp_path / "does-not-exist" / "README.md"
-        entries = country_feed_entries(_country_candidates())
-        assert update_root_country_index(missing, entries) is False
-        assert not missing.exists()
+    def test_root_readme_keeps_its_documentation(self):
+        """Separating the dynamic index must not drop useful documentation."""
+        readme = (ROOT_DIR / "README.md").read_text(encoding="utf-8")
+        for heading in (
+            "## \U0001f525 Ready-to-use Subscription Links",
+            "## \U0001f4f1 How to Use",
+            "## \u2728 Features",
+            "## \U0001f6e0\ufe0f For Developers",
+            "### Documentation",
+            "## \U0001f4c4 License",
+        ):
+            assert heading in readme, f"root README lost {heading!r}"

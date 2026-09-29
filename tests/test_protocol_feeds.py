@@ -41,7 +41,6 @@ from proxyaggregator.publishing import (
     SubscriptionFormat,
     build_subscription,
 )
-from proxyaggregator.publishing.countries import ROOT_README_COUNTRY_START_MARKER
 from proxyaggregator.publishing.feeds import build_protocol_subscriptions
 from proxyaggregator.publishing.models import RankedProxy
 from proxyaggregator.publishing.publisher import (
@@ -440,16 +439,32 @@ class TestReadmeLinks:
         headings = re.findall(r"^## (.+)$", readme, flags=re.MULTILINE)
         feed_sections = [h for h in headings if "subscription" in h.lower()]
         assert len(feed_sections) == 1, f"expected one subscriptions section, got {feed_sections}"
-        # The section must actually carry the copyable feed links, and it must
-        # come before the generated per-country index.
+        # The section must actually carry the copyable feed links. Its extent is
+        # the next level-two heading: the root README is hand-maintained and has
+        # no generated per-country index left to serve as a boundary.
         start = readme.index(f"## {feed_sections[0]}")
-        end = readme.index(ROOT_README_COUNTRY_START_MARKER)
-        assert start < end
-        section = readme[start:end]
+        rest = readme[start + 1 :]
+        next_h2 = re.search(r"^## ", rest, flags=re.MULTILINE)
+        assert next_h2 is not None, "the subscriptions section must be closed by another H2"
+        section = readme[start : start + 1 + next_h2.start()]
         assert re.search(
             r"https://raw\.githubusercontent\.com/GozargahAzadi/ProxyAggregator/main/output/proxyaggregator\.txt",
             section,
         )
+
+    def test_readme_has_no_generated_country_index(self):
+        """The root README is stable documentation, not a live country index.
+
+        Country availability changes on every successful publish and belongs in
+        ``output/countries/README.md``. The root README must not carry a
+        generated country list, or it would change on every publication.
+        """
+        readme = (ROOT_DIR / "README.md").read_text(encoding="utf-8")
+        assert "PROXYAGGREGATOR" not in readme
+        assert "## \U0001f30d Proxies by Country" not in readme
+        assert "Click here to get proxies from a specific country" not in readme
+        # the stable pointer to the live country index must survive
+        assert "./output/countries/README.md" in readme
 
 
 # I. Backward compatibility ---------------------------------------------------
