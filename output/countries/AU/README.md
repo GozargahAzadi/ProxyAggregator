@@ -1,6 +1,6 @@
 # 🇦🇺 Australia
 
-2 healthy proxies.
+1 healthy proxy.
 
 ## 📋 All Protocols
 
@@ -15,5 +15,3 @@
 |---|---|---|
 | VLESS | [Open](./vless.txt) | `https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/countries/AU/vless.txt` |
 | VLESS Base64 | [Open](./vless-base64.txt) | `https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/countries/AU/vless-base64.txt` |
-| HTTPS | [Open](./https.txt) | `https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/countries/AU/https.txt` |
-| HTTPS Base64 | [Open](./https-base64.txt) | `https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/countries/AU/https-base64.txt` |

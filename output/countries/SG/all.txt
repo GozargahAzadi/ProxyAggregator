@@ -1,5 +1,4 @@
-vless://45deab47-28e0-4048-b7a2-1ab672f684f8@45.77.241.190:8441?host=5iv93opy8jus9z.bjo5si35c9i9ud4242fado49188obkoiermjuxj7zgxu.workers.dev&network=ws&path=%2F%40Marisa_kristi&security=tls&sni=5iv93opy8jus9z.bjo5si35c9i9ud4242fado49188obkoiermjuxj7zgxu.workers.dev#%F0%9F%87%B8%F0%9F%87%AC%20SG%20%7C%20VLESS%20%7C%20662ms%20%7C%20GozargahAzadi
-ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTpQV3BqUG8zdHFoUE40eVJa@8.209.74.72:20001#%F0%9F%87%B8%F0%9F%87%AC%20SG%20%7C%20SS%20%7C%201111ms%20%7C%20GozargahAzadi
-ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNToyZGI5ODVmNi0yMWJmLTQwYzItYTRmMS00Y2UyY2Y5MGIxYzI=@13.229.204.74:8443#%F0%9F%87%B8%F0%9F%87%AC%20SG%20%7C%20SS%20%7C%201224ms%20%7C%20GozargahAzadi
-ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTo5ZXBwM285bmc4ZWo1OXV2@45.128.12.20:14249#%F0%9F%87%B8%F0%9F%87%AC%20SG%20%7C%20SS%20%7C%201573ms%20%7C%20GozargahAzadi
-vless://6e59d5c5-7aa3-4c36-a4c4-e3b899525ed2@free-server.techsonic.dev:2096?host=free-server.techsonic.dev&network=ws&path=%2Ffree-server.techsonic.dev&security=tls&sni=free-server.techsonic.dev#%F0%9F%87%B8%F0%9F%87%AC%20SG%20%7C%20VLESS%20%7C%206270ms%20%7C%20GozargahAzadi
+ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTpQV3BqUG8zdHFoUE40eVJa@8.209.74.72:20001#%F0%9F%87%B8%F0%9F%87%AC%20SG%20%7C%20SS%20%7C%201109ms%20%7C%20GozargahAzadi
+ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTo5ZXBwM285bmc4ZWo1OXV2@45.128.12.20:14249#%F0%9F%87%B8%F0%9F%87%AC%20SG%20%7C%20SS%20%7C%201600ms%20%7C%20GozargahAzadi
+vless://6e59d5c5-7aa3-4c36-a4c4-e3b899525ed2@139.162.51.49:2096?host=free-server.techsonic.dev&network=ws&path=%2Ffree-server.techsonic.dev&security=tls&sni=free-server.techsonic.dev#%F0%9F%87%B8%F0%9F%87%AC%20SG%20%7C%20VLESS%20%7C%205066ms%20%7C%20GozargahAzadi
+vless://6e59d5c5-7aa3-4c36-a4c4-e3b899525ed2@free-server.techsonic.dev:2096?host=free-server.techsonic.dev&network=ws&path=%2Ffree-server.techsonic.dev&security=tls&sni=free-server.techsonic.dev#%F0%9F%87%B8%F0%9F%87%AC%20SG%20%7C%20VLESS%20%7C%205413ms%20%7C%20GozargahAzadi

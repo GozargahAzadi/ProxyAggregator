@@ -1,1 +1,0 @@
-vless://19a21d16-4df8-4f63-b53b-83e05b4e321c@64.176.77.247:80?network=ws&path=%2F&security=none#%F0%9F%87%B5%F0%9F%87%B1%20PL%20%7C%20VLESS%20%7C%204547ms%20%7C%20GozargahAzadi
