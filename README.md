@@ -130,7 +130,7 @@ Full flag map of every ISO-3166-1 country — a country links to its page only w
 - 🇦🇷 Argentina
 - 🇦🇸 American Samoa
 - 🇦🇹 Austria
-- 🇦🇺 Australia
+- 🇦🇺 [Australia](./output/countries/AU/)
 - 🇦🇼 Aruba
 - 🇦🇽 Aland Islands
 - 🇦🇿 Azerbaijan
@@ -181,7 +181,7 @@ Full flag map of every ISO-3166-1 country — a country links to its page only w
 - 🇩🇴 Dominican Republic
 - 🇩🇿 Algeria
 - 🇪🇨 Ecuador
-- 🇪🇪 Estonia
+- 🇪🇪 [Estonia](./output/countries/EE/)
 - 🇪🇬 Egypt
 - 🇪🇭 Western Sahara
 - 🇪🇷 Eritrea
@@ -227,7 +227,7 @@ Full flag map of every ISO-3166-1 country — a country links to its page only w
 - 🇮🇶 Iraq
 - 🇮🇷 [Iran](./output/countries/IR/)
 - 🇮🇸 Iceland
-- 🇮🇹 Italy
+- 🇮🇹 [Italy](./output/countries/IT/)
 - 🇯🇪 Jersey
 - 🇯🇲 Jamaica
 - 🇯🇴 Jordan
@@ -405,6 +405,37 @@ https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/coun
 </details>
 
 <details>
+<summary>🇦🇺 Australia — 1 proxy</summary>
+
+### 🇦🇺 Australia
+
+All protocols:
+
+```text
+https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/countries/AU/all.txt
+```
+
+Base64:
+
+```text
+https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/countries/AU/all-base64.txt
+```
+
+VLESS:
+
+```text
+https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/countries/AU/vless.txt
+```
+
+VLESS Base64:
+
+```text
+https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/countries/AU/vless-base64.txt
+```
+
+</details>
+
+<details>
 <summary>🇧🇬 Bulgaria — 2 proxies</summary>
 
 ### 🇧🇬 Bulgaria
@@ -436,7 +467,7 @@ https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/coun
 </details>
 
 <details>
-<summary>🇨🇦 Canada — 14 proxies</summary>
+<summary>🇨🇦 Canada — 16 proxies</summary>
 
 ### 🇨🇦 Canada
 
@@ -467,7 +498,7 @@ https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/coun
 </details>
 
 <details>
-<summary>🇨🇭 Switzerland — 1 proxy</summary>
+<summary>🇨🇭 Switzerland — 2 proxies</summary>
 
 ### 🇨🇭 Switzerland
 
@@ -529,7 +560,7 @@ https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/coun
 </details>
 
 <details>
-<summary>🇩🇪 Germany — 5 proxies</summary>
+<summary>🇩🇪 Germany — 6 proxies</summary>
 
 ### 🇩🇪 Germany
 
@@ -572,6 +603,37 @@ https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/coun
 </details>
 
 <details>
+<summary>🇪🇪 Estonia — 1 proxy</summary>
+
+### 🇪🇪 Estonia
+
+All protocols:
+
+```text
+https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/countries/EE/all.txt
+```
+
+Base64:
+
+```text
+https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/countries/EE/all-base64.txt
+```
+
+VLESS:
+
+```text
+https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/countries/EE/vless.txt
+```
+
+VLESS Base64:
+
+```text
+https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/countries/EE/vless-base64.txt
+```
+
+</details>
+
+<details>
 <summary>🇪🇸 Spain — 2 proxies</summary>
 
 ### 🇪🇸 Spain
@@ -603,7 +665,7 @@ https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/coun
 </details>
 
 <details>
-<summary>🇫🇷 France — 16 proxies</summary>
+<summary>🇫🇷 France — 17 proxies</summary>
 
 ### 🇫🇷 France
 
@@ -670,7 +732,7 @@ https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/coun
 </details>
 
 <details>
-<summary>🇬🇧 United Kingdom — 75 proxies</summary>
+<summary>🇬🇧 United Kingdom — 78 proxies</summary>
 
 ### 🇬🇧 United Kingdom
 
@@ -770,6 +832,37 @@ Shadowsocks Base64:
 
 ```text
 https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/countries/IR/shadowsocks-base64.txt
+```
+
+</details>
+
+<details>
+<summary>🇮🇹 Italy — 1 proxy</summary>
+
+### 🇮🇹 Italy
+
+All protocols:
+
+```text
+https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/countries/IT/all.txt
+```
+
+Base64:
+
+```text
+https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/countries/IT/all-base64.txt
+```
+
+VLESS:
+
+```text
+https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/countries/IT/vless.txt
+```
+
+VLESS Base64:
+
+```text
+https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/countries/IT/vless-base64.txt
 ```
 
 </details>
@@ -1025,18 +1118,6 @@ VLESS Base64:
 https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/countries/RU/vless-base64.txt
 ```
 
-Shadowsocks:
-
-```text
-https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/countries/RU/shadowsocks.txt
-```
-
-Shadowsocks Base64:
-
-```text
-https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/countries/RU/shadowsocks-base64.txt
-```
-
 </details>
 
 <details>
@@ -1114,7 +1195,7 @@ https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/coun
 </details>
 
 <details>
-<summary>🇸🇬 Singapore — 4 proxies</summary>
+<summary>🇸🇬 Singapore — 6 proxies</summary>
 
 ### 🇸🇬 Singapore
 
@@ -1219,7 +1300,7 @@ https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/coun
 </details>
 
 <details>
-<summary>🇺🇸 United States — 140 proxies</summary>
+<summary>🇺🇸 United States — 183 proxies</summary>
 
 ### 🇺🇸 United States
 
