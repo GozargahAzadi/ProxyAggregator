@@ -1,0 +1,1 @@
+vless://794990ea-dc34-4eff-8a43-020a92fec381@65.109.249.114:80?network=ws&path=%2F%3FTelegram---PLANB_NET---PLANB_NET---PLANB_NET---PLANB_NET&security=none#%F0%9F%87%AB%F0%9F%87%AE%20FI%20%7C%20VLESS%20%7C%204675ms%20%7C%20GozargahAzadi
