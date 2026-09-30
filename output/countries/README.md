@@ -4,31 +4,34 @@ Click a country to open its subscriptions.
 
 | Country | Code | Proxies |
 | --- | --- | ---: |
-| [🇦🇪 United Arab Emirates](./AE/) | AE | 2 |
+| [🇦🇪 United Arab Emirates](./AE/) | AE | 3 |
+| [🇦🇹 Austria](./AT/) | AT | 1 |
 | [🇦🇺 Australia](./AU/) | AU | 1 |
-| [🇧🇬 Bulgaria](./BG/) | BG | 2 |
-| [🇨🇦 Canada](./CA/) | CA | 16 |
+| [🇧🇪 Belgium](./BE/) | BE | 1 |
+| [🇧🇬 Bulgaria](./BG/) | BG | 1 |
+| [🇨🇦 Canada](./CA/) | CA | 18 |
 | [🇨🇭 Switzerland](./CH/) | CH | 2 |
-| [🇨🇿 Czechia](./CZ/) | CZ | 1 |
-| [🇩🇪 Germany](./DE/) | DE | 6 |
+| [🇩🇪 Germany](./DE/) | DE | 10 |
 | [🇪🇪 Estonia](./EE/) | EE | 1 |
-| [🇪🇸 Spain](./ES/) | ES | 2 |
-| [🇫🇷 France](./FR/) | FR | 17 |
-| [🇬🇧 United Kingdom](./GB/) | GB | 78 |
+| [🇪🇸 Spain](./ES/) | ES | 3 |
+| [🇫🇮 Finland](./FI/) | FI | 3 |
+| [🇫🇷 France](./FR/) | FR | 19 |
+| [🇬🇧 United Kingdom](./GB/) | GB | 75 |
+| [🇭🇷 Croatia](./HR/) | HR | 1 |
+| [🇮🇪 Ireland](./IE/) | IE | 1 |
 | [🇮🇳 India](./IN/) | IN | 1 |
-| [🇮🇷 Iran](./IR/) | IR | 7 |
+| [🇮🇷 Iran](./IR/) | IR | 11 |
 | [🇮🇹 Italy](./IT/) | IT | 1 |
-| [🇯🇵 Japan](./JP/) | JP | 4 |
-| [🇰🇷 Korea, Republic of](./KR/) | KR | 3 |
-| [🇱🇻 Latvia](./LV/) | LV | 2 |
+| [🇯🇵 Japan](./JP/) | JP | 6 |
+| [🇰🇷 Korea, Republic of](./KR/) | KR | 7 |
+| [🇱🇹 Lithuania](./LT/) | LT | 1 |
 | [🇳🇱 Netherlands](./NL/) | NL | 23 |
 | [🇵🇦 Panama](./PA/) | PA | 1 |
-| [🇷🇴 Romania](./RO/) | RO | 1 |
-| [🇷🇺 Russia](./RU/) | RU | 4 |
+| [🇵🇹 Portugal](./PT/) | PT | 1 |
+| [🇷🇴 Romania](./RO/) | RO | 2 |
+| [🇷🇺 Russia](./RU/) | RU | 5 |
 | [🇸🇨 Seychelles](./SC/) | SC | 2 |
-| [🇸🇪 Sweden](./SE/) | SE | 1 |
-| [🇸🇬 Singapore](./SG/) | SG | 6 |
-| [🇹🇭 Thailand](./TH/) | TH | 1 |
-| [🇹🇷 Turkey](./TR/) | TR | 2 |
-| [🇺🇸 United States](./US/) | US | 183 |
+| [🇸🇬 Singapore](./SG/) | SG | 9 |
+| [🇹🇷 Turkey](./TR/) | TR | 3 |
+| [🇺🇸 United States](./US/) | US | 205 |
 | [🇿🇦 South Africa](./ZA/) | ZA | 3 |
