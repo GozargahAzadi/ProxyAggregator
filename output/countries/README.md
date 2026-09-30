@@ -6,26 +6,26 @@ Click a country to open its subscriptions.
 | --- | --- | ---: |
 | [🇦🇪 United Arab Emirates](./AE/) | AE | 3 |
 | [🇧🇬 Bulgaria](./BG/) | BG | 1 |
-| [🇨🇦 Canada](./CA/) | CA | 16 |
+| [🇨🇦 Canada](./CA/) | CA | 14 |
 | [🇨🇭 Switzerland](./CH/) | CH | 1 |
-| [🇩🇪 Germany](./DE/) | DE | 7 |
-| [🇪🇪 Estonia](./EE/) | EE | 1 |
+| [🇩🇪 Germany](./DE/) | DE | 8 |
+| [🇪🇪 Estonia](./EE/) | EE | 3 |
 | [🇪🇸 Spain](./ES/) | ES | 2 |
-| [🇫🇷 France](./FR/) | FR | 12 |
-| [🇬🇧 United Kingdom](./GB/) | GB | 70 |
+| [🇫🇷 France](./FR/) | FR | 14 |
+| [🇬🇧 United Kingdom](./GB/) | GB | 72 |
 | [🇭🇰 Hong Kong](./HK/) | HK | 1 |
 | [🇮🇳 India](./IN/) | IN | 2 |
 | [🇮🇷 Iran](./IR/) | IR | 11 |
 | [🇮🇹 Italy](./IT/) | IT | 1 |
-| [🇯🇵 Japan](./JP/) | JP | 4 |
-| [🇰🇷 Korea, Republic of](./KR/) | KR | 8 |
+| [🇯🇵 Japan](./JP/) | JP | 3 |
+| [🇰🇷 Korea, Republic of](./KR/) | KR | 6 |
 | [🇳🇱 Netherlands](./NL/) | NL | 22 |
 | [🇷🇴 Romania](./RO/) | RO | 1 |
 | [🇷🇺 Russia](./RU/) | RU | 4 |
 | [🇸🇨 Seychelles](./SC/) | SC | 1 |
 | [🇸🇬 Singapore](./SG/) | SG | 12 |
 | [🇹🇷 Turkey](./TR/) | TR | 2 |
-| [🇺🇸 United States](./US/) | US | 177 |
+| [🇺🇸 United States](./US/) | US | 172 |
 | [🇿🇦 South Africa](./ZA/) | ZA | 3 |
 
 <details>
