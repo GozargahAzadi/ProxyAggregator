@@ -1,6 +1,6 @@
 # 🇮🇷 Iran
 
-6 healthy proxies.
+9 healthy proxies.
 
 ## 📋 All Protocols
 
