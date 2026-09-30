@@ -6,26 +6,29 @@ Click a country to open its subscriptions.
 | --- | --- | ---: |
 | [🇦🇪 United Arab Emirates](./AE/) | AE | 3 |
 | [🇧🇬 Bulgaria](./BG/) | BG | 1 |
-| [🇨🇦 Canada](./CA/) | CA | 14 |
+| [🇨🇦 Canada](./CA/) | CA | 16 |
 | [🇨🇭 Switzerland](./CH/) | CH | 1 |
+| [🇨🇳 China](./CN/) | CN | 10 |
+| [🇨🇿 Czechia](./CZ/) | CZ | 1 |
 | [🇩🇪 Germany](./DE/) | DE | 8 |
-| [🇪🇪 Estonia](./EE/) | EE | 3 |
+| [🇪🇪 Estonia](./EE/) | EE | 4 |
 | [🇪🇸 Spain](./ES/) | ES | 2 |
-| [🇫🇷 France](./FR/) | FR | 14 |
-| [🇬🇧 United Kingdom](./GB/) | GB | 72 |
+| [🇫🇷 France](./FR/) | FR | 17 |
+| [🇬🇧 United Kingdom](./GB/) | GB | 76 |
 | [🇭🇰 Hong Kong](./HK/) | HK | 1 |
 | [🇮🇳 India](./IN/) | IN | 2 |
-| [🇮🇷 Iran](./IR/) | IR | 11 |
+| [🇮🇷 Iran](./IR/) | IR | 9 |
 | [🇮🇹 Italy](./IT/) | IT | 1 |
 | [🇯🇵 Japan](./JP/) | JP | 3 |
-| [🇰🇷 Korea, Republic of](./KR/) | KR | 6 |
-| [🇳🇱 Netherlands](./NL/) | NL | 22 |
-| [🇷🇴 Romania](./RO/) | RO | 1 |
-| [🇷🇺 Russia](./RU/) | RU | 4 |
+| [🇰🇷 Korea, Republic of](./KR/) | KR | 11 |
+| [🇳🇱 Netherlands](./NL/) | NL | 25 |
+| [🇷🇴 Romania](./RO/) | RO | 2 |
+| [🇷🇺 Russia](./RU/) | RU | 2 |
 | [🇸🇨 Seychelles](./SC/) | SC | 1 |
-| [🇸🇬 Singapore](./SG/) | SG | 12 |
+| [🇸🇬 Singapore](./SG/) | SG | 15 |
+| [🇹🇭 Thailand](./TH/) | TH | 1 |
 | [🇹🇷 Turkey](./TR/) | TR | 2 |
-| [🇺🇸 United States](./US/) | US | 172 |
+| [🇺🇸 United States](./US/) | US | 166 |
 | [🇿🇦 South Africa](./ZA/) | ZA | 3 |
 
 <details>
@@ -78,7 +81,7 @@ Click a country to open its subscriptions.
 - 🇨🇰 Cook Islands
 - 🇨🇱 Chile
 - 🇨🇲 Cameroon
-- 🇨🇳 China
+- 🇨🇳 [China](./CN/)
 - 🇨🇴 Colombia
 - 🇨🇷 Costa Rica
 - 🇨🇺 Cuba
@@ -86,7 +89,7 @@ Click a country to open its subscriptions.
 - 🇨🇼 Curacao
 - 🇨🇽 Christmas Island
 - 🇨🇾 Cyprus
-- 🇨🇿 Czechia
+- 🇨🇿 [Czechia](./CZ/)
 - 🇩🇪 [Germany](./DE/)
 - 🇩🇯 Djibouti
 - 🇩🇰 Denmark
@@ -248,7 +251,7 @@ Click a country to open its subscriptions.
 - 🇹🇩 Chad
 - 🇹🇫 French Southern Territories
 - 🇹🇬 Togo
-- 🇹🇭 Thailand
+- 🇹🇭 [Thailand](./TH/)
 - 🇹🇯 Tajikistan
 - 🇹🇰 Tokelau
 - 🇹🇱 Timor-Leste
