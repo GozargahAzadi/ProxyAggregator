@@ -1,8 +1,8 @@
-vless://432289de-8dec-46ef-9a3f-001a3af178a7@45.76.87.125:14750?host=d-l28t5-65-b.pbe40wmcujaw726h7cpqernzmawz4stwtrnqve0n1s5reht.workers.dev&network=ws&path=%2F%40Marisa_kristi&security=tls&sni=d-l28t5-65-b.pbe40wmcujaw726h7cpqernzmawz4stwtrnqve0n1s5reht.workers.dev#%F0%9F%87%A9%F0%9F%87%AA%20DE%20%7C%20VLESS%20%7C%20449ms%20%7C%20GozargahAzadi
-ss://YWVzLTI1Ni1nY206UmV4bkJnVTdFVjVBRHhH@213.202.208.199:7001#%F0%9F%87%A9%F0%9F%87%AA%20DE%20%7C%20SS%20%7C%201133ms%20%7C%20GozargahAzadi
-ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTo3cEdnLW1aenBvS1JONVRZUGc4STJR@cdn-2d12.giftcardbazarbot.com:8243#%F0%9F%87%A9%F0%9F%87%AA%20DE%20%7C%20SS%20%7C%201144ms%20%7C%20GozargahAzadi
-ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNToxaGhycXJva2ozYWc=@209.46.102.22:8388#%F0%9F%87%A9%F0%9F%87%AA%20DE%20%7C%20SS%20%7C%201147ms%20%7C%20GozargahAzadi
-ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTpEZm9rYUFuZGlieWwtd1hqb1ZleF96RFQ3OHIta3dtWA==@jgzt1997.qivfelo.ir:5050#%F0%9F%87%A9%F0%9F%87%AA%20DE%20%7C%20SS%20%7C%201153ms%20%7C%20GozargahAzadi
-ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTp6TS1LODctblBfckFSdnJ6SjFWMWx5dC1RSVg2SjRKNg==@193.39.245.166:100#%F0%9F%87%A9%F0%9F%87%AA%20DE%20%7C%20SS%20%7C%201191ms%20%7C%20GozargahAzadi
-vless://306dcb21-d02d-49dd-8ec7-0005b972b47a@199.247.23.162:80?network=ws&path=%2F&security=none#%F0%9F%87%A9%F0%9F%87%AA%20DE%20%7C%20VLESS%20%7C%204623ms%20%7C%20GozargahAzadi
-vless://b585dc5e-55bf-4a8b-913a-27c9ccac05c3@81.95.4.189:443?host=bab-6.site&network=ws&path=%2Fvws%2F&security=tls&sni=bab-6.site#%F0%9F%87%A9%F0%9F%87%AA%20DE%20%7C%20VLESS%20%7C%206375ms%20%7C%20GozargahAzadi
+ss://YWVzLTI1Ni1nY206UmV4bkJnVTdFVjVBRHhH@213.202.208.199:7001#%F0%9F%87%A9%F0%9F%87%AA%20DE%20%7C%20SS%20%7C%201118ms%20%7C%20GozargahAzadi
+ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTppa3UvR2ZydDlZZUVVVWxlWHIyUHRmM3V2czBoc3pDUjBKSFBxR1NqcytjPQ==@31.76.11.83:11950#%F0%9F%87%A9%F0%9F%87%AA%20DE%20%7C%20SS%20%7C%201131ms%20%7C%20GozargahAzadi
+ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTpEZm9rYUFuZGlieWwtd1hqb1ZleF96RFQ3OHIta3dtWA==@jgzt1997.qivfelo.ir:5050#%F0%9F%87%A9%F0%9F%87%AA%20DE%20%7C%20SS%20%7C%201131ms%20%7C%20GozargahAzadi
+ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTo3cEdnLW1aenBvS1JONVRZUGc4STJR@cdn-2d12.giftcardbazarbot.com:8243#%F0%9F%87%A9%F0%9F%87%AA%20DE%20%7C%20SS%20%7C%201132ms%20%7C%20GozargahAzadi
+ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNToxaGhycXJva2ozYWc=@209.46.102.22:8388#%F0%9F%87%A9%F0%9F%87%AA%20DE%20%7C%20SS%20%7C%201136ms%20%7C%20GozargahAzadi
+vless://306dcb21-d02d-49dd-8ec7-0005b972b47a@199.247.23.162:80?network=ws&path=%2F&security=none#%F0%9F%87%A9%F0%9F%87%AA%20DE%20%7C%20VLESS%20%7C%204583ms%20%7C%20GozargahAzadi
+vless://bb1cb507-6b2a-41ef-8e24-06a422eb7e5a@264572b2539ab597.ravenlo.ir:8080?host=play.google.com&network=ws#%F0%9F%87%A9%F0%9F%87%AA%20DE%20%7C%20VLESS%20%7C%204612ms%20%7C%20GozargahAzadi
+vless://b585dc5e-55bf-4a8b-913a-27c9ccac05c3@81.95.4.189:443?host=bab-6.site&network=ws&path=%2Fvws%2F&security=tls&sni=bab-6.site#%F0%9F%87%A9%F0%9F%87%AA%20DE%20%7C%20VLESS%20%7C%206977ms%20%7C%20GozargahAzadi
