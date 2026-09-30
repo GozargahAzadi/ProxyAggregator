@@ -5,7 +5,8 @@ Pure orchestration that groups Phase 7 ranked, eligible candidates into
 
 - one generated index README (``countries/README.md``) listing every country
   directory that actually contains proxies this run, deterministically
-  ordered by ISO code;
+  ordered by ISO code, followed by a collapsible full ISO-3166-1 flag map in
+  which countries with proxies are linked and the rest are listed unlinked;
 - per non-empty directory: ``README.md``, an all-protocol plain + base64 feed
   (``all.txt`` / ``all-base64.txt``), and a plain + base64 feed per protocol
   only when that protocol has candidates. Empty countries or empty protocols
@@ -37,6 +38,7 @@ from proxyaggregator.publishing.feeds import (
 )
 from proxyaggregator.publishing.models import Subscription, SubscriptionFormat
 from proxyaggregator.publishing.naming import (
+    all_country_records,
     country_bucket,
     country_code_to_flag,
     country_code_to_name,
@@ -77,6 +79,9 @@ _COUNTRY_PROTOCOL_DISPLAY: dict[str, str] = {
 }
 
 _INDEX_HEADING = "# 🌍 ProxyAggregator — Proxies by Country"
+
+#: Summary line of the collapsible full ISO-3166-1 flag map in the country index.
+_ISO_FLAG_MAP_SUMMARY = "🌐 All countries — full ISO flag map"
 
 #: Base URL for copyable raw subscription links in the country READMEs
 #: (the generated country index lives at ``countries/README.md`` next to
@@ -171,6 +176,36 @@ def _render_country_table(entries: Sequence[tuple[str, int]]) -> list[str]:
     return lines
 
 
+def _render_iso_flag_map(entries: Sequence[tuple[str, int]]) -> list[str]:
+    """Render the collapsible full ISO-3166-1 flag map for the country index.
+
+    Every assigned alpha-2 country is listed once, in ISO-code order, with its
+    flag and English name. Countries that produced a directory this run are
+    linked with a relative-directory link ``./{CC}/``; every other country is
+    rendered as plain text, because it has no page. Availability is derived from
+    the same ``entries`` as the table, so the two views can never disagree.
+
+    The ``XX`` unknown-country sentinel is not an assigned ISO code and is
+    therefore omitted here; it still appears in the table above when present.
+    """
+    linked = {bucket.upper() for bucket, _count in entries}
+    lines = [
+        "<details>",
+        f"<summary>{_ISO_FLAG_MAP_SUMMARY}</summary>",
+        "",
+    ]
+    for code, flag, name in all_country_records():
+        if code in linked:
+            lines.append(f"- {flag} [{name}](./{code}/)")
+        else:
+            lines.append(f"- {flag} {name}")
+    lines += [
+        "",
+        "</details>",
+    ]
+    return lines
+
+
 def _index_readme(entries: Sequence[tuple[str, int]]) -> Subscription:
     """Generate the deterministic ``countries/README.md`` country index.
 
@@ -179,6 +214,12 @@ def _index_readme(entries: Sequence[tuple[str, int]]) -> Subscription:
     the ISO alpha-2 code, and the healthy proxy count. Rows are ordered by ISO
     code; the live country list is never hard-coded. The table itself is
     rendered by the shared :func:`_render_country_table`.
+
+    Below the table a collapsible full ISO-3166-1 flag map is appended by
+    :func:`_render_iso_flag_map`, so every assigned country is visible even when
+    it currently has no healthy proxies. The country index is the only generated
+    country documentation; the hand-maintained root ``README.md`` just links to
+    it and never carries a generated country list.
     """
     lines = [
         _INDEX_HEADING,
@@ -187,6 +228,7 @@ def _index_readme(entries: Sequence[tuple[str, int]]) -> Subscription:
         "",
     ]
     lines += _render_country_table(entries)
+    lines += ["", *_render_iso_flag_map(entries)]
     return _doc("\n".join(lines) + "\n")
 
 

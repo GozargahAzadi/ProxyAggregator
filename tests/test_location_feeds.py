@@ -64,6 +64,7 @@ from proxyaggregator.publishing import (
     COUNTRY_RAW_SUBSCRIPTIONS_BASE_URL,
     COUNTRY_UNKNOWN_BUCKET,
     SubscriptionFormat,
+    all_country_records,
     build_country_artifacts,
     build_protocol_subscriptions,
     build_subscription,
@@ -508,6 +509,42 @@ class TestGeneratedReadmes:
         index = artifacts["countries/README.md"].content
         for code, count in _index_rows(index):
             assert artifacts[f"countries/{code}/all.txt"].count == count
+
+    def test_index_iso_flag_map_is_complete_and_links_only_healthy_countries(self):
+        """The generated index keeps the full ISO flag map and stays butterfly-free.
+
+        Regression guard for the *generated* ``countries/README.md``. Neither the
+        banned line nor a shrunken map was covered before: the only butterfly
+        assertions in the suite target the hand-maintained root README, and
+        dropping the map from the generator left every test green.
+        """
+        artifacts = _artifacts(_country_candidates())
+        index = artifacts["countries/README.md"].content
+
+        summary = "<summary>\U0001f310 All countries \u2014 full ISO flag map</summary>"
+        assert index.count(summary) == 1, "the ISO flag map must appear exactly once"
+        assert "Click here to get proxies from a specific country" not in index
+        assert "\U0001f98b" not in index, "the banned butterfly line must stay gone"
+
+        # ``_country_candidates()`` yields healthy DE and US proxies, so exactly
+        # those two countries may carry a link inside the map; every other
+        # assigned country stays a plain flag + name.
+        linked = {"DE", "US"}
+        map_lines = [line for line in index.splitlines() if line.startswith("- ")]
+        records = all_country_records()
+        assert len(map_lines) == len(records), "every ISO-3166-1 country is listed once"
+
+        for line, (code, flag, name) in zip(map_lines, records, strict=True):
+            if code in linked:
+                assert line == f"- {flag} [{name}](./{code}/)", f"{code} must be linked"
+            else:
+                assert line == f"- {flag} {name}", f"{code} must not be linked"
+
+        # the unknown bucket keeps its table row but is not an assigned ISO
+        # code, so it must never leak into the map below it
+        map_section = index.split(summary, 1)[1]
+        assert "Unknown" not in map_section
+        assert index.index("| [") < index.index(summary), "the table still comes first"
 
 
 # G. Determinism + path safety -------------------------------------------------
