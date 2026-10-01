@@ -8,30 +8,28 @@ Click a country to open its subscriptions.
 | [🇧🇬 Bulgaria](./BG/) | BG | 1 |
 | [🇨🇦 Canada](./CA/) | CA | 17 |
 | [🇨🇭 Switzerland](./CH/) | CH | 2 |
-| [🇨🇳 China](./CN/) | CN | 1 |
 | [🇨🇿 Czechia](./CZ/) | CZ | 1 |
-| [🇩🇪 Germany](./DE/) | DE | 7 |
+| [🇩🇪 Germany](./DE/) | DE | 6 |
 | [🇪🇪 Estonia](./EE/) | EE | 1 |
 | [🇪🇸 Spain](./ES/) | ES | 2 |
-| [🇫🇷 France](./FR/) | FR | 14 |
-| [🇬🇧 United Kingdom](./GB/) | GB | 70 |
+| [🇫🇷 France](./FR/) | FR | 13 |
+| [🇬🇧 United Kingdom](./GB/) | GB | 71 |
 | [🇮🇩 Indonesia](./ID/) | ID | 1 |
-| [🇮🇳 India](./IN/) | IN | 2 |
-| [🇮🇷 Iran](./IR/) | IR | 8 |
+| [🇮🇷 Iran](./IR/) | IR | 6 |
 | [🇮🇹 Italy](./IT/) | IT | 1 |
-| [🇯🇵 Japan](./JP/) | JP | 4 |
-| [🇰🇷 Korea, Republic of](./KR/) | KR | 5 |
+| [🇯🇵 Japan](./JP/) | JP | 5 |
+| [🇰🇷 Korea, Republic of](./KR/) | KR | 9 |
+| [🇲🇽 Mexico](./MX/) | MX | 1 |
 | [🇲🇾 Malaysia](./MY/) | MY | 1 |
-| [🇳🇱 Netherlands](./NL/) | NL | 22 |
+| [🇳🇱 Netherlands](./NL/) | NL | 20 |
 | [🇵🇱 Poland](./PL/) | PL | 1 |
-| [🇷🇴 Romania](./RO/) | RO | 2 |
-| [🇷🇺 Russia](./RU/) | RU | 4 |
+| [🇷🇴 Romania](./RO/) | RO | 1 |
+| [🇷🇺 Russia](./RU/) | RU | 6 |
 | [🇸🇨 Seychelles](./SC/) | SC | 1 |
 | [🇸🇪 Sweden](./SE/) | SE | 1 |
-| [🇸🇬 Singapore](./SG/) | SG | 19 |
-| [🇹🇭 Thailand](./TH/) | TH | 1 |
+| [🇸🇬 Singapore](./SG/) | SG | 13 |
 | [🇹🇷 Turkey](./TR/) | TR | 2 |
-| [🇺🇸 United States](./US/) | US | 155 |
+| [🇺🇸 United States](./US/) | US | 179 |
 | [🇿🇦 South Africa](./ZA/) | ZA | 3 |
 
 <details>
@@ -84,7 +82,7 @@ Click a country to open its subscriptions.
 - 🇨🇰 Cook Islands
 - 🇨🇱 Chile
 - 🇨🇲 Cameroon
-- 🇨🇳 [China](./CN/)
+- 🇨🇳 China
 - 🇨🇴 Colombia
 - 🇨🇷 Costa Rica
 - 🇨🇺 Cuba
@@ -141,7 +139,7 @@ Click a country to open its subscriptions.
 - 🇮🇪 Ireland
 - 🇮🇱 Israel
 - 🇮🇲 Isle of Man
-- 🇮🇳 [India](./IN/)
+- 🇮🇳 India
 - 🇮🇴 British Indian Ocean Territory
 - 🇮🇶 Iraq
 - 🇮🇷 [Iran](./IR/)
@@ -193,7 +191,7 @@ Click a country to open its subscriptions.
 - 🇲🇺 Mauritius
 - 🇲🇻 Maldives
 - 🇲🇼 Malawi
-- 🇲🇽 Mexico
+- 🇲🇽 [Mexico](./MX/)
 - 🇲🇾 [Malaysia](./MY/)
 - 🇲🇿 Mozambique
 - 🇳🇦 Namibia
@@ -254,7 +252,7 @@ Click a country to open its subscriptions.
 - 🇹🇩 Chad
 - 🇹🇫 French Southern Territories
 - 🇹🇬 Togo
-- 🇹🇭 [Thailand](./TH/)
+- 🇹🇭 Thailand
 - 🇹🇯 Tajikistan
 - 🇹🇰 Tokelau
 - 🇹🇱 Timor-Leste
