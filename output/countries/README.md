@@ -8,34 +8,34 @@ Click a country to open its subscriptions.
 | [🇦🇺 Australia](./AU/) | AU | 1 |
 | [🇧🇬 Bulgaria](./BG/) | BG | 1 |
 | [🇧🇷 Brazil](./BR/) | BR | 1 |
-| [🇨🇦 Canada](./CA/) | CA | 19 |
+| [🇨🇦 Canada](./CA/) | CA | 18 |
 | [🇨🇭 Switzerland](./CH/) | CH | 2 |
 | [🇨🇱 Chile](./CL/) | CL | 1 |
 | [🇩🇪 Germany](./DE/) | DE | 4 |
-| [🇪🇪 Estonia](./EE/) | EE | 1 |
+| [🇪🇪 Estonia](./EE/) | EE | 2 |
 | [🇪🇸 Spain](./ES/) | ES | 2 |
-| [🇫🇷 France](./FR/) | FR | 10 |
-| [🇬🇧 United Kingdom](./GB/) | GB | 72 |
-| [🇭🇰 Hong Kong](./HK/) | HK | 3 |
+| [🇫🇷 France](./FR/) | FR | 13 |
+| [🇬🇧 United Kingdom](./GB/) | GB | 73 |
+| [🇭🇰 Hong Kong](./HK/) | HK | 5 |
 | [🇮🇩 Indonesia](./ID/) | ID | 1 |
 | [🇮🇳 India](./IN/) | IN | 2 |
-| [🇮🇷 Iran](./IR/) | IR | 7 |
+| [🇮🇷 Iran](./IR/) | IR | 6 |
 | [🇮🇹 Italy](./IT/) | IT | 1 |
-| [🇯🇵 Japan](./JP/) | JP | 6 |
-| [🇰🇷 Korea, Republic of](./KR/) | KR | 9 |
+| [🇯🇵 Japan](./JP/) | JP | 5 |
+| [🇰🇷 Korea, Republic of](./KR/) | KR | 8 |
 | [🇱🇻 Latvia](./LV/) | LV | 1 |
-| [🇲🇽 Mexico](./MX/) | MX | 1 |
 | [🇲🇾 Malaysia](./MY/) | MY | 1 |
-| [🇳🇱 Netherlands](./NL/) | NL | 21 |
+| [🇳🇱 Netherlands](./NL/) | NL | 23 |
 | [🇵🇱 Poland](./PL/) | PL | 1 |
 | [🇷🇴 Romania](./RO/) | RO | 2 |
-| [🇷🇺 Russia](./RU/) | RU | 3 |
+| [🇷🇺 Russia](./RU/) | RU | 2 |
 | [🇸🇨 Seychelles](./SC/) | SC | 1 |
 | [🇸🇪 Sweden](./SE/) | SE | 1 |
-| [🇸🇬 Singapore](./SG/) | SG | 18 |
+| [🇸🇬 Singapore](./SG/) | SG | 19 |
+| [🇹🇭 Thailand](./TH/) | TH | 1 |
 | [🇹🇷 Turkey](./TR/) | TR | 2 |
 | [🇹🇼 Taiwan](./TW/) | TW | 1 |
-| [🇺🇸 United States](./US/) | US | 190 |
+| [🇺🇸 United States](./US/) | US | 189 |
 | [🇿🇦 South Africa](./ZA/) | ZA | 3 |
 
 <details>
@@ -197,7 +197,7 @@ Click a country to open its subscriptions.
 - 🇲🇺 Mauritius
 - 🇲🇻 Maldives
 - 🇲🇼 Malawi
-- 🇲🇽 [Mexico](./MX/)
+- 🇲🇽 Mexico
 - 🇲🇾 [Malaysia](./MY/)
 - 🇲🇿 Mozambique
 - 🇳🇦 Namibia
@@ -258,7 +258,7 @@ Click a country to open its subscriptions.
 - 🇹🇩 Chad
 - 🇹🇫 French Southern Territories
 - 🇹🇬 Togo
-- 🇹🇭 Thailand
+- 🇹🇭 [Thailand](./TH/)
 - 🇹🇯 Tajikistan
 - 🇹🇰 Tokelau
 - 🇹🇱 Timor-Leste
