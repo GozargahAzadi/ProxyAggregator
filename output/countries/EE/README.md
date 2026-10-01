@@ -1,6 +1,6 @@
 # 🇪🇪 Estonia
 
-4 healthy proxies.
+1 healthy proxy.
 
 ## 📋 All Protocols
 
