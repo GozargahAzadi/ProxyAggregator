@@ -2,36 +2,9 @@
 
 Click a country to open its subscriptions.
 
-| Country | Code | Proxies |
-| --- | --- | ---: |
-| [🇦🇪 United Arab Emirates](./AE/) | AE | 2 |
-| [🇧🇬 Bulgaria](./BG/) | BG | 1 |
-| [🇨🇦 Canada](./CA/) | CA | 15 |
-| [🇨🇭 Switzerland](./CH/) | CH | 1 |
-| [🇨🇳 China](./CN/) | CN | 4 |
-| [🇨🇿 Czechia](./CZ/) | CZ | 1 |
-| [🇩🇪 Germany](./DE/) | DE | 11 |
-| [🇪🇪 Estonia](./EE/) | EE | 4 |
-| [🇪🇸 Spain](./ES/) | ES | 2 |
-| [🇫🇮 Finland](./FI/) | FI | 1 |
-| [🇫🇷 France](./FR/) | FR | 16 |
-| [🇬🇧 United Kingdom](./GB/) | GB | 76 |
-| [🇮🇳 India](./IN/) | IN | 2 |
-| [🇮🇷 Iran](./IR/) | IR | 9 |
-| [🇮🇹 Italy](./IT/) | IT | 1 |
-| [🇯🇵 Japan](./JP/) | JP | 6 |
-| [🇰🇷 Korea, Republic of](./KR/) | KR | 9 |
-| [🇳🇱 Netherlands](./NL/) | NL | 25 |
-| [🇷🇴 Romania](./RO/) | RO | 2 |
-| [🇷🇺 Russia](./RU/) | RU | 5 |
-| [🇸🇨 Seychelles](./SC/) | SC | 1 |
-| [🇸🇬 Singapore](./SG/) | SG | 18 |
-| [🇹🇷 Turkey](./TR/) | TR | 2 |
-| [🇺🇸 United States](./US/) | US | 192 |
-| [🇿🇦 South Africa](./ZA/) | ZA | 3 |
 
-<details>
-<summary>🌐 All countries — full ISO flag map</summary>
+
+🌐 All countries
 
 - 🇦🇩 Andorra
 - 🇦🇪 [United Arab Emirates](./AE/)
