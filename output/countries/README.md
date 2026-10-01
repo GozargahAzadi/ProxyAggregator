@@ -9,31 +9,33 @@ Click a country to open its subscriptions.
 | [🇧🇬 Bulgaria](./BG/) | BG | 1 |
 | [🇧🇷 Brazil](./BR/) | BR | 1 |
 | [🇨🇦 Canada](./CA/) | CA | 19 |
-| [🇨🇭 Switzerland](./CH/) | CH | 1 |
+| [🇨🇭 Switzerland](./CH/) | CH | 2 |
 | [🇨🇱 Chile](./CL/) | CL | 1 |
 | [🇩🇪 Germany](./DE/) | DE | 4 |
-| [🇪🇪 Estonia](./EE/) | EE | 2 |
+| [🇪🇪 Estonia](./EE/) | EE | 1 |
 | [🇪🇸 Spain](./ES/) | ES | 2 |
-| [🇫🇷 France](./FR/) | FR | 13 |
+| [🇫🇷 France](./FR/) | FR | 10 |
 | [🇬🇧 United Kingdom](./GB/) | GB | 72 |
+| [🇭🇰 Hong Kong](./HK/) | HK | 3 |
 | [🇮🇩 Indonesia](./ID/) | ID | 1 |
 | [🇮🇳 India](./IN/) | IN | 2 |
-| [🇮🇷 Iran](./IR/) | IR | 6 |
+| [🇮🇷 Iran](./IR/) | IR | 7 |
 | [🇮🇹 Italy](./IT/) | IT | 1 |
-| [🇯🇵 Japan](./JP/) | JP | 5 |
-| [🇰🇷 Korea, Republic of](./KR/) | KR | 5 |
+| [🇯🇵 Japan](./JP/) | JP | 6 |
+| [🇰🇷 Korea, Republic of](./KR/) | KR | 9 |
+| [🇱🇻 Latvia](./LV/) | LV | 1 |
 | [🇲🇽 Mexico](./MX/) | MX | 1 |
 | [🇲🇾 Malaysia](./MY/) | MY | 1 |
-| [🇳🇱 Netherlands](./NL/) | NL | 20 |
+| [🇳🇱 Netherlands](./NL/) | NL | 21 |
 | [🇵🇱 Poland](./PL/) | PL | 1 |
-| [🇷🇴 Romania](./RO/) | RO | 1 |
-| [🇷🇺 Russia](./RU/) | RU | 5 |
+| [🇷🇴 Romania](./RO/) | RO | 2 |
+| [🇷🇺 Russia](./RU/) | RU | 3 |
 | [🇸🇨 Seychelles](./SC/) | SC | 1 |
 | [🇸🇪 Sweden](./SE/) | SE | 1 |
-| [🇸🇬 Singapore](./SG/) | SG | 17 |
+| [🇸🇬 Singapore](./SG/) | SG | 18 |
 | [🇹🇷 Turkey](./TR/) | TR | 2 |
 | [🇹🇼 Taiwan](./TW/) | TW | 1 |
-| [🇺🇸 United States](./US/) | US | 179 |
+| [🇺🇸 United States](./US/) | US | 190 |
 | [🇿🇦 South Africa](./ZA/) | ZA | 3 |
 
 <details>
@@ -133,7 +135,7 @@ Click a country to open its subscriptions.
 - 🇬🇺 Guam
 - 🇬🇼 Guinea-Bissau
 - 🇬🇾 Guyana
-- 🇭🇰 Hong Kong
+- 🇭🇰 [Hong Kong](./HK/)
 - 🇭🇲 Heard Island and McDonald Islands
 - 🇭🇳 Honduras
 - 🇭🇷 Croatia
@@ -173,7 +175,7 @@ Click a country to open its subscriptions.
 - 🇱🇸 Lesotho
 - 🇱🇹 Lithuania
 - 🇱🇺 Luxembourg
-- 🇱🇻 Latvia
+- 🇱🇻 [Latvia](./LV/)
 - 🇱🇾 Libya
 - 🇲🇦 Morocco
 - 🇲🇨 Monaco
