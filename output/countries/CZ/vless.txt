@@ -1,1 +1,1 @@
-vless://2b77e8eb-b03b-4f12-aa6d-23b421e5bed7@91.199.147.41:443?host=snni.868001.xyz&network=ws&path=%2Fproxyip%3Dtw.william.us.ci%3Fuuid%3D2b77e8eb-b03b-4f12-aa6d-23b421e5bed7&security=tls&sni=snni.868001.xyz#%F0%9F%87%A8%F0%9F%87%BF%20CZ%20%7C%20VLESS%20%7C%20467ms%20%7C%20GozargahAzadi
+vless://2b77e8eb-b03b-4f12-aa6d-23b421e5bed7@91.199.147.41:443?host=snni.868001.xyz&network=ws&path=%2Fproxyip%3Dtw.william.us.ci%3Fuuid%3D2b77e8eb-b03b-4f12-aa6d-23b421e5bed7&security=tls&sni=snni.868001.xyz#%F0%9F%87%A8%F0%9F%87%BF%20CZ%20%7C%20VLESS%20%7C%20476ms%20%7C%20GozargahAzadi

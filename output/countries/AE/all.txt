@@ -1,3 +1,2 @@
-vless://39947382-3212-41c9-bc3a-589574ac8b23@84.235.244.108:22573?host=uae.unixzone.us&network=ws&path=%2F&security=none#%F0%9F%87%A6%F0%9F%87%AA%20AE%20%7C%20VLESS%20%7C%204522ms%20%7C%20GozargahAzadi
-vless://8dd437e1-5f3f-446e-98fe-aa29b80057fb@45.88.12.119:2083?network=ws&path=%2Fvless-ws&security=tls&sni=crt.dodopanel.biz#%F0%9F%87%A6%F0%9F%87%AA%20AE%20%7C%20VLESS%20%7C%204576ms%20%7C%20GozargahAzadi
-vless://39947382-3212-41c9-bc3a-589574ac8b23@uae.unixzone.us:22573?host=uae.unixzone.us&network=ws&path=%2F&security=none#%F0%9F%87%A6%F0%9F%87%AA%20AE%20%7C%20VLESS%20%7C%204706ms%20%7C%20GozargahAzadi
+vless://39947382-3212-41c9-bc3a-589574ac8b23@84.235.244.108:22573?host=uae.unixzone.us&network=ws&path=%2F&security=none#%F0%9F%87%A6%F0%9F%87%AA%20AE%20%7C%20VLESS%20%7C%204525ms%20%7C%20GozargahAzadi
+vless://39947382-3212-41c9-bc3a-589574ac8b23@uae.unixzone.us:22573?host=uae.unixzone.us&network=ws&path=%2F&security=none&sni=uae.unixzone.us#%F0%9F%87%A6%F0%9F%87%AA%20AE%20%7C%20VLESS%20%7C%204658ms%20%7C%20GozargahAzadi

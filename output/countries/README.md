@@ -4,31 +4,30 @@ Click a country to open its subscriptions.
 
 | Country | Code | Proxies |
 | --- | --- | ---: |
-| [🇦🇪 United Arab Emirates](./AE/) | AE | 3 |
+| [🇦🇪 United Arab Emirates](./AE/) | AE | 2 |
 | [🇧🇬 Bulgaria](./BG/) | BG | 1 |
-| [🇨🇦 Canada](./CA/) | CA | 16 |
+| [🇨🇦 Canada](./CA/) | CA | 15 |
 | [🇨🇭 Switzerland](./CH/) | CH | 1 |
-| [🇨🇳 China](./CN/) | CN | 10 |
+| [🇨🇳 China](./CN/) | CN | 4 |
 | [🇨🇿 Czechia](./CZ/) | CZ | 1 |
-| [🇩🇪 Germany](./DE/) | DE | 8 |
+| [🇩🇪 Germany](./DE/) | DE | 11 |
 | [🇪🇪 Estonia](./EE/) | EE | 4 |
 | [🇪🇸 Spain](./ES/) | ES | 2 |
-| [🇫🇷 France](./FR/) | FR | 17 |
+| [🇫🇮 Finland](./FI/) | FI | 1 |
+| [🇫🇷 France](./FR/) | FR | 16 |
 | [🇬🇧 United Kingdom](./GB/) | GB | 76 |
-| [🇭🇰 Hong Kong](./HK/) | HK | 1 |
 | [🇮🇳 India](./IN/) | IN | 2 |
 | [🇮🇷 Iran](./IR/) | IR | 9 |
 | [🇮🇹 Italy](./IT/) | IT | 1 |
-| [🇯🇵 Japan](./JP/) | JP | 3 |
-| [🇰🇷 Korea, Republic of](./KR/) | KR | 11 |
+| [🇯🇵 Japan](./JP/) | JP | 6 |
+| [🇰🇷 Korea, Republic of](./KR/) | KR | 9 |
 | [🇳🇱 Netherlands](./NL/) | NL | 25 |
 | [🇷🇴 Romania](./RO/) | RO | 2 |
-| [🇷🇺 Russia](./RU/) | RU | 2 |
+| [🇷🇺 Russia](./RU/) | RU | 5 |
 | [🇸🇨 Seychelles](./SC/) | SC | 1 |
-| [🇸🇬 Singapore](./SG/) | SG | 15 |
-| [🇹🇭 Thailand](./TH/) | TH | 1 |
+| [🇸🇬 Singapore](./SG/) | SG | 18 |
 | [🇹🇷 Turkey](./TR/) | TR | 2 |
-| [🇺🇸 United States](./US/) | US | 166 |
+| [🇺🇸 United States](./US/) | US | 192 |
 | [🇿🇦 South Africa](./ZA/) | ZA | 3 |
 
 <details>
@@ -103,7 +102,7 @@ Click a country to open its subscriptions.
 - 🇪🇷 Eritrea
 - 🇪🇸 [Spain](./ES/)
 - 🇪🇹 Ethiopia
-- 🇫🇮 Finland
+- 🇫🇮 [Finland](./FI/)
 - 🇫🇯 Fiji
 - 🇫🇰 Falkland Islands (Malvinas)
 - 🇫🇲 Micronesia
@@ -128,7 +127,7 @@ Click a country to open its subscriptions.
 - 🇬🇺 Guam
 - 🇬🇼 Guinea-Bissau
 - 🇬🇾 Guyana
-- 🇭🇰 [Hong Kong](./HK/)
+- 🇭🇰 Hong Kong
 - 🇭🇲 Heard Island and McDonald Islands
 - 🇭🇳 Honduras
 - 🇭🇷 Croatia
@@ -251,7 +250,7 @@ Click a country to open its subscriptions.
 - 🇹🇩 Chad
 - 🇹🇫 French Southern Territories
 - 🇹🇬 Togo
-- 🇹🇭 [Thailand](./TH/)
+- 🇹🇭 Thailand
 - 🇹🇯 Tajikistan
 - 🇹🇰 Tokelau
 - 🇹🇱 Timor-Leste

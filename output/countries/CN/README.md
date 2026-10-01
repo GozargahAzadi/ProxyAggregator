@@ -1,6 +1,6 @@
 # 🇨🇳 China
 
-10 healthy proxies.
+4 healthy proxies.
 
 ## 📋 All Protocols
 
