@@ -5,6 +5,7 @@ from __future__ import annotations
 from urllib.parse import parse_qs, urlparse
 
 from proxyaggregator.parsers.base import BaseParser, ParseError, ParseResult
+from proxyaggregator.parsers.normalize import clean_path
 
 
 class VlessParser(BaseParser):
@@ -48,7 +49,7 @@ class VlessParser(BaseParser):
             sni=_first(params, "sni"),
             network=_first(params, "type") or _first(params, "network"),
             tls=_first(params, "security"),
-            path=_first(params, "path"),
+            path=clean_path(_first(params, "path")),
             host_header=_first(params, "host"),
             fragment=parsed.fragment or None,
             service_name=_first(params, "serviceName"),

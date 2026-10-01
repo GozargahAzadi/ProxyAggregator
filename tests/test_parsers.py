@@ -9,7 +9,7 @@ from proxyaggregator.parsers.detect import detect_protocol
 from proxyaggregator.parsers.extract import extract_uris
 from proxyaggregator.parsers.http_proxy import HttpProxyParser, HttpsProxyParser
 from proxyaggregator.parsers.hysteria import Hysteria2Parser, HysteriaParser
-from proxyaggregator.parsers.normalize import normalize_uri
+from proxyaggregator.parsers.normalize import clean_path, normalize_uri
 from proxyaggregator.parsers.registry import ParserRegistry, get_registry
 from proxyaggregator.parsers.shadowsocks import ShadowsocksParser
 from proxyaggregator.parsers.socks import Socks4Parser, Socks5Parser
@@ -184,6 +184,37 @@ class TestNormalizeUri:
         assert normalize_uri("") == ""
 
 
+class TestCleanPath:
+    def test_clean_path_query_kept(self):
+        assert clean_path("/?ed=2560") == "/?ed=2560"
+
+    def test_leaked_query_is_dropped(self):
+        assert clean_path("/?ed=2560security=tls") == "/"
+
+    def test_plain_path_unchanged(self):
+        assert clean_path("/ws") == "/ws"
+        assert clean_path("/") == "/"
+
+    def test_percent_encoded_characters_preserved(self):
+        assert clean_path("/path with spaces") == "/path with spaces"
+        assert clean_path("/ws?ed=2560") == "/ws?ed=2560"
+        assert clean_path("/a&b") == "/a&b"
+
+    def test_leaked_ampersand_is_dropped(self):
+        assert clean_path("/?ed=2560&security=tls") == "/?ed=2560"
+
+    @pytest.mark.parametrize("value", ["", "   ", None])
+    def test_empty_returns_none(self, value):
+        assert clean_path(value) is None
+
+    def test_dangling_question_mark(self):
+        assert clean_path("/?") == "/"
+
+    def test_deterministic(self):
+        broken = "/?ed=2560security=tls"
+        assert clean_path(broken) == clean_path(broken)
+
+
 # --- extract_uris tests ---
 
 
@@ -294,11 +325,52 @@ class TestVlessParser:
         assert isinstance(r, ParseResult)
         assert r.path == "/path with spaces"
 
+    def test_leaked_query_is_cleaned(self):
+        uri = (
+            "vless://uuid@host:443?host=h.example&network=ws"
+            "&path=%2F%3Fed%3D2560security%3Dtls&security=none"
+        )
+        r = self.parser.parse(uri)
+        assert isinstance(r, ParseResult)
+        assert r.path == "/"
+        assert r.host_header == "h.example"
+        assert r.network == "ws"
+        assert r.tls == "none"
+
+    def test_clean_path_query_preserved(self):
+        uri = "vless://uuid@host:443?network=ws&path=%2F%3Fed%3D2560&security=tls"
+        r = self.parser.parse(uri)
+        assert isinstance(r, ParseResult)
+        assert r.path == "/?ed=2560"
+        assert r.tls == "tls"
+
+    def test_missing_path_is_none(self):
+        r = self.parser.parse("vless://uuid@host:443?network=ws")
+        assert isinstance(r, ParseResult)
+        assert r.path is None
+
     def test_deterministic_output(self):
         uri = "vless://uuid@host:443?security=tls&sni=sni.example.com#Test"
         r1 = self.parser.parse(uri)
         r2 = self.parser.parse(uri)
         assert r1.model_dump() == r2.model_dump()
+
+    @pytest.mark.parametrize(
+        "uri",
+        [
+            "vless://uuid@host:443?network=ws&path=%2F%3Fed%3D2560&security=tls#Test",
+            "vless://uuid@host:443?network=ws&path=%2F%3Fed%3D2560security%3Dtls&security=none",
+            "vless://uuid@host:443?path=%2Fpath%20with%20spaces",
+        ],
+    )
+    def test_round_trip_is_stable(self, uri):
+        from proxyaggregator.publishing.serializer import canonical_uri
+
+        first = self.parser.parse(uri)
+        assert isinstance(first, ParseResult)
+        second = self.parser.parse(canonical_uri(first))
+        assert isinstance(second, ParseResult)
+        assert second.model_dump(exclude={"raw_uri"}) == first.model_dump(exclude={"raw_uri"})
 
 
 # --- VMess parser tests ---
@@ -436,6 +508,35 @@ class TestTrojanParser:
         r = self.parser.parse(uri)
         assert isinstance(r, ParseResult)
         assert r.fragment == "MyTrojan"
+
+    def test_leaked_query_is_cleaned(self):
+        uri = "trojan://pass@host:443?sni=sni.example.com&path=%2F%3Fed%3D2560security%3Dtls"
+        r = self.parser.parse(uri)
+        assert isinstance(r, ParseResult)
+        assert r.path == "/"
+        assert r.sni == "sni.example.com"
+        assert r.tls == "tls"
+
+    def test_clean_path_query_preserved(self):
+        uri = "trojan://pass@host:443?path=%2F%3Fed%3D2560"
+        r = self.parser.parse(uri)
+        assert isinstance(r, ParseResult)
+        assert r.path == "/?ed=2560"
+
+    def test_missing_path_is_none(self):
+        r = self.parser.parse("trojan://pass@host:443")
+        assert isinstance(r, ParseResult)
+        assert r.path is None
+
+    def test_round_trip_is_stable(self):
+        from proxyaggregator.publishing.serializer import canonical_uri
+
+        uri = "trojan://pass@host:443?path=%2F%3Fed%3D2560security%3Dtls&sni=sni.example.com"
+        first = self.parser.parse(uri)
+        assert isinstance(first, ParseResult)
+        second = self.parser.parse(canonical_uri(first))
+        assert isinstance(second, ParseResult)
+        assert second.model_dump(exclude={"raw_uri"}) == first.model_dump(exclude={"raw_uri"})
 
     def test_malformed_no_host(self):
         r = self.parser.parse("trojan://")
