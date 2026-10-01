@@ -5,7 +5,8 @@
 > Free, automatic aggregator of public V2Ray & proxy configurations  
 > Collects → Parses → Deduplicates → Health-checks → Publishes subscription feeds every ~15 minutes
 
-[![GitHub stars](https://img.shields.io/github/stars/GozargahAzadi/ProxyAggregator?style=flat-square&logo=github)](https://github.com/GozargahAzadi/ProxyAggregator)
+
+[![GitHub stars](https://img.shields.io/github/stars/GozargahAzadi/ProxyAggregator?style=social)](https://github.com/GozargahAzadi/ProxyAggregator)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Last Publish](https://img.shields.io/badge/Last%20Publish-2026--09--28-brightgreen)](https://github.com/GozargahAzadi/ProxyAggregator/commits/main)
 [![Python](https://img.shields.io/badge/Python-3.12+-blue)](https://www.python.org/)
