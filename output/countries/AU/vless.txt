@@ -1,1 +1,1 @@
-vless://26524cce-d514-4014-a426-365fb266a14d@156.59.201.182:24442?host=qcswhj2.edge-cache.danfeng4.xyz&network=ws&path=%2Fdanfeng-pw8lj2-nzliwt-h23l-978coeve&security=tls&sni=qcswhj2.edge-cache.danfeng4.xyz#%F0%9F%87%A6%F0%9F%87%BA%20AU%20%7C%20VLESS%20%7C%20659ms%20%7C%20GozargahAzadi
+vless://26524cce-d514-4014-a426-365fb266a14d@156.59.201.182:24442?host=qcswhj2.edge-cache.danfeng4.xyz&network=ws&path=%2Fdanfeng-pw8lj2-nzliwt-h23l-978coeve&security=tls&sni=qcswhj2.edge-cache.danfeng4.xyz#%F0%9F%87%A6%F0%9F%87%BA%20AU%20%7C%20VLESS%20%7C%20636ms%20%7C%20GozargahAzadi
