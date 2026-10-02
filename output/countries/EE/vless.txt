@@ -1,2 +1,1 @@
-vless://6c713691-3ca2-4446-ad25-113d1bed6b03@194.26.141.148:8443?host=fdghyt.com&network=ws&path=%2Fvpn-wss%2Ffluxor%2F59011%2F&security=tls&sni=fdghyt.com#%F0%9F%87%AA%F0%9F%87%AA%20EE%20%7C%20VLESS%20%7C%20894ms%20%7C%20GozargahAzadi
-vless://06c4e938-2954-478f-a870-ca1b163e30e9@94.183.170.135:443?network=ws&path=%2F&security=none#%F0%9F%87%AA%F0%9F%87%AA%20EE%20%7C%20VLESS%20%7C%204517ms%20%7C%20GozargahAzadi
+vless://06c4e938-2954-478f-a870-ca1b163e30e9@94.183.170.135:443?network=ws&path=%2F&security=none#%F0%9F%87%AA%F0%9F%87%AA%20EE%20%7C%20VLESS%20%7C%204470ms%20%7C%20GozargahAzadi

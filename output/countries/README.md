@@ -6,36 +6,37 @@ Click a country to open its subscriptions.
 | --- | --- | ---: |
 | [🇦🇪 United Arab Emirates](./AE/) | AE | 2 |
 | [🇦🇺 Australia](./AU/) | AU | 1 |
-| [🇧🇬 Bulgaria](./BG/) | BG | 1 |
+| [🇧🇬 Bulgaria](./BG/) | BG | 2 |
 | [🇧🇷 Brazil](./BR/) | BR | 1 |
-| [🇨🇦 Canada](./CA/) | CA | 18 |
+| [🇧🇾 Belarus](./BY/) | BY | 1 |
+| [🇨🇦 Canada](./CA/) | CA | 19 |
 | [🇨🇭 Switzerland](./CH/) | CH | 2 |
 | [🇨🇱 Chile](./CL/) | CL | 1 |
-| [🇩🇪 Germany](./DE/) | DE | 4 |
-| [🇪🇪 Estonia](./EE/) | EE | 2 |
+| [🇩🇪 Germany](./DE/) | DE | 11 |
+| [🇪🇪 Estonia](./EE/) | EE | 1 |
 | [🇪🇸 Spain](./ES/) | ES | 2 |
-| [🇫🇷 France](./FR/) | FR | 13 |
-| [🇬🇧 United Kingdom](./GB/) | GB | 73 |
-| [🇭🇰 Hong Kong](./HK/) | HK | 5 |
+| [🇫🇮 Finland](./FI/) | FI | 2 |
+| [🇫🇷 France](./FR/) | FR | 20 |
+| [🇬🇧 United Kingdom](./GB/) | GB | 78 |
+| [🇭🇰 Hong Kong](./HK/) | HK | 6 |
 | [🇮🇩 Indonesia](./ID/) | ID | 1 |
 | [🇮🇳 India](./IN/) | IN | 2 |
-| [🇮🇷 Iran](./IR/) | IR | 6 |
+| [🇮🇷 Iran](./IR/) | IR | 7 |
 | [🇮🇹 Italy](./IT/) | IT | 1 |
-| [🇯🇵 Japan](./JP/) | JP | 5 |
-| [🇰🇷 Korea, Republic of](./KR/) | KR | 8 |
+| [🇯🇵 Japan](./JP/) | JP | 8 |
+| [🇰🇷 Korea, Republic of](./KR/) | KR | 9 |
 | [🇱🇻 Latvia](./LV/) | LV | 1 |
 | [🇲🇾 Malaysia](./MY/) | MY | 1 |
-| [🇳🇱 Netherlands](./NL/) | NL | 23 |
+| [🇳🇱 Netherlands](./NL/) | NL | 27 |
 | [🇵🇱 Poland](./PL/) | PL | 1 |
 | [🇷🇴 Romania](./RO/) | RO | 2 |
 | [🇷🇺 Russia](./RU/) | RU | 2 |
 | [🇸🇨 Seychelles](./SC/) | SC | 1 |
-| [🇸🇪 Sweden](./SE/) | SE | 1 |
-| [🇸🇬 Singapore](./SG/) | SG | 19 |
-| [🇹🇭 Thailand](./TH/) | TH | 1 |
+| [🇸🇪 Sweden](./SE/) | SE | 2 |
+| [🇸🇬 Singapore](./SG/) | SG | 24 |
 | [🇹🇷 Turkey](./TR/) | TR | 2 |
 | [🇹🇼 Taiwan](./TW/) | TW | 1 |
-| [🇺🇸 United States](./US/) | US | 189 |
+| [🇺🇸 United States](./US/) | US | 200 |
 | [🇿🇦 South Africa](./ZA/) | ZA | 3 |
 
 <details>
@@ -76,7 +77,7 @@ Click a country to open its subscriptions.
 - 🇧🇹 Bhutan
 - 🇧🇻 Bouvet Island
 - 🇧🇼 Botswana
-- 🇧🇾 Belarus
+- 🇧🇾 [Belarus](./BY/)
 - 🇧🇿 Belize
 - 🇨🇦 [Canada](./CA/)
 - 🇨🇨 Cocos (Keeling) Islands
@@ -110,7 +111,7 @@ Click a country to open its subscriptions.
 - 🇪🇷 Eritrea
 - 🇪🇸 [Spain](./ES/)
 - 🇪🇹 Ethiopia
-- 🇫🇮 Finland
+- 🇫🇮 [Finland](./FI/)
 - 🇫🇯 Fiji
 - 🇫🇰 Falkland Islands (Malvinas)
 - 🇫🇲 Micronesia
@@ -258,7 +259,7 @@ Click a country to open its subscriptions.
 - 🇹🇩 Chad
 - 🇹🇫 French Southern Territories
 - 🇹🇬 Togo
-- 🇹🇭 [Thailand](./TH/)
+- 🇹🇭 Thailand
 - 🇹🇯 Tajikistan
 - 🇹🇰 Tokelau
 - 🇹🇱 Timor-Leste
