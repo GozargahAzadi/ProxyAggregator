@@ -1,6 +1,6 @@
 # 🇸🇬 Singapore
 
-19 healthy proxies.
+20 healthy proxies.
 
 ## 📋 All Protocols
 
