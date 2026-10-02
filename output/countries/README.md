@@ -5,32 +5,32 @@ Click a country to open its subscriptions.
 | Country | Code | Proxies |
 | --- | --- | ---: |
 | [🇦🇪 United Arab Emirates](./AE/) | AE | 2 |
-| [🇧🇬 Bulgaria](./BG/) | BG | 1 |
+| [🇧🇬 Bulgaria](./BG/) | BG | 2 |
 | [🇨🇦 Canada](./CA/) | CA | 19 |
 | [🇨🇭 Switzerland](./CH/) | CH | 1 |
 | [🇨🇱 Chile](./CL/) | CL | 1 |
-| [🇩🇪 Germany](./DE/) | DE | 7 |
-| [🇪🇪 Estonia](./EE/) | EE | 2 |
+| [🇩🇪 Germany](./DE/) | DE | 9 |
+| [🇪🇪 Estonia](./EE/) | EE | 1 |
 | [🇪🇸 Spain](./ES/) | ES | 2 |
-| [🇫🇷 France](./FR/) | FR | 10 |
-| [🇬🇧 United Kingdom](./GB/) | GB | 71 |
-| [🇭🇰 Hong Kong](./HK/) | HK | 3 |
+| [🇫🇷 France](./FR/) | FR | 14 |
+| [🇬🇧 United Kingdom](./GB/) | GB | 74 |
+| [🇭🇰 Hong Kong](./HK/) | HK | 2 |
 | [🇮🇩 Indonesia](./ID/) | ID | 1 |
 | [🇮🇳 India](./IN/) | IN | 3 |
 | [🇮🇷 Iran](./IR/) | IR | 13 |
-| [🇯🇵 Japan](./JP/) | JP | 4 |
-| [🇰🇷 Korea, Republic of](./KR/) | KR | 7 |
-| [🇲🇽 Mexico](./MX/) | MX | 1 |
+| [🇮🇹 Italy](./IT/) | IT | 1 |
+| [🇯🇵 Japan](./JP/) | JP | 6 |
+| [🇰🇷 Korea, Republic of](./KR/) | KR | 9 |
 | [🇲🇾 Malaysia](./MY/) | MY | 1 |
-| [🇳🇱 Netherlands](./NL/) | NL | 24 |
+| [🇳🇱 Netherlands](./NL/) | NL | 23 |
 | [🇵🇱 Poland](./PL/) | PL | 1 |
 | [🇷🇴 Romania](./RO/) | RO | 2 |
-| [🇷🇺 Russia](./RU/) | RU | 6 |
+| [🇷🇺 Russia](./RU/) | RU | 5 |
 | [🇸🇨 Seychelles](./SC/) | SC | 1 |
-| [🇸🇬 Singapore](./SG/) | SG | 20 |
+| [🇸🇬 Singapore](./SG/) | SG | 19 |
 | [🇹🇭 Thailand](./TH/) | TH | 1 |
 | [🇹🇷 Turkey](./TR/) | TR | 2 |
-| [🇺🇸 United States](./US/) | US | 189 |
+| [🇺🇸 United States](./US/) | US | 197 |
 | [🇿🇦 South Africa](./ZA/) | ZA | 3 |
 
 <details>
@@ -145,7 +145,7 @@ Click a country to open its subscriptions.
 - 🇮🇶 Iraq
 - 🇮🇷 [Iran](./IR/)
 - 🇮🇸 Iceland
-- 🇮🇹 Italy
+- 🇮🇹 [Italy](./IT/)
 - 🇯🇪 Jersey
 - 🇯🇲 Jamaica
 - 🇯🇴 Jordan
@@ -192,7 +192,7 @@ Click a country to open its subscriptions.
 - 🇲🇺 Mauritius
 - 🇲🇻 Maldives
 - 🇲🇼 Malawi
-- 🇲🇽 [Mexico](./MX/)
+- 🇲🇽 Mexico
 - 🇲🇾 [Malaysia](./MY/)
 - 🇲🇿 Mozambique
 - 🇳🇦 Namibia
