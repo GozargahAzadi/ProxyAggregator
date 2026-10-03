@@ -5,32 +5,34 @@ Click a country to open its subscriptions.
 | Country | Code | Proxies |
 | --- | --- | ---: |
 | [🇦🇪 United Arab Emirates](./AE/) | AE | 2 |
-| [🇧🇬 Bulgaria](./BG/) | BG | 2 |
+| [🇧🇬 Bulgaria](./BG/) | BG | 1 |
 | [🇨🇦 Canada](./CA/) | CA | 19 |
 | [🇨🇭 Switzerland](./CH/) | CH | 1 |
 | [🇨🇱 Chile](./CL/) | CL | 1 |
-| [🇩🇪 Germany](./DE/) | DE | 9 |
+| [🇩🇪 Germany](./DE/) | DE | 12 |
 | [🇪🇪 Estonia](./EE/) | EE | 1 |
 | [🇪🇸 Spain](./ES/) | ES | 2 |
+| [🇫🇮 Finland](./FI/) | FI | 1 |
 | [🇫🇷 France](./FR/) | FR | 14 |
-| [🇬🇧 United Kingdom](./GB/) | GB | 74 |
-| [🇭🇰 Hong Kong](./HK/) | HK | 2 |
+| [🇬🇧 United Kingdom](./GB/) | GB | 76 |
+| [🇭🇰 Hong Kong](./HK/) | HK | 3 |
 | [🇮🇩 Indonesia](./ID/) | ID | 1 |
 | [🇮🇳 India](./IN/) | IN | 3 |
-| [🇮🇷 Iran](./IR/) | IR | 13 |
+| [🇮🇷 Iran](./IR/) | IR | 7 |
 | [🇮🇹 Italy](./IT/) | IT | 1 |
-| [🇯🇵 Japan](./JP/) | JP | 6 |
-| [🇰🇷 Korea, Republic of](./KR/) | KR | 9 |
+| [🇯🇵 Japan](./JP/) | JP | 7 |
+| [🇰🇷 Korea, Republic of](./KR/) | KR | 2 |
 | [🇲🇾 Malaysia](./MY/) | MY | 1 |
-| [🇳🇱 Netherlands](./NL/) | NL | 23 |
+| [🇳🇱 Netherlands](./NL/) | NL | 25 |
 | [🇵🇱 Poland](./PL/) | PL | 1 |
+| [🇵🇹 Portugal](./PT/) | PT | 1 |
 | [🇷🇴 Romania](./RO/) | RO | 2 |
-| [🇷🇺 Russia](./RU/) | RU | 5 |
+| [🇷🇺 Russia](./RU/) | RU | 8 |
 | [🇸🇨 Seychelles](./SC/) | SC | 1 |
-| [🇸🇬 Singapore](./SG/) | SG | 19 |
+| [🇸🇬 Singapore](./SG/) | SG | 14 |
 | [🇹🇭 Thailand](./TH/) | TH | 1 |
 | [🇹🇷 Turkey](./TR/) | TR | 2 |
-| [🇺🇸 United States](./US/) | US | 197 |
+| [🇺🇸 United States](./US/) | US | 206 |
 | [🇿🇦 South Africa](./ZA/) | ZA | 3 |
 
 <details>
@@ -105,7 +107,7 @@ Click a country to open its subscriptions.
 - 🇪🇷 Eritrea
 - 🇪🇸 [Spain](./ES/)
 - 🇪🇹 Ethiopia
-- 🇫🇮 Finland
+- 🇫🇮 [Finland](./FI/)
 - 🇫🇯 Fiji
 - 🇫🇰 Falkland Islands (Malvinas)
 - 🇫🇲 Micronesia
@@ -219,7 +221,7 @@ Click a country to open its subscriptions.
 - 🇵🇳 Pitcairn
 - 🇵🇷 Puerto Rico
 - 🇵🇸 Palestine
-- 🇵🇹 Portugal
+- 🇵🇹 [Portugal](./PT/)
 - 🇵🇼 Palau
 - 🇵🇾 Paraguay
 - 🇶🇦 Qatar
