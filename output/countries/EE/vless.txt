@@ -1,2 +1,2 @@
-vless://06c4e938-2954-478f-a870-ca1b163e30e9@94.183.170.135:443?network=ws&path=%2F&security=none#%F0%9F%87%AA%F0%9F%87%AA%20EE%20%7C%20VLESS%20%7C%204476ms%20%7C%20GozargahAzadi
-vless://fba73f98-777a-42a6-83c0-7d1f6f070e8d@141.0.187.16:2083?network=ws&path=%2Fvless-ws&security=tls&sni=crt.dodopanel.biz#%F0%9F%87%AA%F0%9F%87%AA%20EE%20%7C%20VLESS%20%7C%207620ms%20%7C%20GozargahAzadi
+vless://06c4e938-2954-478f-a870-ca1b163e30e9@94.183.170.135:443?network=ws&path=%2F&security=none#%F0%9F%87%AA%F0%9F%87%AA%20EE%20%7C%20VLESS%20%7C%204507ms%20%7C%20GozargahAzadi
+vless://fba73f98-777a-42a6-83c0-7d1f6f070e8d@141.0.187.16:2083?network=ws&path=%2Fvless-ws&security=tls&sni=crt.dodopanel.biz#%F0%9F%87%AA%F0%9F%87%AA%20EE%20%7C%20VLESS%20%7C%205121ms%20%7C%20GozargahAzadi
