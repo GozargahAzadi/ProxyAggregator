@@ -1,4 +1,4 @@
-vless://5aae7d2d-c152-42cc-afb6-fe805fb94531@139.162.149.105:80?network=ws&path=%2F&security=none#%F0%9F%87%A9%F0%9F%87%AA%20DE%20%7C%20VLESS%20%7C%204605ms%20%7C%20GozargahAzadi
-vless://758a691a-45d2-4462-a0e8-991248a6994e@49.13.231.249:33483?network=ws&path=%2F&security=none#%F0%9F%87%A9%F0%9F%87%AA%20DE%20%7C%20VLESS%20%7C%204728ms%20%7C%20GozargahAzadi
-vless://758a691a-45d2-4462-a0e8-991248a6994e@apadana.gamingnet.ir:33483?host=apadana.gamingnet.ir&network=ws&path=%2F&security=none#%F0%9F%87%A9%F0%9F%87%AA%20DE%20%7C%20VLESS%20%7C%205594ms%20%7C%20GozargahAzadi
-vless://b585dc5e-55bf-4a8b-913a-27c9ccac05c3@81.95.4.189:443?host=bab-6.site&network=ws&path=%2Fvws%2F&security=tls&sni=bab-6.site#%F0%9F%87%A9%F0%9F%87%AA%20DE%20%7C%20VLESS%20%7C%207324ms%20%7C%20GozargahAzadi
+vless://5aae7d2d-c152-42cc-afb6-fe805fb94531@139.162.149.105:80?network=ws&path=%2F&security=none#%F0%9F%87%A9%F0%9F%87%AA%20DE%20%7C%20VLESS%20%7C%204479ms%20%7C%20GozargahAzadi
+vless://758a691a-45d2-4462-a0e8-991248a6994e@49.13.231.249:33483?network=ws&path=%2F&security=none#%F0%9F%87%A9%F0%9F%87%AA%20DE%20%7C%20VLESS%20%7C%204577ms%20%7C%20GozargahAzadi
+vless://758a691a-45d2-4462-a0e8-991248a6994e@apadana.gamingnet.ir:33483?network=ws&path=%2F&security=none#%F0%9F%87%A9%F0%9F%87%AA%20DE%20%7C%20VLESS%20%7C%204825ms%20%7C%20GozargahAzadi
+vless://b585dc5e-55bf-4a8b-913a-27c9ccac05c3@81.95.4.189:443?host=bab-6.site&network=ws&path=%2Fvws%2F&security=tls&sni=bab-6.site#%F0%9F%87%A9%F0%9F%87%AA%20DE%20%7C%20VLESS%20%7C%207916ms%20%7C%20GozargahAzadi

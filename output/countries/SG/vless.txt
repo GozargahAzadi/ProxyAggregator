@@ -1,7 +1,6 @@
-vless://f2eada1b-fdec-48c6-8638-18ade32993d4@5.223.41.93:80?network=ws&path=%2F&security=none#%F0%9F%87%B8%F0%9F%87%AC%20SG%20%7C%20VLESS%20%7C%204745ms%20%7C%20GozargahAzadi
-vless://80c38933-9747-443d-9d87-15c80f8663ea@5.223.41.51:80?network=ws&path=%2F&security=none#%F0%9F%87%B8%F0%9F%87%AC%20SG%20%7C%20VLESS%20%7C%204746ms%20%7C%20GozargahAzadi
-vless://ef24e9b9-e7b2-4e01-b335-f289612d2d7a@5.223.41.164:80?network=ws&path=%2F&security=none#%F0%9F%87%B8%F0%9F%87%AC%20SG%20%7C%20VLESS%20%7C%204747ms%20%7C%20GozargahAzadi
-vless://ff642d7a-9a24-4078-a031-f8c656f4554e@5.223.41.179:80?network=ws&path=%2F&security=none#%F0%9F%87%B8%F0%9F%87%AC%20SG%20%7C%20VLESS%20%7C%204748ms%20%7C%20GozargahAzadi
-vless://0f7996b1-3ef7-4274-b612-0310270d2a41@5.223.41.121:80?network=ws&path=%2F&security=none#%F0%9F%87%B8%F0%9F%87%AC%20SG%20%7C%20VLESS%20%7C%204748ms%20%7C%20GozargahAzadi
-vless://3b821031-d7d4-4368-918b-15f2312dba2b@5.223.41.125:80?network=ws&path=%2F&security=none#%F0%9F%87%B8%F0%9F%87%AC%20SG%20%7C%20VLESS%20%7C%204749ms%20%7C%20GozargahAzadi
-vless://6e59d5c5-7aa3-4c36-a4c4-e3b899525ed2@free-server.techsonic.dev:2096?host=free-server.techsonic.dev&network=ws&path=%2Ffree-server.techsonic.dev&security=tls&sni=free-server.techsonic.dev#%F0%9F%87%B8%F0%9F%87%AC%20SG%20%7C%20VLESS%20%7C%205032ms%20%7C%20GozargahAzadi
+vless://ff642d7a-9a24-4078-a031-f8c656f4554e@5.223.41.179:80?network=ws&path=%2F&security=none#%F0%9F%87%B8%F0%9F%87%AC%20SG%20%7C%20VLESS%20%7C%204852ms%20%7C%20GozargahAzadi
+vless://0f7996b1-3ef7-4274-b612-0310270d2a41@5.223.41.121:80?network=ws&path=%2F&security=none#%F0%9F%87%B8%F0%9F%87%AC%20SG%20%7C%20VLESS%20%7C%204861ms%20%7C%20GozargahAzadi
+vless://ef24e9b9-e7b2-4e01-b335-f289612d2d7a@5.223.41.164:80?network=ws&path=%2F&security=none#%F0%9F%87%B8%F0%9F%87%AC%20SG%20%7C%20VLESS%20%7C%204861ms%20%7C%20GozargahAzadi
+vless://3b821031-d7d4-4368-918b-15f2312dba2b@5.223.41.125:80?network=ws&path=%2F&security=none#%F0%9F%87%B8%F0%9F%87%AC%20SG%20%7C%20VLESS%20%7C%204862ms%20%7C%20GozargahAzadi
+vless://80c38933-9747-443d-9d87-15c80f8663ea@5.223.41.51:80?network=ws&path=%2F&security=none#%F0%9F%87%B8%F0%9F%87%AC%20SG%20%7C%20VLESS%20%7C%204867ms%20%7C%20GozargahAzadi
+vless://f2eada1b-fdec-48c6-8638-18ade32993d4@5.223.41.93:80?network=ws&path=%2F&security=none#%F0%9F%87%B8%F0%9F%87%AC%20SG%20%7C%20VLESS%20%7C%204868ms%20%7C%20GozargahAzadi
