@@ -1,2 +1,1 @@
-vless://e73df646-1f62-41bf-8c50-653497d603d0@163.172.213.174:80?host=SC-TheNetherlands2.09vpn.com&network=ws&path=%2Fvless%2F#%F0%9F%87%AB%F0%9F%87%B7%20FR%20%7C%20VLESS%20%7C%204817ms%20%7C%20GozargahAzadi
-vless://cf39fab0-bb85-42cb-9945-2ad69d78e575@rubifen.adaspoloandco.com:443?network=ws&path=%2FGOrbEh&security=tls&sni=rubifen.adaspoloandco.com#%F0%9F%87%AB%F0%9F%87%B7%20FR%20%7C%20VLESS%20%7C%207658ms%20%7C%20GozargahAzadi
+vless://cf39fab0-bb85-42cb-9945-2ad69d78e575@rubifen.adaspoloandco.com:443?network=ws&path=%2FGOrbEh&security=tls&sni=rubifen.adaspoloandco.com#%F0%9F%87%AB%F0%9F%87%B7%20FR%20%7C%20VLESS%20%7C%205282ms%20%7C%20GozargahAzadi

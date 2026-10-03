@@ -5,33 +5,33 @@ Click a country to open its subscriptions.
 | Country | Code | Proxies |
 | --- | --- | ---: |
 | [🇦🇪 United Arab Emirates](./AE/) | AE | 1 |
-| [🇧🇬 Bulgaria](./BG/) | BG | 2 |
-| [🇨🇦 Canada](./CA/) | CA | 19 |
+| [🇧🇬 Bulgaria](./BG/) | BG | 1 |
+| [🇨🇦 Canada](./CA/) | CA | 18 |
 | [🇨🇭 Switzerland](./CH/) | CH | 1 |
 | [🇨🇱 Chile](./CL/) | CL | 1 |
-| [🇩🇪 Germany](./DE/) | DE | 4 |
-| [🇪🇪 Estonia](./EE/) | EE | 1 |
+| [🇩🇪 Germany](./DE/) | DE | 5 |
+| [🇪🇪 Estonia](./EE/) | EE | 2 |
 | [🇪🇸 Spain](./ES/) | ES | 2 |
-| [🇫🇷 France](./FR/) | FR | 12 |
-| [🇬🇧 United Kingdom](./GB/) | GB | 70 |
-| [🇭🇰 Hong Kong](./HK/) | HK | 2 |
+| [🇫🇷 France](./FR/) | FR | 13 |
+| [🇬🇧 United Kingdom](./GB/) | GB | 71 |
+| [🇭🇰 Hong Kong](./HK/) | HK | 3 |
 | [🇮🇩 Indonesia](./ID/) | ID | 1 |
 | [🇮🇳 India](./IN/) | IN | 3 |
-| [🇮🇷 Iran](./IR/) | IR | 6 |
+| [🇮🇷 Iran](./IR/) | IR | 8 |
 | [🇮🇹 Italy](./IT/) | IT | 1 |
-| [🇯🇵 Japan](./JP/) | JP | 4 |
-| [🇰🇷 Korea, Republic of](./KR/) | KR | 11 |
-| [🇲🇽 Mexico](./MX/) | MX | 1 |
-| [🇳🇱 Netherlands](./NL/) | NL | 21 |
+| [🇯🇵 Japan](./JP/) | JP | 3 |
+| [🇰🇷 Korea, Republic of](./KR/) | KR | 9 |
+| [🇳🇱 Netherlands](./NL/) | NL | 20 |
 | [🇵🇱 Poland](./PL/) | PL | 2 |
 | [🇵🇹 Portugal](./PT/) | PT | 1 |
 | [🇷🇴 Romania](./RO/) | RO | 2 |
-| [🇷🇺 Russia](./RU/) | RU | 2 |
+| [🇷🇺 Russia](./RU/) | RU | 5 |
 | [🇸🇨 Seychelles](./SC/) | SC | 1 |
 | [🇸🇪 Sweden](./SE/) | SE | 1 |
-| [🇸🇬 Singapore](./SG/) | SG | 11 |
-| [🇹🇷 Turkey](./TR/) | TR | 3 |
-| [🇺🇸 United States](./US/) | US | 139 |
+| [🇸🇬 Singapore](./SG/) | SG | 13 |
+| [🇹🇭 Thailand](./TH/) | TH | 1 |
+| [🇹🇷 Turkey](./TR/) | TR | 1 |
+| [🇺🇸 United States](./US/) | US | 165 |
 | [🇿🇦 South Africa](./ZA/) | ZA | 3 |
 
 <details>
@@ -193,7 +193,7 @@ Click a country to open its subscriptions.
 - 🇲🇺 Mauritius
 - 🇲🇻 Maldives
 - 🇲🇼 Malawi
-- 🇲🇽 [Mexico](./MX/)
+- 🇲🇽 Mexico
 - 🇲🇾 Malaysia
 - 🇲🇿 Mozambique
 - 🇳🇦 Namibia
@@ -254,7 +254,7 @@ Click a country to open its subscriptions.
 - 🇹🇩 Chad
 - 🇹🇫 French Southern Territories
 - 🇹🇬 Togo
-- 🇹🇭 Thailand
+- 🇹🇭 [Thailand](./TH/)
 - 🇹🇯 Tajikistan
 - 🇹🇰 Tokelau
 - 🇹🇱 Timor-Leste
