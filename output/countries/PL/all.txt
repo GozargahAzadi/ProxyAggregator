@@ -1,1 +1,1 @@
-vless://a889262f-5fe3-4c93-9aaa-3721318dd389@70.34.255.101:80?network=ws#%F0%9F%87%B5%F0%9F%87%B1%20PL%20%7C%20VLESS%20%7C%204502ms%20%7C%20GozargahAzadi
+vless://a889262f-5fe3-4c93-9aaa-3721318dd389@70.34.255.101:80?network=ws&path=%2F&security=none#%F0%9F%87%B5%F0%9F%87%B1%20PL%20%7C%20VLESS%20%7C%204517ms%20%7C%20GozargahAzadi
