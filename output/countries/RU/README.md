@@ -1,6 +1,6 @@
 # 🇷🇺 Russia
 
-7 healthy proxies.
+5 healthy proxies.
 
 ## 📋 All Protocols
 
@@ -15,7 +15,5 @@
 |---|---|---|
 | VLESS | [Open](./vless.txt) | `https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/countries/RU/vless.txt` |
 | VLESS Base64 | [Open](./vless-base64.txt) | `https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/countries/RU/vless-base64.txt` |
-| VMess | [Open](./vmess.txt) | `https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/countries/RU/vmess.txt` |
-| VMess Base64 | [Open](./vmess-base64.txt) | `https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/countries/RU/vmess-base64.txt` |
 | Shadowsocks | [Open](./shadowsocks.txt) | `https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/countries/RU/shadowsocks.txt` |
 | Shadowsocks Base64 | [Open](./shadowsocks-base64.txt) | `https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/countries/RU/shadowsocks-base64.txt` |
