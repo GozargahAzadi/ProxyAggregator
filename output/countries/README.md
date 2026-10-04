@@ -6,33 +6,34 @@ Click a country to open its subscriptions.
 | --- | --- | ---: |
 | [🇦🇪 United Arab Emirates](./AE/) | AE | 2 |
 | [🇧🇬 Bulgaria](./BG/) | BG | 2 |
-| [🇨🇦 Canada](./CA/) | CA | 20 |
+| [🇨🇦 Canada](./CA/) | CA | 18 |
 | [🇨🇭 Switzerland](./CH/) | CH | 1 |
 | [🇨🇱 Chile](./CL/) | CL | 1 |
-| [🇩🇪 Germany](./DE/) | DE | 7 |
+| [🇨🇳 China](./CN/) | CN | 1 |
+| [🇩🇪 Germany](./DE/) | DE | 6 |
 | [🇪🇪 Estonia](./EE/) | EE | 1 |
 | [🇪🇸 Spain](./ES/) | ES | 2 |
-| [🇫🇷 France](./FR/) | FR | 11 |
-| [🇬🇧 United Kingdom](./GB/) | GB | 73 |
-| [🇭🇰 Hong Kong](./HK/) | HK | 2 |
+| [🇫🇮 Finland](./FI/) | FI | 1 |
+| [🇫🇷 France](./FR/) | FR | 15 |
+| [🇬🇧 United Kingdom](./GB/) | GB | 72 |
+| [🇭🇰 Hong Kong](./HK/) | HK | 3 |
 | [🇮🇩 Indonesia](./ID/) | ID | 1 |
-| [🇮🇳 India](./IN/) | IN | 1 |
-| [🇮🇷 Iran](./IR/) | IR | 5 |
-| [🇮🇹 Italy](./IT/) | IT | 1 |
+| [🇮🇳 India](./IN/) | IN | 3 |
+| [🇮🇷 Iran](./IR/) | IR | 3 |
 | [🇯🇵 Japan](./JP/) | JP | 3 |
-| [🇰🇷 Korea, Republic of](./KR/) | KR | 9 |
+| [🇰🇷 Korea, Republic of](./KR/) | KR | 8 |
 | [🇲🇽 Mexico](./MX/) | MX | 1 |
-| [🇳🇱 Netherlands](./NL/) | NL | 23 |
+| [🇳🇱 Netherlands](./NL/) | NL | 18 |
 | [🇵🇱 Poland](./PL/) | PL | 2 |
 | [🇵🇹 Portugal](./PT/) | PT | 1 |
 | [🇷🇴 Romania](./RO/) | RO | 2 |
-| [🇷🇺 Russia](./RU/) | RU | 7 |
+| [🇷🇺 Russia](./RU/) | RU | 4 |
 | [🇸🇨 Seychelles](./SC/) | SC | 1 |
 | [🇸🇪 Sweden](./SE/) | SE | 1 |
-| [🇸🇬 Singapore](./SG/) | SG | 15 |
-| [🇹🇭 Thailand](./TH/) | TH | 2 |
+| [🇸🇬 Singapore](./SG/) | SG | 8 |
 | [🇹🇷 Turkey](./TR/) | TR | 1 |
-| [🇺🇸 United States](./US/) | US | 188 |
+| [🇺🇸 United States](./US/) | US | 190 |
+| [🇻🇬 Virgin Islands, British](./VG/) | VG | 1 |
 | [🇿🇦 South Africa](./ZA/) | ZA | 3 |
 
 <details>
@@ -85,7 +86,7 @@ Click a country to open its subscriptions.
 - 🇨🇰 Cook Islands
 - 🇨🇱 [Chile](./CL/)
 - 🇨🇲 Cameroon
-- 🇨🇳 China
+- 🇨🇳 [China](./CN/)
 - 🇨🇴 Colombia
 - 🇨🇷 Costa Rica
 - 🇨🇺 Cuba
@@ -107,7 +108,7 @@ Click a country to open its subscriptions.
 - 🇪🇷 Eritrea
 - 🇪🇸 [Spain](./ES/)
 - 🇪🇹 Ethiopia
-- 🇫🇮 Finland
+- 🇫🇮 [Finland](./FI/)
 - 🇫🇯 Fiji
 - 🇫🇰 Falkland Islands (Malvinas)
 - 🇫🇲 Micronesia
@@ -147,7 +148,7 @@ Click a country to open its subscriptions.
 - 🇮🇶 Iraq
 - 🇮🇷 [Iran](./IR/)
 - 🇮🇸 Iceland
-- 🇮🇹 [Italy](./IT/)
+- 🇮🇹 Italy
 - 🇯🇪 Jersey
 - 🇯🇲 Jamaica
 - 🇯🇴 Jordan
@@ -255,7 +256,7 @@ Click a country to open its subscriptions.
 - 🇹🇩 Chad
 - 🇹🇫 French Southern Territories
 - 🇹🇬 Togo
-- 🇹🇭 [Thailand](./TH/)
+- 🇹🇭 Thailand
 - 🇹🇯 Tajikistan
 - 🇹🇰 Tokelau
 - 🇹🇱 Timor-Leste
@@ -276,7 +277,7 @@ Click a country to open its subscriptions.
 - 🇻🇦 Holy See
 - 🇻🇨 Saint Vincent and the Grenadines
 - 🇻🇪 Venezuela
-- 🇻🇬 Virgin Islands, British
+- 🇻🇬 [Virgin Islands, British](./VG/)
 - 🇻🇮 Virgin Islands, U.S.
 - 🇻🇳 Vietnam
 - 🇻🇺 Vanuatu

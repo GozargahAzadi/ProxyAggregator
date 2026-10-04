@@ -1,3 +1,2 @@
-vless://bdd897a6-57f2-4311-835f-0b6c5ac5a1a2@188.245.191.19:2040?host=9qohadlkywguh.hlf9x1796lkopyju2kplt9c9smz1vyuv0u8azzk.workers.dev&network=ws&path=%2F%40Marisa_kristi&security=tls&sni=9qohadlkywguh.hlf9x1796lkopyju2kplt9c9smz1vyuv0u8azzk.workers.dev#%F0%9F%87%A9%F0%9F%87%AA%20DE%20%7C%20VLESS%20%7C%20403ms%20%7C%20GozargahAzadi
-vless://5aae7d2d-c152-42cc-afb6-fe805fb94531@139.162.149.105:80?network=ws&path=%2F&security=none#%F0%9F%87%A9%F0%9F%87%AA%20DE%20%7C%20VLESS%20%7C%204566ms%20%7C%20GozargahAzadi
-vless://b585dc5e-55bf-4a8b-913a-27c9ccac05c3@81.95.4.189:443?host=bab-6.site&network=ws&path=%2Fvws%2F&security=tls&sni=bab-6.site#%F0%9F%87%A9%F0%9F%87%AA%20DE%20%7C%20VLESS%20%7C%207576ms%20%7C%20GozargahAzadi
+vless://5aae7d2d-c152-42cc-afb6-fe805fb94531@139.162.149.105:80?network=ws&path=%2F&security=none#%F0%9F%87%A9%F0%9F%87%AA%20DE%20%7C%20VLESS%20%7C%204603ms%20%7C%20GozargahAzadi
+vless://b585dc5e-55bf-4a8b-913a-27c9ccac05c3@81.95.4.189:443?host=bab-6.site&network=ws&path=%2Fvws%2F&security=tls&sni=bab-6.site#%F0%9F%87%A9%F0%9F%87%AA%20DE%20%7C%20VLESS%20%7C%209022ms%20%7C%20GozargahAzadi
