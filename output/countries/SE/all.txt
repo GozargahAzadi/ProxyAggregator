@@ -1,1 +1,2 @@
-ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTphSWVpbDRVVUdTRjV3bzFrZzlUZWJaZlhPRkxDWjY2Rw==@sw.roshdiran1.ir:53425#%F0%9F%87%B8%F0%9F%87%AA%20SE%20%7C%20SS%20%7C%201125ms%20%7C%20GozargahAzadi
+ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTphSWVpbDRVVUdTRjV3bzFrZzlUZWJaZlhPRkxDWjY2Rw==@sw.roshdiran1.ir:53425#%F0%9F%87%B8%F0%9F%87%AA%20SE%20%7C%20SS%20%7C%201100ms%20%7C%20GozargahAzadi
+vless://9cdcec15-2c73-40d5-b50f-d00381fddd26@stsr.hospitaldt.ir:8443?network=ws&path=%2F&security=tls&sni=stsr.hospitaldt.ir#%F0%9F%87%B8%F0%9F%87%AA%20SE%20%7C%20VLESS%20%7C%204984ms%20%7C%20GozargahAzadi
