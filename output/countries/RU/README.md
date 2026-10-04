@@ -1,6 +1,6 @@
 # 🇷🇺 Russia
 
-5 healthy proxies.
+7 healthy proxies.
 
 ## 📋 All Protocols
 
