@@ -1,2 +1,2 @@
-vless://05caca6c-9e97-4c0f-8edf-7b88a6e572c5@85.17.145.65:12068?network=ws&path=%2F&security=none&sni=85.17.145.65#%F0%9F%87%B3%F0%9F%87%B1%20NL%20%7C%20VLESS%20%7C%204380ms%20%7C%20GozargahAzadi
-vless://05caca6c-9e97-4c0f-8edf-7b88a6e572c5@mypanel.unixzone.us:12068?host=mypanel.unixzone.us&network=ws&path=%2F&security=none#%F0%9F%87%B3%F0%9F%87%B1%20NL%20%7C%20VLESS%20%7C%204388ms%20%7C%20GozargahAzadi
+vless://05caca6c-9e97-4c0f-8edf-7b88a6e572c5@85.17.145.65:12068?host=mypanel.unixzone.us&network=ws&path=%2F&security=none&sni=mypanel.unixzone.us#%F0%9F%87%B3%F0%9F%87%B1%20NL%20%7C%20VLESS%20%7C%204356ms%20%7C%20GozargahAzadi
+vless://05caca6c-9e97-4c0f-8edf-7b88a6e572c5@mypanel.unixzone.us:12068?host=mypanel.unixzone.us&network=ws&path=%2F&security=none&sni=mypanel.unixzone.us#%F0%9F%87%B3%F0%9F%87%B1%20NL%20%7C%20VLESS%20%7C%204361ms%20%7C%20GozargahAzadi

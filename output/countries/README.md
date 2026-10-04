@@ -6,33 +6,33 @@ Click a country to open its subscriptions.
 | --- | --- | ---: |
 | [🇦🇪 United Arab Emirates](./AE/) | AE | 1 |
 | [🇧🇬 Bulgaria](./BG/) | BG | 2 |
-| [🇨🇦 Canada](./CA/) | CA | 18 |
+| [🇨🇦 Canada](./CA/) | CA | 19 |
 | [🇨🇭 Switzerland](./CH/) | CH | 1 |
 | [🇨🇳 China](./CN/) | CN | 1 |
-| [🇩🇪 Germany](./DE/) | DE | 5 |
+| [🇩🇪 Germany](./DE/) | DE | 6 |
 | [🇪🇪 Estonia](./EE/) | EE | 1 |
 | [🇪🇸 Spain](./ES/) | ES | 2 |
 | [🇫🇮 Finland](./FI/) | FI | 1 |
 | [🇫🇷 France](./FR/) | FR | 13 |
-| [🇬🇧 United Kingdom](./GB/) | GB | 74 |
+| [🇬🇧 United Kingdom](./GB/) | GB | 76 |
 | [🇭🇰 Hong Kong](./HK/) | HK | 5 |
 | [🇮🇩 Indonesia](./ID/) | ID | 1 |
-| [🇮🇳 India](./IN/) | IN | 2 |
+| [🇮🇳 India](./IN/) | IN | 3 |
 | [🇮🇷 Iran](./IR/) | IR | 5 |
 | [🇮🇹 Italy](./IT/) | IT | 1 |
-| [🇯🇵 Japan](./JP/) | JP | 3 |
-| [🇰🇷 Korea, Republic of](./KR/) | KR | 8 |
+| [🇯🇵 Japan](./JP/) | JP | 4 |
+| [🇰🇷 Korea, Republic of](./KR/) | KR | 14 |
 | [🇲🇽 Mexico](./MX/) | MX | 1 |
 | [🇳🇱 Netherlands](./NL/) | NL | 23 |
 | [🇵🇱 Poland](./PL/) | PL | 2 |
 | [🇵🇹 Portugal](./PT/) | PT | 1 |
 | [🇷🇴 Romania](./RO/) | RO | 2 |
-| [🇷🇺 Russia](./RU/) | RU | 4 |
+| [🇷🇺 Russia](./RU/) | RU | 2 |
 | [🇸🇨 Seychelles](./SC/) | SC | 1 |
 | [🇸🇬 Singapore](./SG/) | SG | 4 |
 | [🇹🇭 Thailand](./TH/) | TH | 2 |
 | [🇹🇷 Turkey](./TR/) | TR | 1 |
-| [🇺🇸 United States](./US/) | US | 133 |
+| [🇺🇸 United States](./US/) | US | 192 |
 | [🇿🇦 South Africa](./ZA/) | ZA | 3 |
 
 <details>
