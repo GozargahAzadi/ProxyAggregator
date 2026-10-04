@@ -5,31 +5,31 @@ Click a country to open its subscriptions.
 | Country | Code | Proxies |
 | --- | --- | ---: |
 | [🇦🇪 United Arab Emirates](./AE/) | AE | 2 |
-| [🇧🇬 Bulgaria](./BG/) | BG | 1 |
+| [🇧🇬 Bulgaria](./BG/) | BG | 2 |
 | [🇨🇦 Canada](./CA/) | CA | 19 |
 | [🇨🇭 Switzerland](./CH/) | CH | 1 |
 | [🇨🇱 Chile](./CL/) | CL | 1 |
-| [🇩🇪 Germany](./DE/) | DE | 9 |
+| [🇩🇪 Germany](./DE/) | DE | 6 |
 | [🇪🇪 Estonia](./EE/) | EE | 1 |
 | [🇪🇸 Spain](./ES/) | ES | 2 |
-| [🇫🇷 France](./FR/) | FR | 14 |
-| [🇬🇧 United Kingdom](./GB/) | GB | 74 |
+| [🇫🇷 France](./FR/) | FR | 15 |
+| [🇬🇧 United Kingdom](./GB/) | GB | 72 |
 | [🇭🇰 Hong Kong](./HK/) | HK | 2 |
 | [🇮🇩 Indonesia](./ID/) | ID | 1 |
-| [🇮🇳 India](./IN/) | IN | 2 |
-| [🇮🇷 Iran](./IR/) | IR | 5 |
-| [🇮🇹 Italy](./IT/) | IT | 1 |
-| [🇯🇵 Japan](./JP/) | JP | 4 |
+| [🇮🇳 India](./IN/) | IN | 3 |
+| [🇮🇷 Iran](./IR/) | IR | 6 |
+| [🇯🇵 Japan](./JP/) | JP | 6 |
 | [🇰🇷 Korea, Republic of](./KR/) | KR | 9 |
-| [🇳🇱 Netherlands](./NL/) | NL | 22 |
-| [🇵🇱 Poland](./PL/) | PL | 2 |
+| [🇳🇱 Netherlands](./NL/) | NL | 21 |
+| [🇵🇱 Poland](./PL/) | PL | 3 |
 | [🇵🇹 Portugal](./PT/) | PT | 1 |
 | [🇷🇴 Romania](./RO/) | RO | 2 |
 | [🇷🇺 Russia](./RU/) | RU | 5 |
 | [🇸🇨 Seychelles](./SC/) | SC | 1 |
-| [🇸🇬 Singapore](./SG/) | SG | 15 |
+| [🇸🇪 Sweden](./SE/) | SE | 1 |
+| [🇸🇬 Singapore](./SG/) | SG | 14 |
 | [🇹🇷 Turkey](./TR/) | TR | 1 |
-| [🇺🇸 United States](./US/) | US | 180 |
+| [🇺🇸 United States](./US/) | US | 192 |
 | [🇿🇦 South Africa](./ZA/) | ZA | 3 |
 
 <details>
@@ -144,7 +144,7 @@ Click a country to open its subscriptions.
 - 🇮🇶 Iraq
 - 🇮🇷 [Iran](./IR/)
 - 🇮🇸 Iceland
-- 🇮🇹 [Italy](./IT/)
+- 🇮🇹 Italy
 - 🇯🇪 Jersey
 - 🇯🇲 Jamaica
 - 🇯🇴 Jordan
@@ -231,7 +231,7 @@ Click a country to open its subscriptions.
 - 🇸🇧 Solomon Islands
 - 🇸🇨 [Seychelles](./SC/)
 - 🇸🇩 Sudan
-- 🇸🇪 Sweden
+- 🇸🇪 [Sweden](./SE/)
 - 🇸🇬 [Singapore](./SG/)
 - 🇸🇭 Saint Helena, Ascension and Tristan da Cunha
 - 🇸🇮 Slovenia
