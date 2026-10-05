@@ -4,46 +4,45 @@ Click a country to open its subscriptions.
 
 | Country | Code | Proxies |
 | --- | --- | ---: |
-| [🇦🇪 United Arab Emirates](./AE/) | AE | 2 |
-| [🇦🇹 Austria](./AT/) | AT | 1 |
+| [🇦🇪 United Arab Emirates](./AE/) | AE | 1 |
+| [🇦🇱 Albania](./AL/) | AL | 1 |
+| [🇦🇹 Austria](./AT/) | AT | 2 |
 | [🇧🇦 Bosnia and Herzegovina](./BA/) | BA | 1 |
 | [🇧🇪 Belgium](./BE/) | BE | 1 |
-| [🇧🇬 Bulgaria](./BG/) | BG | 3 |
-| [🇨🇦 Canada](./CA/) | CA | 22 |
+| [🇧🇬 Bulgaria](./BG/) | BG | 1 |
+| [🇨🇦 Canada](./CA/) | CA | 21 |
 | [🇨🇭 Switzerland](./CH/) | CH | 2 |
-| [🇨🇳 China](./CN/) | CN | 1 |
+| [🇨🇱 Chile](./CL/) | CL | 1 |
 | [🇨🇾 Cyprus](./CY/) | CY | 1 |
-| [🇩🇪 Germany](./DE/) | DE | 9 |
+| [🇩🇪 Germany](./DE/) | DE | 8 |
+| [🇩🇰 Denmark](./DK/) | DK | 1 |
 | [🇪🇪 Estonia](./EE/) | EE | 1 |
 | [🇪🇸 Spain](./ES/) | ES | 5 |
-| [🇫🇮 Finland](./FI/) | FI | 2 |
-| [🇫🇷 France](./FR/) | FR | 18 |
-| [🇬🇧 United Kingdom](./GB/) | GB | 81 |
+| [🇫🇮 Finland](./FI/) | FI | 1 |
+| [🇫🇷 France](./FR/) | FR | 17 |
+| [🇬🇧 United Kingdom](./GB/) | GB | 83 |
+| [🇬🇪 Georgia](./GE/) | GE | 1 |
 | [🇭🇰 Hong Kong](./HK/) | HK | 5 |
 | [🇮🇩 Indonesia](./ID/) | ID | 1 |
-| [🇮🇪 Ireland](./IE/) | IE | 2 |
-| [🇮🇱 Israel](./IL/) | IL | 1 |
-| [🇮🇳 India](./IN/) | IN | 3 |
-| [🇮🇷 Iran](./IR/) | IR | 5 |
+| [🇮🇪 Ireland](./IE/) | IE | 3 |
+| [🇮🇳 India](./IN/) | IN | 2 |
+| [🇮🇷 Iran](./IR/) | IR | 6 |
 | [🇮🇸 Iceland](./IS/) | IS | 1 |
 | [🇮🇹 Italy](./IT/) | IT | 2 |
-| [🇯🇵 Japan](./JP/) | JP | 6 |
+| [🇯🇵 Japan](./JP/) | JP | 5 |
 | [🇰🇷 Korea, Republic of](./KR/) | KR | 9 |
-| [🇱🇹 Lithuania](./LT/) | LT | 1 |
-| [🇱🇻 Latvia](./LV/) | LV | 2 |
-| [🇲🇽 Mexico](./MX/) | MX | 1 |
-| [🇳🇱 Netherlands](./NL/) | NL | 24 |
+| [🇱🇻 Latvia](./LV/) | LV | 1 |
+| [🇲🇽 Mexico](./MX/) | MX | 2 |
+| [🇳🇱 Netherlands](./NL/) | NL | 25 |
 | [🇵🇱 Poland](./PL/) | PL | 2 |
 | [🇵🇹 Portugal](./PT/) | PT | 1 |
 | [🇷🇴 Romania](./RO/) | RO | 2 |
-| [🇷🇸 Serbia](./RS/) | RS | 1 |
-| [🇷🇺 Russia](./RU/) | RU | 4 |
+| [🇷🇺 Russia](./RU/) | RU | 5 |
 | [🇸🇨 Seychelles](./SC/) | SC | 1 |
-| [🇸🇪 Sweden](./SE/) | SE | 3 |
-| [🇸🇬 Singapore](./SG/) | SG | 10 |
-| [🇹🇭 Thailand](./TH/) | TH | 2 |
-| [🇹🇷 Turkey](./TR/) | TR | 2 |
-| [🇺🇸 United States](./US/) | US | 187 |
+| [🇸🇪 Sweden](./SE/) | SE | 2 |
+| [🇸🇬 Singapore](./SG/) | SG | 3 |
+| [🇹🇷 Turkey](./TR/) | TR | 1 |
+| [🇺🇸 United States](./US/) | US | 184 |
 | [🇿🇦 South Africa](./ZA/) | ZA | 3 |
 
 <details>
@@ -54,7 +53,7 @@ Click a country to open its subscriptions.
 - 🇦🇫 Afghanistan
 - 🇦🇬 Antigua and Barbuda
 - 🇦🇮 Anguilla
-- 🇦🇱 Albania
+- 🇦🇱 [Albania](./AL/)
 - 🇦🇲 Armenia
 - 🇦🇴 Angola
 - 🇦🇶 Antarctica
@@ -94,9 +93,9 @@ Click a country to open its subscriptions.
 - 🇨🇭 [Switzerland](./CH/)
 - 🇨🇮 Cote d'Ivoire
 - 🇨🇰 Cook Islands
-- 🇨🇱 Chile
+- 🇨🇱 [Chile](./CL/)
 - 🇨🇲 Cameroon
-- 🇨🇳 [China](./CN/)
+- 🇨🇳 China
 - 🇨🇴 Colombia
 - 🇨🇷 Costa Rica
 - 🇨🇺 Cuba
@@ -107,7 +106,7 @@ Click a country to open its subscriptions.
 - 🇨🇿 Czechia
 - 🇩🇪 [Germany](./DE/)
 - 🇩🇯 Djibouti
-- 🇩🇰 Denmark
+- 🇩🇰 [Denmark](./DK/)
 - 🇩🇲 Dominica
 - 🇩🇴 Dominican Republic
 - 🇩🇿 Algeria
@@ -127,7 +126,7 @@ Click a country to open its subscriptions.
 - 🇬🇦 Gabon
 - 🇬🇧 [United Kingdom](./GB/)
 - 🇬🇩 Grenada
-- 🇬🇪 Georgia
+- 🇬🇪 [Georgia](./GE/)
 - 🇬🇫 French Guiana
 - 🇬🇬 Guernsey
 - 🇬🇭 Ghana
@@ -151,7 +150,7 @@ Click a country to open its subscriptions.
 - 🇭🇺 Hungary
 - 🇮🇩 [Indonesia](./ID/)
 - 🇮🇪 [Ireland](./IE/)
-- 🇮🇱 [Israel](./IL/)
+- 🇮🇱 Israel
 - 🇮🇲 Isle of Man
 - 🇮🇳 [India](./IN/)
 - 🇮🇴 British Indian Ocean Territory
@@ -181,7 +180,7 @@ Click a country to open its subscriptions.
 - 🇱🇰 Sri Lanka
 - 🇱🇷 Liberia
 - 🇱🇸 Lesotho
-- 🇱🇹 [Lithuania](./LT/)
+- 🇱🇹 Lithuania
 - 🇱🇺 Luxembourg
 - 🇱🇻 [Latvia](./LV/)
 - 🇱🇾 Libya
@@ -238,7 +237,7 @@ Click a country to open its subscriptions.
 - 🇶🇦 Qatar
 - 🇷🇪 Reunion
 - 🇷🇴 [Romania](./RO/)
-- 🇷🇸 [Serbia](./RS/)
+- 🇷🇸 Serbia
 - 🇷🇺 [Russia](./RU/)
 - 🇷🇼 Rwanda
 - 🇸🇦 Saudi Arabia
@@ -266,7 +265,7 @@ Click a country to open its subscriptions.
 - 🇹🇩 Chad
 - 🇹🇫 French Southern Territories
 - 🇹🇬 Togo
-- 🇹🇭 [Thailand](./TH/)
+- 🇹🇭 Thailand
 - 🇹🇯 Tajikistan
 - 🇹🇰 Tokelau
 - 🇹🇱 Timor-Leste

@@ -1,6 +1,6 @@
 # 🇨🇦 Canada
 
-22 healthy proxies.
+21 healthy proxies.
 
 ## 📋 All Protocols
 
