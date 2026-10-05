@@ -1,2 +1,2 @@
-vless://69ac162b-1643-4acb-9f49-09d8b0fad609@milan.adaspoloandco.com:8443?network=ws&path=%2FRoBeRt&security=tls&sni=milan.adaspoloandco.com#%F0%9F%87%AB%F0%9F%87%B7%20FR%20%7C%20VLESS%20%7C%205043ms%20%7C%20GozargahAzadi
-vless://cf39fab0-bb85-42cb-9945-2ad69d78e575@rubifen.adaspoloandco.com:443?network=ws&path=%2FGOrbEh&security=tls&sni=rubifen.adaspoloandco.com#%F0%9F%87%AB%F0%9F%87%B7%20FR%20%7C%20VLESS%20%7C%206997ms%20%7C%20GozargahAzadi
+vless://6bceb548-d9b6-461f-8e37-a5a7fbcdc2c8@155.117.5.158:8080?network=tcp#%F0%9F%87%AB%F0%9F%87%B7%20FR%20%7C%20VLESS%20%7C%20512ms%20%7C%20GozargahAzadi
+vless://cf39fab0-bb85-42cb-9945-2ad69d78e575@rubifen.adaspoloandco.com:443?network=ws&path=%2FGOrbEh&security=tls&sni=rubifen.adaspoloandco.com#%F0%9F%87%AB%F0%9F%87%B7%20FR%20%7C%20VLESS%20%7C%208414ms%20%7C%20GozargahAzadi

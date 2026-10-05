@@ -1,6 +1,6 @@
 # 🇬🇧 United Kingdom
 
-83 healthy proxies.
+84 healthy proxies.
 
 ## 📋 All Protocols
 
