@@ -1,6 +1,6 @@
 # 🇮🇹 Italy
 
-2 healthy proxies.
+3 healthy proxies.
 
 ## 📋 All Protocols
 
@@ -13,5 +13,7 @@
 
 | Protocol | GitHub | Raw |
 |---|---|---|
+| VLESS | [Open](./vless.txt) | `https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/countries/IT/vless.txt` |
+| VLESS Base64 | [Open](./vless-base64.txt) | `https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/countries/IT/vless-base64.txt` |
 | HTTPS | [Open](./https.txt) | `https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/countries/IT/https.txt` |
 | HTTPS Base64 | [Open](./https-base64.txt) | `https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/countries/IT/https-base64.txt` |

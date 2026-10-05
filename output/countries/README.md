@@ -4,6 +4,7 @@ Click a country to open its subscriptions.
 
 | Country | Code | Proxies |
 | --- | --- | ---: |
+| [🇦🇪 United Arab Emirates](./AE/) | AE | 2 |
 | [🇦🇱 Albania](./AL/) | AL | 1 |
 | [🇦🇹 Austria](./AT/) | AT | 2 |
 | [🇧🇦 Bosnia and Herzegovina](./BA/) | BA | 1 |
@@ -11,26 +12,27 @@ Click a country to open its subscriptions.
 | [🇧🇬 Bulgaria](./BG/) | BG | 1 |
 | [🇨🇦 Canada](./CA/) | CA | 21 |
 | [🇨🇭 Switzerland](./CH/) | CH | 2 |
+| [🇨🇱 Chile](./CL/) | CL | 1 |
 | [🇨🇾 Cyprus](./CY/) | CY | 1 |
-| [🇩🇪 Germany](./DE/) | DE | 7 |
+| [🇩🇪 Germany](./DE/) | DE | 6 |
 | [🇩🇰 Denmark](./DK/) | DK | 1 |
-| [🇪🇪 Estonia](./EE/) | EE | 1 |
-| [🇪🇸 Spain](./ES/) | ES | 5 |
-| [🇫🇷 France](./FR/) | FR | 17 |
-| [🇬🇧 United Kingdom](./GB/) | GB | 84 |
+| [🇪🇪 Estonia](./EE/) | EE | 2 |
+| [🇪🇸 Spain](./ES/) | ES | 4 |
+| [🇫🇷 France](./FR/) | FR | 18 |
+| [🇬🇧 United Kingdom](./GB/) | GB | 83 |
 | [🇬🇪 Georgia](./GE/) | GE | 1 |
 | [🇭🇰 Hong Kong](./HK/) | HK | 5 |
 | [🇮🇩 Indonesia](./ID/) | ID | 1 |
 | [🇮🇪 Ireland](./IE/) | IE | 3 |
-| [🇮🇳 India](./IN/) | IN | 3 |
-| [🇮🇷 Iran](./IR/) | IR | 6 |
+| [🇮🇳 India](./IN/) | IN | 1 |
+| [🇮🇷 Iran](./IR/) | IR | 4 |
 | [🇮🇸 Iceland](./IS/) | IS | 1 |
-| [🇮🇹 Italy](./IT/) | IT | 2 |
+| [🇮🇹 Italy](./IT/) | IT | 3 |
 | [🇯🇵 Japan](./JP/) | JP | 5 |
-| [🇰🇷 Korea, Republic of](./KR/) | KR | 10 |
+| [🇰🇷 Korea, Republic of](./KR/) | KR | 8 |
 | [🇱🇻 Latvia](./LV/) | LV | 1 |
-| [🇲🇽 Mexico](./MX/) | MX | 1 |
-| [🇳🇱 Netherlands](./NL/) | NL | 27 |
+| [🇲🇽 Mexico](./MX/) | MX | 2 |
+| [🇳🇱 Netherlands](./NL/) | NL | 26 |
 | [🇵🇱 Poland](./PL/) | PL | 2 |
 | [🇵🇹 Portugal](./PT/) | PT | 1 |
 | [🇷🇴 Romania](./RO/) | RO | 2 |
@@ -38,15 +40,16 @@ Click a country to open its subscriptions.
 | [🇸🇨 Seychelles](./SC/) | SC | 1 |
 | [🇸🇪 Sweden](./SE/) | SE | 2 |
 | [🇸🇬 Singapore](./SG/) | SG | 4 |
+| [🇹🇭 Thailand](./TH/) | TH | 1 |
 | [🇹🇷 Turkey](./TR/) | TR | 1 |
-| [🇺🇸 United States](./US/) | US | 193 |
+| [🇺🇸 United States](./US/) | US | 187 |
 | [🇿🇦 South Africa](./ZA/) | ZA | 3 |
 
 <details>
 <summary>🌐 All countries — full ISO flag map</summary>
 
 - 🇦🇩 Andorra
-- 🇦🇪 United Arab Emirates
+- 🇦🇪 [United Arab Emirates](./AE/)
 - 🇦🇫 Afghanistan
 - 🇦🇬 Antigua and Barbuda
 - 🇦🇮 Anguilla
@@ -90,7 +93,7 @@ Click a country to open its subscriptions.
 - 🇨🇭 [Switzerland](./CH/)
 - 🇨🇮 Cote d'Ivoire
 - 🇨🇰 Cook Islands
-- 🇨🇱 Chile
+- 🇨🇱 [Chile](./CL/)
 - 🇨🇲 Cameroon
 - 🇨🇳 China
 - 🇨🇴 Colombia
@@ -262,7 +265,7 @@ Click a country to open its subscriptions.
 - 🇹🇩 Chad
 - 🇹🇫 French Southern Territories
 - 🇹🇬 Togo
-- 🇹🇭 Thailand
+- 🇹🇭 [Thailand](./TH/)
 - 🇹🇯 Tajikistan
 - 🇹🇰 Tokelau
 - 🇹🇱 Timor-Leste
