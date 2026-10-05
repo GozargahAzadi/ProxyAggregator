@@ -1,6 +1,6 @@
 # 🇪🇸 Spain
 
-2 healthy proxies.
+5 healthy proxies.
 
 ## 📋 All Protocols
 
@@ -13,5 +13,9 @@
 
 | Protocol | GitHub | Raw |
 |---|---|---|
+| VLESS | [Open](./vless.txt) | `https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/countries/ES/vless.txt` |
+| VLESS Base64 | [Open](./vless-base64.txt) | `https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/countries/ES/vless-base64.txt` |
 | Shadowsocks | [Open](./shadowsocks.txt) | `https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/countries/ES/shadowsocks.txt` |
 | Shadowsocks Base64 | [Open](./shadowsocks-base64.txt) | `https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/countries/ES/shadowsocks-base64.txt` |
+| HTTPS | [Open](./https.txt) | `https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/countries/ES/https.txt` |
+| HTTPS Base64 | [Open](./https-base64.txt) | `https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/countries/ES/https-base64.txt` |
