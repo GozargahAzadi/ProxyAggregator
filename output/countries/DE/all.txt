@@ -1,7 +1,7 @@
-https://149.36.50.129:443#%F0%9F%87%A9%F0%9F%87%AA%20DE%20%7C%20HTTPS%20%7C%20417ms%20%7C%20GozargahAzadi
-vless://d89b1691-e1ad-47c4-8cdb-5bbfe1171a8c@188.245.191.19:2040?host=jr61rsc8fog5f.l6yr5b4ialxnf2ll2zcsgmlqf3u.workers.dev&network=ws&path=%2F%40Marisa_kristi&security=tls&sni=jr61rsc8fog5f.l6yr5b4ialxnf2ll2zcsgmlqf3u.workers.dev#%F0%9F%87%A9%F0%9F%87%AA%20DE%20%7C%20VLESS%20%7C%20468ms%20%7C%20GozargahAzadi
-ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTo3cEdnLW1aenBvS1JONVRZUGc4STJR@cdn-2d12.giftcardbazarbot.com:8243#%F0%9F%87%A9%F0%9F%87%AA%20DE%20%7C%20SS%20%7C%201138ms%20%7C%20GozargahAzadi
-ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNToxaGhycXJva2ozYWc=@209.46.102.22:8388#%F0%9F%87%A9%F0%9F%87%AA%20DE%20%7C%20SS%20%7C%201146ms%20%7C%20GozargahAzadi
-ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTpFVXlGWTRhdm1JRnc4Smp1alZvWVhNelBHaFVIZ3RBSQ==@api.zedmobile.org:8443#%F0%9F%87%A9%F0%9F%87%AA%20DE%20%7C%20SS%20%7C%201182ms%20%7C%20GozargahAzadi
-vless://a5c988df-58e5-4b5c-bcb7-1e7d7e41f141@89.213.119.126:2086?host=www.tesla.com&network=ws&path=%2Fapi%2Fv2%2Fxtrnwqjbkr%3Fed%3D2560&security=none#%F0%9F%87%A9%F0%9F%87%AA%20DE%20%7C%20VLESS%20%7C%204469ms%20%7C%20GozargahAzadi
-vless://b585dc5e-55bf-4a8b-913a-27c9ccac05c3@81.95.4.189:443?host=bab-6.site&network=ws&path=%2Fvws%2F&security=tls&sni=bab-6.site#%F0%9F%87%A9%F0%9F%87%AA%20DE%20%7C%20VLESS%20%7C%206413ms%20%7C%20GozargahAzadi
+https://149.36.50.129:443#%F0%9F%87%A9%F0%9F%87%AA%20DE%20%7C%20HTTPS%20%7C%20357ms%20%7C%20GozargahAzadi
+https://87.249.132.97:443#%F0%9F%87%A9%F0%9F%87%AA%20DE%20%7C%20HTTPS%20%7C%20374ms%20%7C%20GozargahAzadi
+ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNToxaGhycXJva2ozYWc=@209.46.102.22:8388#%F0%9F%87%A9%F0%9F%87%AA%20DE%20%7C%20SS%20%7C%201115ms%20%7C%20GozargahAzadi
+ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTppa3UvR2ZydDlZZUVVVWxlWHIyUHRmM3V2czBoc3pDUjBKSFBxR1NqcytjPQ==@31.76.11.83:15250#%F0%9F%87%A9%F0%9F%87%AA%20DE%20%7C%20SS%20%7C%201134ms%20%7C%20GozargahAzadi
+ss://YWVzLTI1Ni1nY206UmV4bkJnVTdFVjVBRHhH@213.202.208.199:7001#%F0%9F%87%A9%F0%9F%87%AA%20DE%20%7C%20SS%20%7C%201165ms%20%7C%20GozargahAzadi
+ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTo3cEdnLW1aenBvS1JONVRZUGc4STJR@cdn-2d12.giftcardbazarbot.com:8243#%F0%9F%87%A9%F0%9F%87%AA%20DE%20%7C%20SS%20%7C%202018ms%20%7C%20GozargahAzadi
+vless://b585dc5e-55bf-4a8b-913a-27c9ccac05c3@81.95.4.189:443?host=bab-6.site&network=ws&path=%2Fvws%2F&security=tls&sni=bab-6.site#%F0%9F%87%A9%F0%9F%87%AA%20DE%20%7C%20VLESS%20%7C%208496ms%20%7C%20GozargahAzadi

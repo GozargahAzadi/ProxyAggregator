@@ -1,2 +1,3 @@
-vless://d9c7ec1f-5aa3-469a-b860-760c686806b0@70.34.252.154:80?network=ws&path=%2F&security=none#%F0%9F%87%B5%F0%9F%87%B1%20PL%20%7C%20VLESS%20%7C%204669ms%20%7C%20GozargahAzadi
-vless://a889262f-5fe3-4c93-9aaa-3721318dd389@70.34.255.101:80?network=ws#%F0%9F%87%B5%F0%9F%87%B1%20PL%20%7C%20VLESS%20%7C%204692ms%20%7C%20GozargahAzadi
+vless://d342d11e-d424-4583-b36e-524ab1f0afa4@2.56.172.107:443?host=fzo5i.ir46.90k.hh.ov0.kdns.fr&network=ws&path=%2Fglasspanel%2Fguest000_0_5de14443985f%2F&security=tls&sni=fzo5i.ir46.90k.hh.ov0.kdns.fr#%F0%9F%87%B5%F0%9F%87%B1%20PL%20%7C%20VLESS%20%7C%201681ms%20%7C%20GozargahAzadi
+vless://d9c7ec1f-5aa3-469a-b860-760c686806b0@70.34.252.154:80?network=ws&path=%2F&security=none#%F0%9F%87%B5%F0%9F%87%B1%20PL%20%7C%20VLESS%20%7C%204594ms%20%7C%20GozargahAzadi
+vless://a889262f-5fe3-4c93-9aaa-3721318dd389@70.34.255.101:80?network=ws&path=%2F&security=none#%F0%9F%87%B5%F0%9F%87%B1%20PL%20%7C%20VLESS%20%7C%204628ms%20%7C%20GozargahAzadi

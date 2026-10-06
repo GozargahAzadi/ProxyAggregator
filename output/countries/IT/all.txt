@@ -1,2 +1,4 @@
-https://185.183.105.130:443#%F0%9F%87%AE%F0%9F%87%B9%20IT%20%7C%20HTTPS%20%7C%201214ms%20%7C%20GozargahAzadi
-vless://9f0285ee-20ca-4953-bcdb-86a920652923@204.216.216.23:10086?network=raw&security=none#%F0%9F%87%AE%F0%9F%87%B9%20IT%20%7C%20VLESS%20%7C%204499ms%20%7C%20GozargahAzadi
+https://185.183.105.146:443#%F0%9F%87%AE%F0%9F%87%B9%20IT%20%7C%20HTTPS%20%7C%20402ms%20%7C%20GozargahAzadi
+https://185.183.105.130:443#%F0%9F%87%AE%F0%9F%87%B9%20IT%20%7C%20HTTPS%20%7C%20416ms%20%7C%20GozargahAzadi
+vless://d342d11e-d424-4583-b36e-524ab1f0afa4@80.211.27.249:443?host=fzo5i.ir46.90k.hh.ov0.kdns.fr&network=ws&path=%2Fglasspanel%2Fguest000_0_5de14443985f%2F&security=tls&sni=fzo5i.ir46.90k.hh.ov0.kdns.fr#%F0%9F%87%AE%F0%9F%87%B9%20IT%20%7C%20VLESS%20%7C%20587ms%20%7C%20GozargahAzadi
+vless://9f0285ee-20ca-4953-bcdb-86a920652923@204.216.216.23:10086?network=tcp#%F0%9F%87%AE%F0%9F%87%B9%20IT%20%7C%20VLESS%20%7C%204438ms%20%7C%20GozargahAzadi
