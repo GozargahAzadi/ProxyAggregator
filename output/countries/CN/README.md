@@ -1,6 +1,6 @@
 # 🇨🇳 China
 
-2 healthy proxies.
+1 healthy proxy.
 
 ## 📋 All Protocols
 
@@ -13,7 +13,5 @@
 
 | Protocol | GitHub | Raw |
 |---|---|---|
-| VLESS | [Open](./vless.txt) | `https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/countries/CN/vless.txt` |
-| VLESS Base64 | [Open](./vless-base64.txt) | `https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/countries/CN/vless-base64.txt` |
 | VMess | [Open](./vmess.txt) | `https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/countries/CN/vmess.txt` |
 | VMess Base64 | [Open](./vmess-base64.txt) | `https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/countries/CN/vmess-base64.txt` |

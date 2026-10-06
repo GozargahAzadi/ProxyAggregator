@@ -1,1 +1,1 @@
-vless://d342d11e-d224-4463-b982-532309285094@43.174.193.1:443?host=ccc.010304.xyz&network=ws&path=%2Ffp&security=tls&sni=ccc.010304.xyz#%F0%9F%87%B8%F0%9F%87%AC%20SG%20%7C%20VLESS%20%7C%20593ms%20%7C%20GozargahAzadi
+vless://d342d11e-d224-4463-b982-532309285094@43.174.193.1:443?host=ccc.010304.xyz&network=ws&path=%2Ffp&security=tls&sni=ccc.010304.xyz#%F0%9F%87%B8%F0%9F%87%AC%20SG%20%7C%20VLESS%20%7C%20603ms%20%7C%20GozargahAzadi
