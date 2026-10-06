@@ -10,18 +10,18 @@ Click a country to open its subscriptions.
 | [🇧🇦 Bosnia and Herzegovina](./BA/) | BA | 1 |
 | [🇧🇪 Belgium](./BE/) | BE | 1 |
 | [🇧🇬 Bulgaria](./BG/) | BG | 1 |
-| [🇨🇦 Canada](./CA/) | CA | 23 |
+| [🇨🇦 Canada](./CA/) | CA | 29 |
 | [🇨🇭 Switzerland](./CH/) | CH | 2 |
 | [🇨🇱 Chile](./CL/) | CL | 1 |
 | [🇨🇳 China](./CN/) | CN | 1 |
 | [🇨🇾 Cyprus](./CY/) | CY | 1 |
-| [🇩🇪 Germany](./DE/) | DE | 11 |
+| [🇩🇪 Germany](./DE/) | DE | 9 |
 | [🇩🇰 Denmark](./DK/) | DK | 1 |
 | [🇪🇪 Estonia](./EE/) | EE | 2 |
-| [🇪🇸 Spain](./ES/) | ES | 3 |
+| [🇪🇸 Spain](./ES/) | ES | 1 |
 | [🇫🇮 Finland](./FI/) | FI | 2 |
-| [🇫🇷 France](./FR/) | FR | 20 |
-| [🇬🇧 United Kingdom](./GB/) | GB | 85 |
+| [🇫🇷 France](./FR/) | FR | 19 |
+| [🇬🇧 United Kingdom](./GB/) | GB | 86 |
 | [🇬🇪 Georgia](./GE/) | GE | 1 |
 | [🇭🇰 Hong Kong](./HK/) | HK | 4 |
 | [🇮🇩 Indonesia](./ID/) | ID | 1 |
@@ -31,19 +31,19 @@ Click a country to open its subscriptions.
 | [🇮🇸 Iceland](./IS/) | IS | 1 |
 | [🇮🇹 Italy](./IT/) | IT | 2 |
 | [🇯🇵 Japan](./JP/) | JP | 11 |
-| [🇰🇷 Korea, Republic of](./KR/) | KR | 14 |
+| [🇰🇷 Korea, Republic of](./KR/) | KR | 13 |
 | [🇱🇻 Latvia](./LV/) | LV | 1 |
-| [🇳🇱 Netherlands](./NL/) | NL | 28 |
+| [🇳🇱 Netherlands](./NL/) | NL | 27 |
 | [🇵🇱 Poland](./PL/) | PL | 2 |
 | [🇵🇹 Portugal](./PT/) | PT | 1 |
 | [🇷🇴 Romania](./RO/) | RO | 2 |
 | [🇷🇺 Russia](./RU/) | RU | 3 |
 | [🇸🇨 Seychelles](./SC/) | SC | 1 |
 | [🇸🇪 Sweden](./SE/) | SE | 2 |
-| [🇸🇬 Singapore](./SG/) | SG | 9 |
+| [🇸🇬 Singapore](./SG/) | SG | 10 |
 | [🇹🇭 Thailand](./TH/) | TH | 1 |
 | [🇹🇷 Turkey](./TR/) | TR | 1 |
-| [🇺🇸 United States](./US/) | US | 199 |
+| [🇺🇸 United States](./US/) | US | 210 |
 | [🇻🇬 Virgin Islands, British](./VG/) | VG | 1 |
 | [🇿🇦 South Africa](./ZA/) | ZA | 3 |
 

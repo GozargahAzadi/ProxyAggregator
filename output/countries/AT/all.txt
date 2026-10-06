@@ -1,2 +1,2 @@
-vless://c5d884cb-4613-4321-9582-b896137df60d@85.192.42.29:8444?host=5iv93opy8jus9z.bjo5si35c9i9ud4242fado49188obkoiermjuxj7zgxu.workers.dev&network=ws&path=%2F%40Marisa_kristi&security=tls&sni=5iv93opy8jus9z.bjo5si35c9i9ud4242fado49188obkoiermjuxj7zgxu.workers.dev#%F0%9F%87%A6%F0%9F%87%B9%20AT%20%7C%20VLESS%20%7C%20380ms%20%7C%20GozargahAzadi
-https://146.70.244.2:443#%F0%9F%87%A6%F0%9F%87%B9%20AT%20%7C%20HTTPS%20%7C%20643ms%20%7C%20GozargahAzadi
+vless://c5d884cb-4613-4321-9582-b896137df60d@85.192.42.29:8444?host=5iv93opy8jus9z.bjo5si35c9i9ud4242fado49188obkoiermjuxj7zgxu.workers.dev&network=ws&path=%2F%40Marisa_kristi&security=tls&sni=5iv93opy8jus9z.bjo5si35c9i9ud4242fado49188obkoiermjuxj7zgxu.workers.dev#%F0%9F%87%A6%F0%9F%87%B9%20AT%20%7C%20VLESS%20%7C%20513ms%20%7C%20GozargahAzadi
+https://146.70.244.2:443#%F0%9F%87%A6%F0%9F%87%B9%20AT%20%7C%20HTTPS%20%7C%20758ms%20%7C%20GozargahAzadi
