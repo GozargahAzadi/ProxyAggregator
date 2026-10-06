@@ -1,6 +1,6 @@
 # 🇮🇳 India
 
-2 healthy proxies.
+1 healthy proxy.
 
 ## 📋 All Protocols
 
@@ -15,5 +15,3 @@
 |---|---|---|
 | VMess | [Open](./vmess.txt) | `https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/countries/IN/vmess.txt` |
 | VMess Base64 | [Open](./vmess-base64.txt) | `https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/countries/IN/vmess-base64.txt` |
-| Shadowsocks | [Open](./shadowsocks.txt) | `https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/countries/IN/shadowsocks.txt` |
-| Shadowsocks Base64 | [Open](./shadowsocks-base64.txt) | `https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/countries/IN/shadowsocks-base64.txt` |

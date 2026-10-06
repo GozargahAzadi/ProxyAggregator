@@ -10,37 +10,39 @@ Click a country to open its subscriptions.
 | [🇧🇦 Bosnia and Herzegovina](./BA/) | BA | 1 |
 | [🇧🇪 Belgium](./BE/) | BE | 1 |
 | [🇧🇬 Bulgaria](./BG/) | BG | 1 |
-| [🇨🇦 Canada](./CA/) | CA | 27 |
+| [🇨🇦 Canada](./CA/) | CA | 26 |
 | [🇨🇭 Switzerland](./CH/) | CH | 2 |
+| [🇨🇱 Chile](./CL/) | CL | 1 |
 | [🇨🇳 China](./CN/) | CN | 1 |
 | [🇨🇾 Cyprus](./CY/) | CY | 1 |
-| [🇩🇪 Germany](./DE/) | DE | 6 |
+| [🇩🇪 Germany](./DE/) | DE | 7 |
 | [🇩🇰 Denmark](./DK/) | DK | 1 |
 | [🇪🇪 Estonia](./EE/) | EE | 1 |
 | [🇪🇸 Spain](./ES/) | ES | 1 |
-| [🇫🇮 Finland](./FI/) | FI | 1 |
-| [🇫🇷 France](./FR/) | FR | 15 |
-| [🇬🇧 United Kingdom](./GB/) | GB | 82 |
+| [🇫🇮 Finland](./FI/) | FI | 2 |
+| [🇫🇷 France](./FR/) | FR | 16 |
+| [🇬🇧 United Kingdom](./GB/) | GB | 83 |
 | [🇬🇪 Georgia](./GE/) | GE | 1 |
-| [🇭🇰 Hong Kong](./HK/) | HK | 3 |
+| [🇭🇰 Hong Kong](./HK/) | HK | 4 |
 | [🇮🇩 Indonesia](./ID/) | ID | 1 |
 | [🇮🇪 Ireland](./IE/) | IE | 1 |
-| [🇮🇳 India](./IN/) | IN | 2 |
+| [🇮🇳 India](./IN/) | IN | 1 |
 | [🇮🇷 Iran](./IR/) | IR | 5 |
 | [🇮🇸 Iceland](./IS/) | IS | 1 |
 | [🇮🇹 Italy](./IT/) | IT | 2 |
-| [🇯🇵 Japan](./JP/) | JP | 5 |
-| [🇰🇷 Korea, Republic of](./KR/) | KR | 10 |
+| [🇯🇵 Japan](./JP/) | JP | 4 |
+| [🇰🇷 Korea, Republic of](./KR/) | KR | 8 |
 | [🇱🇻 Latvia](./LV/) | LV | 1 |
 | [🇳🇱 Netherlands](./NL/) | NL | 18 |
 | [🇵🇱 Poland](./PL/) | PL | 2 |
 | [🇷🇴 Romania](./RO/) | RO | 2 |
-| [🇷🇺 Russia](./RU/) | RU | 4 |
+| [🇷🇺 Russia](./RU/) | RU | 3 |
 | [🇸🇨 Seychelles](./SC/) | SC | 1 |
 | [🇸🇪 Sweden](./SE/) | SE | 2 |
-| [🇸🇬 Singapore](./SG/) | SG | 5 |
+| [🇸🇬 Singapore](./SG/) | SG | 6 |
+| [🇹🇭 Thailand](./TH/) | TH | 1 |
 | [🇹🇷 Turkey](./TR/) | TR | 1 |
-| [🇺🇸 United States](./US/) | US | 195 |
+| [🇺🇸 United States](./US/) | US | 199 |
 | [🇻🇬 Virgin Islands, British](./VG/) | VG | 1 |
 | [🇿🇦 South Africa](./ZA/) | ZA | 3 |
 
@@ -92,7 +94,7 @@ Click a country to open its subscriptions.
 - 🇨🇭 [Switzerland](./CH/)
 - 🇨🇮 Cote d'Ivoire
 - 🇨🇰 Cook Islands
-- 🇨🇱 Chile
+- 🇨🇱 [Chile](./CL/)
 - 🇨🇲 Cameroon
 - 🇨🇳 [China](./CN/)
 - 🇨🇴 Colombia
@@ -264,7 +266,7 @@ Click a country to open its subscriptions.
 - 🇹🇩 Chad
 - 🇹🇫 French Southern Territories
 - 🇹🇬 Togo
-- 🇹🇭 Thailand
+- 🇹🇭 [Thailand](./TH/)
 - 🇹🇯 Tajikistan
 - 🇹🇰 Tokelau
 - 🇹🇱 Timor-Leste

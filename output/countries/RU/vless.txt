@@ -1,2 +1,2 @@
-vless://ff0b6ba8-bed0-4c4d-bbc9-23af47582615@200.165.231.209:443?host=wstg.datasynctrue.online&network=ws&path=%2Fapi%2Fconnect&security=tls&sni=wstg.datasynctrue.online#%F0%9F%87%B7%F0%9F%87%BA%20RU%20%7C%20VLESS%20%7C%201733ms%20%7C%20GozargahAzadi
-vless://ff0b6ba8-bed0-4c4d-bbc9-23af47582615@91.210.169.181:443?host=wstg.datasynctrue.online&network=ws&path=%2Fapi%2Fconnect&security=tls#%F0%9F%87%B7%F0%9F%87%BA%20RU%20%7C%20VLESS%20%7C%201766ms%20%7C%20GozargahAzadi
+vless://ff0b6ba8-bed0-4c4d-bbc9-23af47582615@91.210.169.181:443?host=wstg.datasynctrue.online&network=ws&path=%2Fapi%2Fconnect&security=tls#%F0%9F%87%B7%F0%9F%87%BA%20RU%20%7C%20VLESS%20%7C%201351ms%20%7C%20GozargahAzadi
+vless://ff0b6ba8-bed0-4c4d-bbc9-23af47582615@200.165.231.209:443?host=wstg.datasynctrue.online&network=ws&path=%2Fapi%2Fconnect&security=tls&sni=wstg.datasynctrue.online#%F0%9F%87%B7%F0%9F%87%BA%20RU%20%7C%20VLESS%20%7C%201355ms%20%7C%20GozargahAzadi
