@@ -1,6 +1,6 @@
 # 🇰🇷 Korea, Republic of
 
-11 healthy proxies.
+14 healthy proxies.
 
 ## 📋 All Protocols
 
@@ -13,6 +13,8 @@
 
 | Protocol | GitHub | Raw |
 |---|---|---|
+| VLESS | [Open](./vless.txt) | `https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/countries/KR/vless.txt` |
+| VLESS Base64 | [Open](./vless-base64.txt) | `https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/countries/KR/vless-base64.txt` |
 | VMess | [Open](./vmess.txt) | `https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/countries/KR/vmess.txt` |
 | VMess Base64 | [Open](./vmess-base64.txt) | `https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/countries/KR/vmess-base64.txt` |
 | Shadowsocks | [Open](./shadowsocks.txt) | `https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/countries/KR/shadowsocks.txt` |
