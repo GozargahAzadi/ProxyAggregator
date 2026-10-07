@@ -1,6 +1,6 @@
 # 🇳🇱 Netherlands
 
-23 healthy proxies.
+22 healthy proxies.
 
 ## 📋 All Protocols
 
@@ -13,8 +13,6 @@
 
 | Protocol | GitHub | Raw |
 |---|---|---|
-| VLESS | [Open](./vless.txt) | `https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/countries/NL/vless.txt` |
-| VLESS Base64 | [Open](./vless-base64.txt) | `https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/countries/NL/vless-base64.txt` |
 | VMess | [Open](./vmess.txt) | `https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/countries/NL/vmess.txt` |
 | VMess Base64 | [Open](./vmess-base64.txt) | `https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/countries/NL/vmess-base64.txt` |
 | Shadowsocks | [Open](./shadowsocks.txt) | `https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/countries/NL/shadowsocks.txt` |

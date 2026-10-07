@@ -1,2 +1,0 @@
-vless://d342d11e-d424-4583-b36e-524ab1f0afa4@212.87.220.98:443?host=fzo5i.ir46.90k.hh.ov0.kdns.fr&network=ws&path=%2Fglasspanel%2Fguest000_0_5de14443985f%2F&security=tls&sni=fzo5i.ir46.90k.hh.ov0.kdns.fr#%F0%9F%87%B3%F0%9F%87%B1%20NL%20%7C%20VLESS%20%7C%20766ms%20%7C%20GozargahAzadi
-vless://d342d11e-d424-4583-b36e-524ab1f0afa4@185.36.143.187:443?host=fzo5i.ir46.90k.hh.ov0.kdns.fr&network=ws&path=%2Fglasspanel%2Fguest000_0_5de14443985f%2F&security=tls&sni=fzo5i.ir46.90k.hh.ov0.kdns.fr#%F0%9F%87%B3%F0%9F%87%B1%20NL%20%7C%20VLESS%20%7C%207009ms%20%7C%20GozargahAzadi
