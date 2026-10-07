@@ -1,6 +1,6 @@
 # 🇷🇴 Romania
 
-3 healthy proxies.
+2 healthy proxies.
 
 ## 📋 All Protocols
 
@@ -15,5 +15,3 @@
 |---|---|---|
 | Shadowsocks | [Open](./shadowsocks.txt) | `https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/countries/RO/shadowsocks.txt` |
 | Shadowsocks Base64 | [Open](./shadowsocks-base64.txt) | `https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/countries/RO/shadowsocks-base64.txt` |
-| HTTPS | [Open](./https.txt) | `https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/countries/RO/https.txt` |
-| HTTPS Base64 | [Open](./https-base64.txt) | `https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/countries/RO/https-base64.txt` |
