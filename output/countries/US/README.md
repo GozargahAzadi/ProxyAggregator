@@ -1,6 +1,6 @@
 # 🇺🇸 United States
 
-210 healthy proxies.
+53 healthy proxies.
 
 ## 📋 All Protocols
 
@@ -19,7 +19,5 @@
 | VMess Base64 | [Open](./vmess-base64.txt) | `https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/countries/US/vmess-base64.txt` |
 | Shadowsocks | [Open](./shadowsocks.txt) | `https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/countries/US/shadowsocks.txt` |
 | Shadowsocks Base64 | [Open](./shadowsocks-base64.txt) | `https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/countries/US/shadowsocks-base64.txt` |
-| Socks5 | [Open](./socks5.txt) | `https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/countries/US/socks5.txt` |
-| Socks5 Base64 | [Open](./socks5-base64.txt) | `https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/countries/US/socks5-base64.txt` |
 | HTTPS | [Open](./https.txt) | `https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/countries/US/https.txt` |
 | HTTPS Base64 | [Open](./https-base64.txt) | `https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/countries/US/https-base64.txt` |

@@ -1,6 +1,6 @@
 # 🇦🇱 Albania
 
-3 healthy proxies.
+1 healthy proxy.
 
 ## 📋 All Protocols
 
