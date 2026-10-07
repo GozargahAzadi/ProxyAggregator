@@ -1,6 +1,6 @@
 # 🇸🇬 Singapore
 
-7 healthy proxies.
+5 healthy proxies.
 
 ## 📋 All Protocols
 
@@ -17,5 +17,3 @@
 | VLESS Base64 | [Open](./vless-base64.txt) | `https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/countries/SG/vless-base64.txt` |
 | Shadowsocks | [Open](./shadowsocks.txt) | `https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/countries/SG/shadowsocks.txt` |
 | Shadowsocks Base64 | [Open](./shadowsocks-base64.txt) | `https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/countries/SG/shadowsocks-base64.txt` |
-| HTTP | [Open](./http.txt) | `https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/countries/SG/http.txt` |
-| HTTP Base64 | [Open](./http-base64.txt) | `https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/countries/SG/http-base64.txt` |

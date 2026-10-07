@@ -1,1 +1,0 @@
-vless://97ea73b6-2043-4238-903c-a1e3d4a43c96@amphetamine.adaspoloandco.com:2087?host=amphetamine.adaspoloandco.com&network=ws&path=%2Fdownload.php&security=tls&sni=amphetamine.adaspoloandco.com#%F0%9F%87%A8%F0%9F%87%A6%20CA%20%7C%20VLESS%20%7C%204491ms%20%7C%20GozargahAzadi
