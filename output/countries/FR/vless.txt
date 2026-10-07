@@ -1,1 +1,0 @@
-vless://db4fb2a7-a31d-46d8-b6d2-76eafe8cfe2a@fr2.vip-get.ru:443?network=ws&path=%2Fapi%2Fdownload&security=tls&sni=fr2.vip-get.ru#%F0%9F%87%AB%F0%9F%87%B7%20FR%20%7C%20VLESS%20%7C%206523ms%20%7C%20GozargahAzadi

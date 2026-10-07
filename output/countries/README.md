@@ -12,32 +12,34 @@ Click a country to open its subscriptions.
 | [🇨🇭 Switzerland](./CH/) | CH | 1 |
 | [🇨🇳 China](./CN/) | CN | 1 |
 | [🇨🇾 Cyprus](./CY/) | CY | 1 |
-| [🇩🇪 Germany](./DE/) | DE | 6 |
+| [🇩🇪 Germany](./DE/) | DE | 5 |
 | [🇪🇪 Estonia](./EE/) | EE | 2 |
 | [🇪🇸 Spain](./ES/) | ES | 1 |
 | [🇫🇮 Finland](./FI/) | FI | 2 |
-| [🇫🇷 France](./FR/) | FR | 15 |
-| [🇬🇧 United Kingdom](./GB/) | GB | 76 |
+| [🇫🇷 France](./FR/) | FR | 16 |
+| [🇬🇧 United Kingdom](./GB/) | GB | 77 |
 | [🇭🇰 Hong Kong](./HK/) | HK | 2 |
 | [🇮🇩 Indonesia](./ID/) | ID | 1 |
 | [🇮🇪 Ireland](./IE/) | IE | 1 |
 | [🇮🇱 Israel](./IL/) | IL | 1 |
 | [🇮🇳 India](./IN/) | IN | 2 |
-| [🇮🇷 Iran](./IR/) | IR | 3 |
+| [🇮🇷 Iran](./IR/) | IR | 4 |
 | [🇮🇹 Italy](./IT/) | IT | 1 |
-| [🇯🇵 Japan](./JP/) | JP | 5 |
-| [🇰🇷 Korea, Republic of](./KR/) | KR | 4 |
-| [🇳🇱 Netherlands](./NL/) | NL | 19 |
+| [🇯🇵 Japan](./JP/) | JP | 6 |
+| [🇰🇷 Korea, Republic of](./KR/) | KR | 6 |
+| [🇱🇹 Lithuania](./LT/) | LT | 2 |
+| [🇳🇱 Netherlands](./NL/) | NL | 20 |
 | [🇵🇱 Poland](./PL/) | PL | 2 |
 | [🇷🇴 Romania](./RO/) | RO | 2 |
 | [🇷🇸 Serbia](./RS/) | RS | 2 |
-| [🇷🇺 Russia](./RU/) | RU | 4 |
+| [🇷🇺 Russia](./RU/) | RU | 3 |
 | [🇸🇨 Seychelles](./SC/) | SC | 1 |
-| [🇸🇬 Singapore](./SG/) | SG | 5 |
-| [🇹🇷 Turkey](./TR/) | TR | 3 |
-| [🇺🇸 United States](./US/) | US | 49 |
+| [🇸🇬 Singapore](./SG/) | SG | 6 |
+| [🇹🇭 Thailand](./TH/) | TH | 3 |
+| [🇹🇷 Turkey](./TR/) | TR | 4 |
+| [🇺🇸 United States](./US/) | US | 52 |
 | [🇻🇬 Virgin Islands, British](./VG/) | VG | 1 |
-| [🇿🇦 South Africa](./ZA/) | ZA | 2 |
+| [🇿🇦 South Africa](./ZA/) | ZA | 3 |
 
 <details>
 <summary>🌐 All countries — full ISO flag map</summary>
@@ -174,7 +176,7 @@ Click a country to open its subscriptions.
 - 🇱🇰 Sri Lanka
 - 🇱🇷 Liberia
 - 🇱🇸 Lesotho
-- 🇱🇹 Lithuania
+- 🇱🇹 [Lithuania](./LT/)
 - 🇱🇺 Luxembourg
 - 🇱🇻 Latvia
 - 🇱🇾 Libya
@@ -259,7 +261,7 @@ Click a country to open its subscriptions.
 - 🇹🇩 Chad
 - 🇹🇫 French Southern Territories
 - 🇹🇬 Togo
-- 🇹🇭 Thailand
+- 🇹🇭 [Thailand](./TH/)
 - 🇹🇯 Tajikistan
 - 🇹🇰 Tokelau
 - 🇹🇱 Timor-Leste
