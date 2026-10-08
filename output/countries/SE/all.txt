@@ -1,3 +1,1 @@
-https://149.50.216.65:443#%F0%9F%87%B8%F0%9F%87%AA%20SE%20%7C%20HTTPS%20%7C%20499ms%20%7C%20GozargahAzadi
-https://146.70.242.146:443#%F0%9F%87%B8%F0%9F%87%AA%20SE%20%7C%20HTTPS%20%7C%20517ms%20%7C%20GozargahAzadi
-vless://cfae6477-e8ad-4114-8efd-a7c3e5d8a05b@13.143.174.97:2053?host=se.fastmirror-labs.xyz&network=ws&path=%2Fws-cdn1-vless&security=tls&sni=13.143.174.97#%F0%9F%87%B8%F0%9F%87%AA%20SE%20%7C%20VLESS%20%7C%204689ms%20%7C%20GozargahAzadi
+vless://d342d11e-d224-4463-b982-532309285094@77.110.97.245:443?host=ccc.010304.xyz&network=ws&path=%2F&security=tls&sni=ccc.010304.xyz#%F0%9F%87%B8%F0%9F%87%AA%20SE%20%7C%20VLESS%20%7C%20805ms%20%7C%20GozargahAzadi

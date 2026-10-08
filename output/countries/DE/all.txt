@@ -1,11 +1,5 @@
-https://149.36.50.1:443#%F0%9F%87%A9%F0%9F%87%AA%20DE%20%7C%20HTTPS%20%7C%20451ms%20%7C%20GozargahAzadi
-https://149.36.50.157:443#%F0%9F%87%A9%F0%9F%87%AA%20DE%20%7C%20HTTPS%20%7C%20457ms%20%7C%20GozargahAzadi
-https://87.249.132.97:443#%F0%9F%87%A9%F0%9F%87%AA%20DE%20%7C%20HTTPS%20%7C%20458ms%20%7C%20GozargahAzadi
-https://185.232.70.11:443#%F0%9F%87%A9%F0%9F%87%AA%20DE%20%7C%20HTTPS%20%7C%20484ms%20%7C%20GozargahAzadi
-https://185.221.132.226:9443#%F0%9F%87%A9%F0%9F%87%AA%20DE%20%7C%20HTTPS%20%7C%20503ms%20%7C%20GozargahAzadi
-vless://d89b1691-e1ad-47c4-8cdb-5bbfe1171a8c@188.245.191.19:2040?host=jr61rsc8fog5f.l6yr5b4ialxnf2ll2zcsgmlqf3u.workers.dev&network=ws&path=%2F%40Marisa_kristi&security=tls&sni=jr61rsc8fog5f.l6yr5b4ialxnf2ll2zcsgmlqf3u.workers.dev#%F0%9F%87%A9%F0%9F%87%AA%20DE%20%7C%20VLESS%20%7C%20515ms%20%7C%20GozargahAzadi
-ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNToxaGhycXJva2ozYWc=@209.46.102.22:8388#%F0%9F%87%A9%F0%9F%87%AA%20DE%20%7C%20SS%20%7C%201150ms%20%7C%20GozargahAzadi
-ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTo3cEdnLW1aenBvS1JONVRZUGc4STJR@cdn-2d12.giftcardbazarbot.com:8243#%F0%9F%87%A9%F0%9F%87%AA%20DE%20%7C%20SS%20%7C%201156ms%20%7C%20GozargahAzadi
-ss://YWVzLTI1Ni1nY206UmV4bkJnVTdFVjVBRHhH@213.202.208.199:7001#%F0%9F%87%A9%F0%9F%87%AA%20DE%20%7C%20SS%20%7C%201158ms%20%7C%20GozargahAzadi
-vless://6bceb548-d9b6-461f-8e37-a5a7fbcdc2c8@milo.rubinaz.xyz:8080?network=tcp&security=none&sni=milo.rubinaz.xyz#%F0%9F%87%A9%F0%9F%87%AA%20DE%20%7C%20VLESS%20%7C%201490ms%20%7C%20GozargahAzadi
-vless://b585dc5e-55bf-4a8b-913a-27c9ccac05c3@81.95.4.189:443?host=bab-6.site&network=ws&path=%2Fvws%2F&security=tls&sni=bab-6.site#%F0%9F%87%A9%F0%9F%87%AA%20DE%20%7C%20VLESS%20%7C%208664ms%20%7C%20GozargahAzadi
+vless://a42ba501-2628-40ab-87ad-cf77adc46f67@188.245.191.19:2040?host=7nnoiou0z.3xn99hzq2sh7iekktpkeq7rofs3qc8iohrqs4pb9p.workers.dev&network=ws&path=%2F%40Marisa_kristi&security=tls&sni=7nnoiou0z.3xn99hzq2sh7iekktpkeq7rofs3qc8iohrqs4pb9p.workers.dev#%F0%9F%87%A9%F0%9F%87%AA%20DE%20%7C%20VLESS%20%7C%20418ms%20%7C%20GozargahAzadi
+ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTo3cEdnLW1aenBvS1JONVRZUGc4STJR@cdn-2d12.giftcardbazarbot.com:8243#%F0%9F%87%A9%F0%9F%87%AA%20DE%20%7C%20SS%20%7C%201129ms%20%7C%20GozargahAzadi
+ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNToxaGhycXJva2ozYWc=@209.46.102.22:8388#%F0%9F%87%A9%F0%9F%87%AA%20DE%20%7C%20SS%20%7C%201133ms%20%7C%20GozargahAzadi
+vless://d342d11e-d224-4463-b982-532309285094@157.230.101.36:443?host=ccc.010304.xyz&network=ws&path=%2F&security=tls&sni=ccc.010304.xyz#%F0%9F%87%A9%F0%9F%87%AA%20DE%20%7C%20VLESS%20%7C%203035ms%20%7C%20GozargahAzadi
+vless://7858128a-6b5e-4f86-9bff-52c1f1e6439d@sino.bestsellers1.site:2083?network=ws&path=%2F&security=tls&sni=sino.bestsellers1.site#%F0%9F%87%A9%F0%9F%87%AA%20DE%20%7C%20VLESS%20%7C%204486ms%20%7C%20GozargahAzadi
