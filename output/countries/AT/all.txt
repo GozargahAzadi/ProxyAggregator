@@ -1,1 +1,3 @@
-https://146.70.244.18:443#%F0%9F%87%A6%F0%9F%87%B9%20AT%20%7C%20HTTPS%20%7C%20393ms%20%7C%20GozargahAzadi
+https://146.70.244.18:443#%F0%9F%87%A6%F0%9F%87%B9%20AT%20%7C%20HTTPS%20%7C%20433ms%20%7C%20GozargahAzadi
+https://146.70.244.2:443#%F0%9F%87%A6%F0%9F%87%B9%20AT%20%7C%20HTTPS%20%7C%20436ms%20%7C%20GozargahAzadi
+vless://2f89c063-808b-4872-b68b-c64644a0841e@85.192.42.29:8444?host=3t1yvbyla-rj740g.28m7r63dttya6gazmhoo.workers.dev&network=ws&path=%2F%40Marisa_kristi&security=tls&sni=3t1yvbyla-rj740g.28m7r63dttya6gazmhoo.workers.dev#%F0%9F%87%A6%F0%9F%87%B9%20AT%20%7C%20VLESS%20%7C%20479ms%20%7C%20GozargahAzadi
