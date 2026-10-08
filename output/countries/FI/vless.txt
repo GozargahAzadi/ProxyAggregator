@@ -1,2 +1,2 @@
-vless://d342d11e-d224-4463-b982-532309285094@144.31.99.252:443?host=ccc.010304.xyz&network=ws&path=%2F&security=tls&sni=ccc.010304.xyz#%F0%9F%87%AB%F0%9F%87%AE%20FI%20%7C%20VLESS%20%7C%20825ms%20%7C%20GozargahAzadi
-vless://ae1612f8-6e01-48d6-b4f7-502f233dfb33@177.3.218.181:8443?host=fi.fastmirror-labs.xyz&network=ws&path=%2Fws-cdn1-vless&security=tls&sni=177.3.218.181#%F0%9F%87%AB%F0%9F%87%AE%20FI%20%7C%20VLESS%20%7C%204651ms%20%7C%20GozargahAzadi
+vless://d342d11e-d224-4463-b982-532309285094@144.31.99.252:443?host=ccc.010304.xyz&network=ws&path=%2F&security=tls&sni=ccc.010304.xyz#%F0%9F%87%AB%F0%9F%87%AE%20FI%20%7C%20VLESS%20%7C%20845ms%20%7C%20GozargahAzadi
+vless://ae1612f8-6e01-48d6-b4f7-502f233dfb33@177.3.218.181:8443?host=fi.fastmirror-labs.xyz&network=ws&path=%2Fws-cdn1-vless&security=tls&sni=177.3.218.181#%F0%9F%87%AB%F0%9F%87%AE%20FI%20%7C%20VLESS%20%7C%204634ms%20%7C%20GozargahAzadi
