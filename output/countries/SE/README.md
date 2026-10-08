@@ -1,6 +1,6 @@
 # 🇸🇪 Sweden
 
-4 healthy proxies.
+3 healthy proxies.
 
 ## 📋 All Protocols
 

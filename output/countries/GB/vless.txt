@@ -1,2 +1,0 @@
-vless://bd01efed-f999-41a5-bbb1-3d2357647f11@129.151.64.169:31867?host=c6dbx99g6stb418qeo.t3jmlj0r152zji4htdkm9.workers.dev&network=ws&path=%2F%40Marisa_kristi&security=tls&sni=c6dbx99g6stb418qeo.t3jmlj0r152zji4htdkm9.workers.dev#%F0%9F%87%AC%F0%9F%87%A7%20GB%20%7C%20VLESS%20%7C%20394ms%20%7C%20GozargahAzadi
-vless://d342d11e-d224-4463-b982-532309285094@159.65.51.189:443?host=ccc.010304.xyz&network=ws&path=%2F&security=tls&sni=ccc.010304.xyz#%F0%9F%87%AC%F0%9F%87%A7%20GB%20%7C%20VLESS%20%7C%20481ms%20%7C%20GozargahAzadi
