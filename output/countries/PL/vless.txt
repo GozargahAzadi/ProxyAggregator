@@ -1,1 +1,1 @@
-vless://ee0a38e3-d148-48ac-ba99-5133446c2377@95.85.253.241:8443?host=pl.fastmirror-labs.xyz&network=ws&path=%2Fws-cdn1-vless&security=tls&sni=95.85.253.241#%F0%9F%87%B5%F0%9F%87%B1%20PL%20%7C%20VLESS%20%7C%205160ms%20%7C%20GozargahAzadi
+vless://ee0a38e3-d148-48ac-ba99-5133446c2377@95.85.253.241:8443?host=pl.fastmirror-labs.xyz&network=ws&path=%2Fws-cdn1-vless&security=tls&sni=95.85.253.241#%F0%9F%87%B5%F0%9F%87%B1%20PL%20%7C%20VLESS%20%7C%205036ms%20%7C%20GozargahAzadi
