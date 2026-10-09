@@ -1,2 +1,2 @@
-vless://7858128a-6b5e-4f86-9bff-52c1f1e6439d@91.107.247.173:2083?network=ws&path=%2F&security=tls&sni=sino.bestsellers1.site#%F0%9F%87%A9%F0%9F%87%AA%20DE%20%7C%20VLESS%20%7C%204390ms%20%7C%20GozargahAzadi
-vless://7858128a-6b5e-4f86-9bff-52c1f1e6439d@sino.bestsellers1.site:2083?network=ws&path=%2F&security=tls&sni=sino.bestsellers1.site#%F0%9F%87%A9%F0%9F%87%AA%20DE%20%7C%20VLESS%20%7C%204444ms%20%7C%20GozargahAzadi
+vless://7858128a-6b5e-4f86-9bff-52c1f1e6439d@91.107.247.173:2083?network=ws&path=%2F&security=tls&sni=sino.bestsellers1.site#%F0%9F%87%A9%F0%9F%87%AA%20DE%20%7C%20VLESS%20%7C%204380ms%20%7C%20GozargahAzadi
+vless://7858128a-6b5e-4f86-9bff-52c1f1e6439d@sino.bestsellers1.site:2083?network=ws&path=%2F&security=tls&sni=sino.bestsellers1.site#%F0%9F%87%A9%F0%9F%87%AA%20DE%20%7C%20VLESS%20%7C%204386ms%20%7C%20GozargahAzadi

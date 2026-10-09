@@ -4,28 +4,28 @@ Click a country to open its subscriptions.
 
 | Country | Code | Proxies |
 | --- | --- | ---: |
-| [🇦🇪 United Arab Emirates](./AE/) | AE | 2 |
+| [🇦🇪 United Arab Emirates](./AE/) | AE | 3 |
 | [🇧🇬 Bulgaria](./BG/) | BG | 2 |
-| [🇨🇦 Canada](./CA/) | CA | 19 |
+| [🇨🇦 Canada](./CA/) | CA | 20 |
 | [🇨🇭 Switzerland](./CH/) | CH | 1 |
-| [🇨🇳 China](./CN/) | CN | 1 |
+| [🇨🇳 China](./CN/) | CN | 2 |
 | [🇩🇪 Germany](./DE/) | DE | 7 |
 | [🇪🇪 Estonia](./EE/) | EE | 1 |
 | [🇪🇸 Spain](./ES/) | ES | 1 |
 | [🇫🇮 Finland](./FI/) | FI | 2 |
-| [🇫🇷 France](./FR/) | FR | 14 |
-| [🇬🇧 United Kingdom](./GB/) | GB | 79 |
+| [🇫🇷 France](./FR/) | FR | 15 |
+| [🇬🇧 United Kingdom](./GB/) | GB | 81 |
 | [🇭🇰 Hong Kong](./HK/) | HK | 2 |
 | [🇮🇩 Indonesia](./ID/) | ID | 1 |
 | [🇮🇪 Ireland](./IE/) | IE | 1 |
 | [🇮🇱 Israel](./IL/) | IL | 1 |
 | [🇮🇳 India](./IN/) | IN | 2 |
-| [🇮🇷 Iran](./IR/) | IR | 6 |
+| [🇮🇷 Iran](./IR/) | IR | 5 |
 | [🇮🇹 Italy](./IT/) | IT | 1 |
-| [🇯🇵 Japan](./JP/) | JP | 4 |
+| [🇯🇵 Japan](./JP/) | JP | 5 |
 | [🇰🇷 Korea, Republic of](./KR/) | KR | 6 |
 | [🇲🇾 Malaysia](./MY/) | MY | 1 |
-| [🇳🇱 Netherlands](./NL/) | NL | 19 |
+| [🇳🇱 Netherlands](./NL/) | NL | 21 |
 | [🇵🇱 Poland](./PL/) | PL | 1 |
 | [🇷🇴 Romania](./RO/) | RO | 2 |
 | [🇷🇺 Russia](./RU/) | RU | 3 |
