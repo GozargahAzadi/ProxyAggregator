@@ -1,1 +1,2 @@
-vless://ff0b6ba8-bed0-4c4d-bbc9-23af47582615@91.210.169.181:443?host=wstg.datasynctrue.online&network=ws&path=%2Fapi%2Fconnect&security=tls#%F0%9F%87%B7%F0%9F%87%BA%20RU%20%7C%20VLESS%20%7C%201727ms%20%7C%20GozargahAzadi
+vless://ff0b6ba8-bed0-4c4d-bbc9-23af47582615@91.210.169.181:443?host=wstg.datasynctrue.online&network=ws&path=%2Fapi%2Fconnect&security=tls#%F0%9F%87%B7%F0%9F%87%BA%20RU%20%7C%20VLESS%20%7C%202337ms%20%7C%20GozargahAzadi
+vless://3eec23c1-2a0d-4d53-afa5-62745a1f5ffe@31.76.65.216:30002?host=olivejournal.gazette.help&network=ws&path=%2Fjournal-11ff0bb2fa767891c2fc03ebc9a59aa7&security=tls&sni=olivejournal.gazette.help#%F0%9F%87%B7%F0%9F%87%BA%20RU%20%7C%20VLESS%20%7C%205217ms%20%7C%20GozargahAzadi

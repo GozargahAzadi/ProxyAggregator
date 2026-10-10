@@ -1,1 +1,0 @@
-vless://d342d11e-d224-4463-b982-532309285094@159.65.51.189:443?host=ccc.010304.xyz&network=ws&path=%2F&security=tls&sni=ccc.010304.xyz#%F0%9F%87%AC%F0%9F%87%A7%20GB%20%7C%20VLESS%20%7C%20411ms%20%7C%20GozargahAzadi
