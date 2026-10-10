@@ -1,3 +1,1 @@
-vless://6bceb548-d9b6-461f-8e37-a5a7fbcdc2c8@milo.rubinaz.xyz:8080?network=tcp&security=none&sni=milo.rubinaz.xyz#%F0%9F%87%B5%F0%9F%87%B1%20PL%20%7C%20VLESS%20%7C%202296ms%20%7C%20GozargahAzadi
-vless://9ef61079-6f7d-4911-9608-943da85d8e6f@test.keoplentuio.xyz:2053?network=tcp#%F0%9F%87%B5%F0%9F%87%B1%20PL%20%7C%20VLESS%20%7C%205637ms%20%7C%20GozargahAzadi
-vless://ee0a38e3-d148-48ac-ba99-5133446c2377@95.85.253.241:8443?host=pl.fastmirror-labs.xyz&network=ws&path=%2Fws-cdn1-vless&security=tls&sni=95.85.253.241#%F0%9F%87%B5%F0%9F%87%B1%20PL%20%7C%20VLESS%20%7C%205796ms%20%7C%20GozargahAzadi
+vless://ee0a38e3-d148-48ac-ba99-5133446c2377@95.85.253.241:8443?host=pl.fastmirror-labs.xyz&network=ws&path=%2Fws-cdn1-vless&security=tls&sni=95.85.253.241#%F0%9F%87%B5%F0%9F%87%B1%20PL%20%7C%20VLESS%20%7C%206645ms%20%7C%20GozargahAzadi
