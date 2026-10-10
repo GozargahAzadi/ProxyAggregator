@@ -1,2 +1,1 @@
-vless://ff0b6ba8-bed0-4c4d-bbc9-23af47582615@91.210.169.181:443?host=wstg.datasynctrue.online&network=ws&path=%2Fapi%2Fconnect&security=tls#%F0%9F%87%B7%F0%9F%87%BA%20RU%20%7C%20VLESS%20%7C%202727ms%20%7C%20GozargahAzadi
-vless://ec6f8131-7a5d-4117-9627-6fb2b39ae0da@drive.korroh.com:443?host=drive.korroh.com&network=ws&path=%2Fremote.php%2Fdav%2F89f7661a0011ce46&security=tls&sni=drive.korroh.com#%F0%9F%87%B7%F0%9F%87%BA%20RU%20%7C%20VLESS%20%7C%205474ms%20%7C%20GozargahAzadi
+vless://ff0b6ba8-bed0-4c4d-bbc9-23af47582615@91.210.169.181:443?host=wstg.datasynctrue.online&network=ws&path=%2Fapi%2Fconnect&security=tls#%F0%9F%87%B7%F0%9F%87%BA%20RU%20%7C%20VLESS%20%7C%201884ms%20%7C%20GozargahAzadi
