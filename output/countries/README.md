@@ -6,37 +6,37 @@ Click a country to open its subscriptions.
 | --- | --- | ---: |
 | [🇦🇪 United Arab Emirates](./AE/) | AE | 2 |
 | [🇧🇬 Bulgaria](./BG/) | BG | 1 |
-| [🇨🇦 Canada](./CA/) | CA | 15 |
+| [🇨🇦 Canada](./CA/) | CA | 16 |
 | [🇨🇭 Switzerland](./CH/) | CH | 1 |
 | [🇨🇳 China](./CN/) | CN | 1 |
 | [🇩🇪 Germany](./DE/) | DE | 6 |
 | [🇪🇪 Estonia](./EE/) | EE | 1 |
 | [🇪🇸 Spain](./ES/) | ES | 1 |
 | [🇫🇮 Finland](./FI/) | FI | 1 |
-| [🇫🇷 France](./FR/) | FR | 12 |
-| [🇬🇧 United Kingdom](./GB/) | GB | 79 |
+| [🇫🇷 France](./FR/) | FR | 16 |
+| [🇬🇧 United Kingdom](./GB/) | GB | 80 |
 | [🇭🇰 Hong Kong](./HK/) | HK | 3 |
 | [🇮🇩 Indonesia](./ID/) | ID | 1 |
 | [🇮🇪 Ireland](./IE/) | IE | 1 |
 | [🇮🇱 Israel](./IL/) | IL | 1 |
-| [🇮🇳 India](./IN/) | IN | 2 |
-| [🇮🇷 Iran](./IR/) | IR | 5 |
+| [🇮🇳 India](./IN/) | IN | 1 |
+| [🇮🇷 Iran](./IR/) | IR | 6 |
 | [🇮🇹 Italy](./IT/) | IT | 1 |
 | [🇯🇵 Japan](./JP/) | JP | 4 |
-| [🇰🇷 Korea, Republic of](./KR/) | KR | 4 |
+| [🇰🇷 Korea, Republic of](./KR/) | KR | 6 |
 | [🇲🇽 Mexico](./MX/) | MX | 1 |
 | [🇲🇾 Malaysia](./MY/) | MY | 1 |
-| [🇳🇱 Netherlands](./NL/) | NL | 19 |
-| [🇵🇱 Poland](./PL/) | PL | 2 |
+| [🇳🇱 Netherlands](./NL/) | NL | 20 |
+| [🇵🇱 Poland](./PL/) | PL | 3 |
 | [🇷🇴 Romania](./RO/) | RO | 1 |
 | [🇷🇺 Russia](./RU/) | RU | 1 |
 | [🇸🇨 Seychelles](./SC/) | SC | 1 |
 | [🇸🇬 Singapore](./SG/) | SG | 9 |
 | [🇹🇭 Thailand](./TH/) | TH | 1 |
-| [🇹🇷 Turkey](./TR/) | TR | 4 |
-| [🇺🇸 United States](./US/) | US | 45 |
+| [🇹🇷 Turkey](./TR/) | TR | 3 |
+| [🇺🇸 United States](./US/) | US | 48 |
 | [🇻🇬 Virgin Islands, British](./VG/) | VG | 2 |
-| [🇿🇦 South Africa](./ZA/) | ZA | 2 |
+| [🇿🇦 South Africa](./ZA/) | ZA | 3 |
 
 <details>
 <summary>🌐 All countries — full ISO flag map</summary>
