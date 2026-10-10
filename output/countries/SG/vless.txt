@@ -1,3 +1,3 @@
-vless://d342d11e-d224-4463-b982-532309285094@43.174.193.1:443?host=ccc.010304.xyz&network=ws&path=%2F&security=tls&sni=ccc.010304.xyz#%F0%9F%87%B8%F0%9F%87%AC%20SG%20%7C%20VLESS%20%7C%201414ms%20%7C%20GozargahAzadi
-vless://6e59d5c5-7aa3-4c36-a4c4-e3b899525ed2@139.162.27.96:2096?host=free-server.techsonic.dev&network=ws&path=%2Ffree-server.techsonic.dev&security=tls&sni=free-server.techsonic.dev#%F0%9F%87%B8%F0%9F%87%AC%20SG%20%7C%20VLESS%20%7C%204774ms%20%7C%20GozargahAzadi
-vless://20ff936a-8eb5-4d27-9cce-93f2016d467b@free.nadun.store:443?network=ws&security=tls#%F0%9F%87%B8%F0%9F%87%AC%20SG%20%7C%20VLESS%20%7C%204824ms%20%7C%20GozargahAzadi
+vless://d342d11e-d224-4463-b982-532309285094@43.174.193.1:443?host=ccc.010304.xyz&network=ws&path=%2F&security=tls&sni=ccc.010304.xyz#%F0%9F%87%B8%F0%9F%87%AC%20SG%20%7C%20VLESS%20%7C%20646ms%20%7C%20GozargahAzadi
+vless://6e59d5c5-7aa3-4c36-a4c4-e3b899525ed2@139.162.27.96:2096?host=free-server.techsonic.dev&network=ws&path=%2Ffree-server.techsonic.dev&security=tls&sni=free-server.techsonic.dev#%F0%9F%87%B8%F0%9F%87%AC%20SG%20%7C%20VLESS%20%7C%204674ms%20%7C%20GozargahAzadi
+vless://20ff936a-8eb5-4d27-9cce-93f2016d467b@free.nadun.store:443?network=ws&security=tls#%F0%9F%87%B8%F0%9F%87%AC%20SG%20%7C%20VLESS%20%7C%204723ms%20%7C%20GozargahAzadi

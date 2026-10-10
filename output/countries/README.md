@@ -4,7 +4,7 @@ Click a country to open its subscriptions.
 
 | Country | Code | Proxies |
 | --- | --- | ---: |
-| [🇦🇪 United Arab Emirates](./AE/) | AE | 3 |
+| [🇦🇪 United Arab Emirates](./AE/) | AE | 2 |
 | [🇧🇬 Bulgaria](./BG/) | BG | 2 |
 | [🇨🇦 Canada](./CA/) | CA | 16 |
 | [🇨🇭 Switzerland](./CH/) | CH | 1 |
@@ -12,28 +12,29 @@ Click a country to open its subscriptions.
 | [🇩🇪 Germany](./DE/) | DE | 6 |
 | [🇪🇪 Estonia](./EE/) | EE | 1 |
 | [🇪🇸 Spain](./ES/) | ES | 1 |
+| [🇫🇮 Finland](./FI/) | FI | 2 |
 | [🇫🇷 France](./FR/) | FR | 14 |
-| [🇬🇧 United Kingdom](./GB/) | GB | 80 |
+| [🇬🇧 United Kingdom](./GB/) | GB | 79 |
 | [🇭🇰 Hong Kong](./HK/) | HK | 2 |
 | [🇮🇩 Indonesia](./ID/) | ID | 1 |
 | [🇮🇳 India](./IN/) | IN | 2 |
-| [🇮🇷 Iran](./IR/) | IR | 6 |
+| [🇮🇷 Iran](./IR/) | IR | 7 |
 | [🇮🇹 Italy](./IT/) | IT | 1 |
-| [🇯🇵 Japan](./JP/) | JP | 5 |
-| [🇰🇷 Korea, Republic of](./KR/) | KR | 4 |
+| [🇯🇵 Japan](./JP/) | JP | 6 |
+| [🇰🇷 Korea, Republic of](./KR/) | KR | 8 |
 | [🇲🇽 Mexico](./MX/) | MX | 1 |
 | [🇲🇾 Malaysia](./MY/) | MY | 1 |
-| [🇳🇱 Netherlands](./NL/) | NL | 22 |
+| [🇳🇱 Netherlands](./NL/) | NL | 21 |
 | [🇵🇱 Poland](./PL/) | PL | 1 |
 | [🇷🇴 Romania](./RO/) | RO | 1 |
-| [🇷🇺 Russia](./RU/) | RU | 9 |
+| [🇷🇺 Russia](./RU/) | RU | 2 |
 | [🇸🇨 Seychelles](./SC/) | SC | 1 |
 | [🇸🇬 Singapore](./SG/) | SG | 8 |
-| [🇹🇭 Thailand](./TH/) | TH | 1 |
+| [🇹🇭 Thailand](./TH/) | TH | 4 |
 | [🇹🇷 Turkey](./TR/) | TR | 4 |
-| [🇺🇸 United States](./US/) | US | 45 |
+| [🇺🇸 United States](./US/) | US | 48 |
 | [🇻🇬 Virgin Islands, British](./VG/) | VG | 2 |
-| [🇿🇦 South Africa](./ZA/) | ZA | 3 |
+| [🇿🇦 South Africa](./ZA/) | ZA | 2 |
 
 <details>
 <summary>🌐 All countries — full ISO flag map</summary>
@@ -107,7 +108,7 @@ Click a country to open its subscriptions.
 - 🇪🇷 Eritrea
 - 🇪🇸 [Spain](./ES/)
 - 🇪🇹 Ethiopia
-- 🇫🇮 Finland
+- 🇫🇮 [Finland](./FI/)
 - 🇫🇯 Fiji
 - 🇫🇰 Falkland Islands (Malvinas)
 - 🇫🇲 Micronesia
