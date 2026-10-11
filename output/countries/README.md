@@ -13,16 +13,15 @@ Click a country to open its subscriptions.
 | [🇪🇪 Estonia](./EE/) | EE | 1 |
 | [🇪🇸 Spain](./ES/) | ES | 1 |
 | [🇫🇮 Finland](./FI/) | FI | 3 |
-| [🇫🇷 France](./FR/) | FR | 18 |
+| [🇫🇷 France](./FR/) | FR | 16 |
 | [🇬🇧 United Kingdom](./GB/) | GB | 81 |
 | [🇭🇰 Hong Kong](./HK/) | HK | 2 |
 | [🇮🇩 Indonesia](./ID/) | ID | 1 |
 | [🇮🇳 India](./IN/) | IN | 2 |
-| [🇮🇷 Iran](./IR/) | IR | 7 |
+| [🇮🇷 Iran](./IR/) | IR | 8 |
 | [🇮🇹 Italy](./IT/) | IT | 1 |
 | [🇯🇵 Japan](./JP/) | JP | 6 |
-| [🇰🇷 Korea, Republic of](./KR/) | KR | 5 |
-| [🇲🇽 Mexico](./MX/) | MX | 1 |
+| [🇰🇷 Korea, Republic of](./KR/) | KR | 9 |
 | [🇲🇾 Malaysia](./MY/) | MY | 1 |
 | [🇳🇱 Netherlands](./NL/) | NL | 21 |
 | [🇵🇱 Poland](./PL/) | PL | 1 |
@@ -30,12 +29,13 @@ Click a country to open its subscriptions.
 | [🇷🇺 Russia](./RU/) | RU | 1 |
 | [🇸🇨 Seychelles](./SC/) | SC | 1 |
 | [🇸🇪 Sweden](./SE/) | SE | 1 |
-| [🇸🇬 Singapore](./SG/) | SG | 15 |
-| [🇹🇭 Thailand](./TH/) | TH | 2 |
+| [🇸🇬 Singapore](./SG/) | SG | 10 |
+| [🇹🇭 Thailand](./TH/) | TH | 1 |
 | [🇹🇷 Turkey](./TR/) | TR | 3 |
-| [🇺🇸 United States](./US/) | US | 56 |
+| [🇹🇼 Taiwan](./TW/) | TW | 1 |
+| [🇺🇸 United States](./US/) | US | 53 |
 | [🇻🇬 Virgin Islands, British](./VG/) | VG | 2 |
-| [🇿🇦 South Africa](./ZA/) | ZA | 3 |
+| [🇿🇦 South Africa](./ZA/) | ZA | 2 |
 
 <details>
 <summary>🌐 All countries — full ISO flag map</summary>
@@ -196,7 +196,7 @@ Click a country to open its subscriptions.
 - 🇲🇺 Mauritius
 - 🇲🇻 Maldives
 - 🇲🇼 Malawi
-- 🇲🇽 [Mexico](./MX/)
+- 🇲🇽 Mexico
 - 🇲🇾 [Malaysia](./MY/)
 - 🇲🇿 Mozambique
 - 🇳🇦 Namibia
@@ -267,7 +267,7 @@ Click a country to open its subscriptions.
 - 🇹🇷 [Turkey](./TR/)
 - 🇹🇹 Trinidad and Tobago
 - 🇹🇻 Tuvalu
-- 🇹🇼 Taiwan
+- 🇹🇼 [Taiwan](./TW/)
 - 🇹🇿 Tanzania
 - 🇺🇦 Ukraine
 - 🇺🇬 Uganda
