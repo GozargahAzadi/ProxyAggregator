@@ -4,42 +4,42 @@ Click a country to open its subscriptions.
 
 | Country | Code | Proxies |
 | --- | --- | ---: |
-| [🇦🇪 United Arab Emirates](./AE/) | AE | 2 |
+| [🇦🇪 United Arab Emirates](./AE/) | AE | 3 |
 | [🇦🇹 Austria](./AT/) | AT | 1 |
 | [🇧🇬 Bulgaria](./BG/) | BG | 2 |
-| [🇨🇦 Canada](./CA/) | CA | 16 |
+| [🇨🇦 Canada](./CA/) | CA | 15 |
 | [🇨🇭 Switzerland](./CH/) | CH | 1 |
 | [🇨🇳 China](./CN/) | CN | 1 |
 | [🇨🇿 Czechia](./CZ/) | CZ | 1 |
-| [🇩🇪 Germany](./DE/) | DE | 9 |
+| [🇩🇪 Germany](./DE/) | DE | 10 |
 | [🇪🇪 Estonia](./EE/) | EE | 1 |
 | [🇪🇸 Spain](./ES/) | ES | 2 |
 | [🇫🇮 Finland](./FI/) | FI | 1 |
-| [🇫🇷 France](./FR/) | FR | 13 |
-| [🇬🇧 United Kingdom](./GB/) | GB | 78 |
-| [🇭🇰 Hong Kong](./HK/) | HK | 2 |
+| [🇫🇷 France](./FR/) | FR | 17 |
+| [🇬🇧 United Kingdom](./GB/) | GB | 81 |
 | [🇮🇩 Indonesia](./ID/) | ID | 1 |
+| [🇮🇪 Ireland](./IE/) | IE | 1 |
 | [🇮🇱 Israel](./IL/) | IL | 1 |
 | [🇮🇳 India](./IN/) | IN | 2 |
 | [🇮🇷 Iran](./IR/) | IR | 8 |
-| [🇮🇹 Italy](./IT/) | IT | 3 |
-| [🇯🇵 Japan](./JP/) | JP | 5 |
-| [🇰🇷 Korea, Republic of](./KR/) | KR | 6 |
+| [🇮🇹 Italy](./IT/) | IT | 2 |
+| [🇯🇵 Japan](./JP/) | JP | 4 |
+| [🇰🇷 Korea, Republic of](./KR/) | KR | 4 |
 | [🇲🇾 Malaysia](./MY/) | MY | 1 |
 | [🇳🇱 Netherlands](./NL/) | NL | 19 |
 | [🇵🇦 Panama](./PA/) | PA | 1 |
-| [🇵🇱 Poland](./PL/) | PL | 2 |
-| [🇷🇴 Romania](./RO/) | RO | 3 |
+| [🇵🇱 Poland](./PL/) | PL | 3 |
+| [🇷🇴 Romania](./RO/) | RO | 2 |
 | [🇷🇺 Russia](./RU/) | RU | 2 |
 | [🇸🇨 Seychelles](./SC/) | SC | 1 |
-| [🇸🇬 Singapore](./SG/) | SG | 6 |
+| [🇸🇬 Singapore](./SG/) | SG | 5 |
 | [🇹🇭 Thailand](./TH/) | TH | 2 |
-| [🇹🇷 Turkey](./TR/) | TR | 4 |
+| [🇹🇷 Turkey](./TR/) | TR | 3 |
 | [🇹🇼 Taiwan](./TW/) | TW | 2 |
 | [🇺🇦 Ukraine](./UA/) | UA | 1 |
 | [🇺🇸 United States](./US/) | US | 53 |
 | [🇻🇬 Virgin Islands, British](./VG/) | VG | 2 |
-| [🇿🇦 South Africa](./ZA/) | ZA | 2 |
+| [🇿🇦 South Africa](./ZA/) | ZA | 3 |
 
 <details>
 <summary>🌐 All countries — full ISO flag map</summary>
@@ -138,14 +138,14 @@ Click a country to open its subscriptions.
 - 🇬🇺 Guam
 - 🇬🇼 Guinea-Bissau
 - 🇬🇾 Guyana
-- 🇭🇰 [Hong Kong](./HK/)
+- 🇭🇰 Hong Kong
 - 🇭🇲 Heard Island and McDonald Islands
 - 🇭🇳 Honduras
 - 🇭🇷 Croatia
 - 🇭🇹 Haiti
 - 🇭🇺 Hungary
 - 🇮🇩 [Indonesia](./ID/)
-- 🇮🇪 Ireland
+- 🇮🇪 [Ireland](./IE/)
 - 🇮🇱 [Israel](./IL/)
 - 🇮🇲 Isle of Man
 - 🇮🇳 [India](./IN/)
