@@ -11,19 +11,19 @@ Click a country to open its subscriptions.
 | [🇨🇭 Switzerland](./CH/) | CH | 1 |
 | [🇨🇳 China](./CN/) | CN | 1 |
 | [🇨🇿 Czechia](./CZ/) | CZ | 1 |
-| [🇩🇪 Germany](./DE/) | DE | 8 |
+| [🇩🇪 Germany](./DE/) | DE | 10 |
 | [🇪🇪 Estonia](./EE/) | EE | 1 |
 | [🇪🇸 Spain](./ES/) | ES | 2 |
-| [🇫🇮 Finland](./FI/) | FI | 1 |
+| [🇫🇮 Finland](./FI/) | FI | 2 |
 | [🇫🇷 France](./FR/) | FR | 17 |
-| [🇬🇧 United Kingdom](./GB/) | GB | 83 |
+| [🇬🇧 United Kingdom](./GB/) | GB | 82 |
 | [🇮🇩 Indonesia](./ID/) | ID | 1 |
 | [🇮🇪 Ireland](./IE/) | IE | 1 |
 | [🇮🇱 Israel](./IL/) | IL | 1 |
 | [🇮🇳 India](./IN/) | IN | 2 |
 | [🇮🇷 Iran](./IR/) | IR | 7 |
 | [🇮🇹 Italy](./IT/) | IT | 3 |
-| [🇯🇵 Japan](./JP/) | JP | 4 |
+| [🇯🇵 Japan](./JP/) | JP | 5 |
 | [🇰🇷 Korea, Republic of](./KR/) | KR | 7 |
 | [🇲🇾 Malaysia](./MY/) | MY | 1 |
 | [🇳🇱 Netherlands](./NL/) | NL | 19 |
@@ -32,10 +32,10 @@ Click a country to open its subscriptions.
 | [🇷🇴 Romania](./RO/) | RO | 2 |
 | [🇷🇺 Russia](./RU/) | RU | 2 |
 | [🇸🇨 Seychelles](./SC/) | SC | 1 |
-| [🇸🇬 Singapore](./SG/) | SG | 6 |
+| [🇸🇬 Singapore](./SG/) | SG | 5 |
 | [🇹🇭 Thailand](./TH/) | TH | 4 |
 | [🇹🇷 Turkey](./TR/) | TR | 3 |
-| [🇹🇼 Taiwan](./TW/) | TW | 2 |
+| [🇹🇼 Taiwan](./TW/) | TW | 1 |
 | [🇺🇦 Ukraine](./UA/) | UA | 1 |
 | [🇺🇸 United States](./US/) | US | 55 |
 | [🇻🇬 Virgin Islands, British](./VG/) | VG | 2 |
