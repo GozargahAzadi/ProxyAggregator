@@ -6,34 +6,32 @@ Click a country to open its subscriptions.
 | --- | --- | ---: |
 | [🇦🇪 United Arab Emirates](./AE/) | AE | 2 |
 | [🇧🇬 Bulgaria](./BG/) | BG | 1 |
-| [🇨🇦 Canada](./CA/) | CA | 15 |
+| [🇨🇦 Canada](./CA/) | CA | 16 |
 | [🇨🇭 Switzerland](./CH/) | CH | 1 |
 | [🇨🇳 China](./CN/) | CN | 1 |
-| [🇩🇪 Germany](./DE/) | DE | 7 |
+| [🇩🇪 Germany](./DE/) | DE | 6 |
 | [🇪🇪 Estonia](./EE/) | EE | 1 |
 | [🇪🇸 Spain](./ES/) | ES | 1 |
-| [🇫🇮 Finland](./FI/) | FI | 3 |
-| [🇫🇷 France](./FR/) | FR | 16 |
+| [🇫🇮 Finland](./FI/) | FI | 1 |
+| [🇫🇷 France](./FR/) | FR | 14 |
 | [🇬🇧 United Kingdom](./GB/) | GB | 81 |
 | [🇭🇰 Hong Kong](./HK/) | HK | 2 |
 | [🇮🇩 Indonesia](./ID/) | ID | 1 |
 | [🇮🇳 India](./IN/) | IN | 2 |
-| [🇮🇷 Iran](./IR/) | IR | 8 |
+| [🇮🇷 Iran](./IR/) | IR | 7 |
 | [🇮🇹 Italy](./IT/) | IT | 1 |
-| [🇯🇵 Japan](./JP/) | JP | 6 |
-| [🇰🇷 Korea, Republic of](./KR/) | KR | 9 |
+| [🇯🇵 Japan](./JP/) | JP | 3 |
+| [🇰🇷 Korea, Republic of](./KR/) | KR | 13 |
 | [🇲🇾 Malaysia](./MY/) | MY | 1 |
 | [🇳🇱 Netherlands](./NL/) | NL | 21 |
-| [🇵🇱 Poland](./PL/) | PL | 1 |
 | [🇷🇴 Romania](./RO/) | RO | 2 |
 | [🇷🇺 Russia](./RU/) | RU | 1 |
 | [🇸🇨 Seychelles](./SC/) | SC | 1 |
-| [🇸🇪 Sweden](./SE/) | SE | 1 |
-| [🇸🇬 Singapore](./SG/) | SG | 10 |
-| [🇹🇭 Thailand](./TH/) | TH | 1 |
+| [🇸🇬 Singapore](./SG/) | SG | 5 |
+| [🇹🇭 Thailand](./TH/) | TH | 3 |
 | [🇹🇷 Turkey](./TR/) | TR | 3 |
 | [🇹🇼 Taiwan](./TW/) | TW | 1 |
-| [🇺🇸 United States](./US/) | US | 53 |
+| [🇺🇸 United States](./US/) | US | 47 |
 | [🇻🇬 Virgin Islands, British](./VG/) | VG | 2 |
 | [🇿🇦 South Africa](./ZA/) | ZA | 2 |
 
@@ -218,7 +216,7 @@ Click a country to open its subscriptions.
 - 🇵🇬 Papua New Guinea
 - 🇵🇭 Philippines
 - 🇵🇰 Pakistan
-- 🇵🇱 [Poland](./PL/)
+- 🇵🇱 Poland
 - 🇵🇲 Saint Pierre and Miquelon
 - 🇵🇳 Pitcairn
 - 🇵🇷 Puerto Rico
@@ -236,7 +234,7 @@ Click a country to open its subscriptions.
 - 🇸🇧 Solomon Islands
 - 🇸🇨 [Seychelles](./SC/)
 - 🇸🇩 Sudan
-- 🇸🇪 [Sweden](./SE/)
+- 🇸🇪 Sweden
 - 🇸🇬 [Singapore](./SG/)
 - 🇸🇭 Saint Helena, Ascension and Tristan da Cunha
 - 🇸🇮 Slovenia
