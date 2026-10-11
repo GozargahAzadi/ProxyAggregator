@@ -15,18 +15,18 @@ Click a country to open its subscriptions.
 | [🇪🇪 Estonia](./EE/) | EE | 1 |
 | [🇪🇸 Spain](./ES/) | ES | 2 |
 | [🇫🇮 Finland](./FI/) | FI | 1 |
-| [🇫🇷 France](./FR/) | FR | 18 |
-| [🇬🇧 United Kingdom](./GB/) | GB | 80 |
+| [🇫🇷 France](./FR/) | FR | 13 |
+| [🇬🇧 United Kingdom](./GB/) | GB | 78 |
 | [🇭🇰 Hong Kong](./HK/) | HK | 2 |
 | [🇮🇩 Indonesia](./ID/) | ID | 1 |
 | [🇮🇱 Israel](./IL/) | IL | 1 |
 | [🇮🇳 India](./IN/) | IN | 2 |
-| [🇮🇷 Iran](./IR/) | IR | 5 |
-| [🇮🇹 Italy](./IT/) | IT | 2 |
-| [🇯🇵 Japan](./JP/) | JP | 4 |
-| [🇰🇷 Korea, Republic of](./KR/) | KR | 10 |
+| [🇮🇷 Iran](./IR/) | IR | 8 |
+| [🇮🇹 Italy](./IT/) | IT | 3 |
+| [🇯🇵 Japan](./JP/) | JP | 5 |
+| [🇰🇷 Korea, Republic of](./KR/) | KR | 6 |
 | [🇲🇾 Malaysia](./MY/) | MY | 1 |
-| [🇳🇱 Netherlands](./NL/) | NL | 20 |
+| [🇳🇱 Netherlands](./NL/) | NL | 19 |
 | [🇵🇦 Panama](./PA/) | PA | 1 |
 | [🇵🇱 Poland](./PL/) | PL | 2 |
 | [🇷🇴 Romania](./RO/) | RO | 3 |
@@ -35,7 +35,7 @@ Click a country to open its subscriptions.
 | [🇸🇬 Singapore](./SG/) | SG | 6 |
 | [🇹🇭 Thailand](./TH/) | TH | 2 |
 | [🇹🇷 Turkey](./TR/) | TR | 4 |
-| [🇹🇼 Taiwan](./TW/) | TW | 1 |
+| [🇹🇼 Taiwan](./TW/) | TW | 2 |
 | [🇺🇦 Ukraine](./UA/) | UA | 1 |
 | [🇺🇸 United States](./US/) | US | 53 |
 | [🇻🇬 Virgin Islands, British](./VG/) | VG | 2 |
