@@ -5,11 +5,11 @@ Click a country to open its subscriptions.
 | Country | Code | Proxies |
 | --- | --- | ---: |
 | [🇦🇪 United Arab Emirates](./AE/) | AE | 2 |
-| [🇧🇬 Bulgaria](./BG/) | BG | 2 |
+| [🇧🇬 Bulgaria](./BG/) | BG | 1 |
 | [🇨🇦 Canada](./CA/) | CA | 15 |
 | [🇨🇭 Switzerland](./CH/) | CH | 1 |
 | [🇨🇳 China](./CN/) | CN | 1 |
-| [🇩🇪 Germany](./DE/) | DE | 8 |
+| [🇩🇪 Germany](./DE/) | DE | 7 |
 | [🇪🇪 Estonia](./EE/) | EE | 1 |
 | [🇪🇸 Spain](./ES/) | ES | 1 |
 | [🇫🇮 Finland](./FI/) | FI | 3 |
@@ -21,18 +21,19 @@ Click a country to open its subscriptions.
 | [🇮🇷 Iran](./IR/) | IR | 7 |
 | [🇮🇹 Italy](./IT/) | IT | 1 |
 | [🇯🇵 Japan](./JP/) | JP | 6 |
-| [🇰🇷 Korea, Republic of](./KR/) | KR | 6 |
+| [🇰🇷 Korea, Republic of](./KR/) | KR | 5 |
 | [🇲🇽 Mexico](./MX/) | MX | 1 |
 | [🇲🇾 Malaysia](./MY/) | MY | 1 |
-| [🇳🇱 Netherlands](./NL/) | NL | 23 |
+| [🇳🇱 Netherlands](./NL/) | NL | 21 |
 | [🇵🇱 Poland](./PL/) | PL | 1 |
-| [🇷🇴 Romania](./RO/) | RO | 1 |
+| [🇷🇴 Romania](./RO/) | RO | 2 |
+| [🇷🇺 Russia](./RU/) | RU | 1 |
 | [🇸🇨 Seychelles](./SC/) | SC | 1 |
 | [🇸🇪 Sweden](./SE/) | SE | 1 |
 | [🇸🇬 Singapore](./SG/) | SG | 15 |
 | [🇹🇭 Thailand](./TH/) | TH | 2 |
 | [🇹🇷 Turkey](./TR/) | TR | 3 |
-| [🇺🇸 United States](./US/) | US | 60 |
+| [🇺🇸 United States](./US/) | US | 56 |
 | [🇻🇬 Virgin Islands, British](./VG/) | VG | 2 |
 | [🇿🇦 South Africa](./ZA/) | ZA | 3 |
 
@@ -229,7 +230,7 @@ Click a country to open its subscriptions.
 - 🇷🇪 Reunion
 - 🇷🇴 [Romania](./RO/)
 - 🇷🇸 Serbia
-- 🇷🇺 Russia
+- 🇷🇺 [Russia](./RU/)
 - 🇷🇼 Rwanda
 - 🇸🇦 Saudi Arabia
 - 🇸🇧 Solomon Islands
