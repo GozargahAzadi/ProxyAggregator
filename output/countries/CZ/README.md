@@ -1,6 +1,6 @@
 # 🇨🇿 Czechia
 
-1 healthy proxy.
+3 healthy proxies.
 
 ## 📋 All Protocols
 
