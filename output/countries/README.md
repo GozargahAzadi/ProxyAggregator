@@ -7,40 +7,40 @@ Click a country to open its subscriptions.
 | [🇦🇪 United Arab Emirates](./AE/) | AE | 3 |
 | [🇦🇹 Austria](./AT/) | AT | 2 |
 | [🇧🇪 Belgium](./BE/) | BE | 1 |
-| [🇧🇬 Bulgaria](./BG/) | BG | 1 |
+| [🇧🇬 Bulgaria](./BG/) | BG | 2 |
 | [🇨🇦 Canada](./CA/) | CA | 17 |
-| [🇨🇭 Switzerland](./CH/) | CH | 1 |
+| [🇨🇭 Switzerland](./CH/) | CH | 3 |
 | [🇨🇳 China](./CN/) | CN | 1 |
-| [🇩🇪 Germany](./DE/) | DE | 10 |
+| [🇩🇪 Germany](./DE/) | DE | 15 |
 | [🇪🇪 Estonia](./EE/) | EE | 2 |
 | [🇫🇮 Finland](./FI/) | FI | 2 |
-| [🇫🇷 France](./FR/) | FR | 13 |
-| [🇬🇧 United Kingdom](./GB/) | GB | 83 |
+| [🇫🇷 France](./FR/) | FR | 14 |
+| [🇬🇧 United Kingdom](./GB/) | GB | 87 |
 | [🇭🇰 Hong Kong](./HK/) | HK | 2 |
 | [🇭🇷 Croatia](./HR/) | HR | 1 |
 | [🇭🇺 Hungary](./HU/) | HU | 1 |
-| [🇮🇩 Indonesia](./ID/) | ID | 1 |
 | [🇮🇪 Ireland](./IE/) | IE | 1 |
 | [🇮🇱 Israel](./IL/) | IL | 1 |
 | [🇮🇳 India](./IN/) | IN | 2 |
-| [🇮🇷 Iran](./IR/) | IR | 6 |
-| [🇮🇹 Italy](./IT/) | IT | 2 |
+| [🇮🇷 Iran](./IR/) | IR | 8 |
+| [🇮🇹 Italy](./IT/) | IT | 1 |
 | [🇯🇵 Japan](./JP/) | JP | 4 |
-| [🇰🇷 Korea, Republic of](./KR/) | KR | 4 |
-| [🇲🇾 Malaysia](./MY/) | MY | 1 |
-| [🇳🇱 Netherlands](./NL/) | NL | 22 |
+| [🇰🇷 Korea, Republic of](./KR/) | KR | 9 |
+| [🇲🇾 Malaysia](./MY/) | MY | 2 |
+| [🇳🇱 Netherlands](./NL/) | NL | 23 |
 | [🇳🇴 Norway](./NO/) | NO | 1 |
 | [🇵🇱 Poland](./PL/) | PL | 1 |
 | [🇷🇴 Romania](./RO/) | RO | 3 |
 | [🇷🇸 Serbia](./RS/) | RS | 2 |
-| [🇷🇺 Russia](./RU/) | RU | 1 |
+| [🇷🇺 Russia](./RU/) | RU | 2 |
 | [🇸🇨 Seychelles](./SC/) | SC | 1 |
+| [🇸🇪 Sweden](./SE/) | SE | 1 |
 | [🇸🇬 Singapore](./SG/) | SG | 7 |
-| [🇹🇭 Thailand](./TH/) | TH | 2 |
-| [🇹🇷 Turkey](./TR/) | TR | 4 |
+| [🇹🇭 Thailand](./TH/) | TH | 4 |
+| [🇹🇷 Turkey](./TR/) | TR | 3 |
 | [🇹🇼 Taiwan](./TW/) | TW | 1 |
 | [🇺🇦 Ukraine](./UA/) | UA | 1 |
-| [🇺🇸 United States](./US/) | US | 67 |
+| [🇺🇸 United States](./US/) | US | 64 |
 | [🇻🇬 Virgin Islands, British](./VG/) | VG | 2 |
 | [🇿🇦 South Africa](./ZA/) | ZA | 3 |
 
@@ -147,7 +147,7 @@ Click a country to open its subscriptions.
 - 🇭🇷 [Croatia](./HR/)
 - 🇭🇹 Haiti
 - 🇭🇺 [Hungary](./HU/)
-- 🇮🇩 [Indonesia](./ID/)
+- 🇮🇩 Indonesia
 - 🇮🇪 [Ireland](./IE/)
 - 🇮🇱 [Israel](./IL/)
 - 🇮🇲 Isle of Man
@@ -243,7 +243,7 @@ Click a country to open its subscriptions.
 - 🇸🇧 Solomon Islands
 - 🇸🇨 [Seychelles](./SC/)
 - 🇸🇩 Sudan
-- 🇸🇪 Sweden
+- 🇸🇪 [Sweden](./SE/)
 - 🇸🇬 [Singapore](./SG/)
 - 🇸🇭 Saint Helena, Ascension and Tristan da Cunha
 - 🇸🇮 Slovenia
