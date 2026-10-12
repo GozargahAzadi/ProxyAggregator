@@ -8,14 +8,14 @@ Click a country to open its subscriptions.
 | [🇦🇹 Austria](./AT/) | AT | 2 |
 | [🇧🇪 Belgium](./BE/) | BE | 1 |
 | [🇧🇬 Bulgaria](./BG/) | BG | 1 |
-| [🇨🇦 Canada](./CA/) | CA | 18 |
+| [🇨🇦 Canada](./CA/) | CA | 17 |
 | [🇨🇭 Switzerland](./CH/) | CH | 1 |
 | [🇨🇳 China](./CN/) | CN | 1 |
 | [🇩🇪 Germany](./DE/) | DE | 10 |
 | [🇪🇪 Estonia](./EE/) | EE | 2 |
-| [🇫🇮 Finland](./FI/) | FI | 1 |
-| [🇫🇷 France](./FR/) | FR | 14 |
-| [🇬🇧 United Kingdom](./GB/) | GB | 81 |
+| [🇫🇮 Finland](./FI/) | FI | 2 |
+| [🇫🇷 France](./FR/) | FR | 13 |
+| [🇬🇧 United Kingdom](./GB/) | GB | 83 |
 | [🇭🇰 Hong Kong](./HK/) | HK | 2 |
 | [🇭🇷 Croatia](./HR/) | HR | 1 |
 | [🇭🇺 Hungary](./HU/) | HU | 1 |
@@ -23,24 +23,24 @@ Click a country to open its subscriptions.
 | [🇮🇪 Ireland](./IE/) | IE | 1 |
 | [🇮🇱 Israel](./IL/) | IL | 1 |
 | [🇮🇳 India](./IN/) | IN | 2 |
-| [🇮🇷 Iran](./IR/) | IR | 7 |
-| [🇮🇹 Italy](./IT/) | IT | 1 |
-| [🇯🇵 Japan](./JP/) | JP | 5 |
+| [🇮🇷 Iran](./IR/) | IR | 6 |
+| [🇮🇹 Italy](./IT/) | IT | 2 |
+| [🇯🇵 Japan](./JP/) | JP | 4 |
 | [🇰🇷 Korea, Republic of](./KR/) | KR | 4 |
-| [🇲🇾 Malaysia](./MY/) | MY | 2 |
-| [🇳🇱 Netherlands](./NL/) | NL | 24 |
+| [🇲🇾 Malaysia](./MY/) | MY | 1 |
+| [🇳🇱 Netherlands](./NL/) | NL | 22 |
 | [🇳🇴 Norway](./NO/) | NO | 1 |
 | [🇵🇱 Poland](./PL/) | PL | 1 |
 | [🇷🇴 Romania](./RO/) | RO | 3 |
 | [🇷🇸 Serbia](./RS/) | RS | 2 |
 | [🇷🇺 Russia](./RU/) | RU | 1 |
 | [🇸🇨 Seychelles](./SC/) | SC | 1 |
-| [🇸🇬 Singapore](./SG/) | SG | 6 |
+| [🇸🇬 Singapore](./SG/) | SG | 7 |
 | [🇹🇭 Thailand](./TH/) | TH | 2 |
-| [🇹🇷 Turkey](./TR/) | TR | 3 |
+| [🇹🇷 Turkey](./TR/) | TR | 4 |
 | [🇹🇼 Taiwan](./TW/) | TW | 1 |
 | [🇺🇦 Ukraine](./UA/) | UA | 1 |
-| [🇺🇸 United States](./US/) | US | 58 |
+| [🇺🇸 United States](./US/) | US | 67 |
 | [🇻🇬 Virgin Islands, British](./VG/) | VG | 2 |
 | [🇿🇦 South Africa](./ZA/) | ZA | 3 |
 
