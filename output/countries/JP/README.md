@@ -1,6 +1,6 @@
 # 🇯🇵 Japan
 
-6 healthy proxies.
+8 healthy proxies.
 
 ## 📋 All Protocols
 

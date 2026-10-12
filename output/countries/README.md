@@ -10,46 +10,46 @@ Click a country to open its subscriptions.
 | [🇧🇪 Belgium](./BE/) | BE | 1 |
 | [🇧🇬 Bulgaria](./BG/) | BG | 3 |
 | [🇨🇦 Canada](./CA/) | CA | 18 |
-| [🇨🇭 Switzerland](./CH/) | CH | 2 |
+| [🇨🇭 Switzerland](./CH/) | CH | 1 |
 | [🇨🇳 China](./CN/) | CN | 1 |
 | [🇨🇿 Czechia](./CZ/) | CZ | 3 |
 | [🇩🇪 Germany](./DE/) | DE | 15 |
 | [🇩🇰 Denmark](./DK/) | DK | 1 |
 | [🇪🇪 Estonia](./EE/) | EE | 1 |
-| [🇪🇸 Spain](./ES/) | ES | 1 |
-| [🇫🇮 Finland](./FI/) | FI | 3 |
-| [🇫🇷 France](./FR/) | FR | 23 |
-| [🇬🇧 United Kingdom](./GB/) | GB | 84 |
+| [🇫🇮 Finland](./FI/) | FI | 2 |
+| [🇫🇷 France](./FR/) | FR | 20 |
+| [🇬🇧 United Kingdom](./GB/) | GB | 86 |
+| [🇭🇰 Hong Kong](./HK/) | HK | 4 |
 | [🇭🇺 Hungary](./HU/) | HU | 1 |
 | [🇮🇩 Indonesia](./ID/) | ID | 1 |
 | [🇮🇪 Ireland](./IE/) | IE | 2 |
 | [🇮🇱 Israel](./IL/) | IL | 1 |
 | [🇮🇳 India](./IN/) | IN | 2 |
-| [🇮🇷 Iran](./IR/) | IR | 7 |
+| [🇮🇷 Iran](./IR/) | IR | 6 |
 | [🇮🇸 Iceland](./IS/) | IS | 1 |
-| [🇮🇹 Italy](./IT/) | IT | 4 |
-| [🇯🇵 Japan](./JP/) | JP | 6 |
-| [🇰🇷 Korea, Republic of](./KR/) | KR | 7 |
+| [🇮🇹 Italy](./IT/) | IT | 3 |
+| [🇯🇵 Japan](./JP/) | JP | 8 |
+| [🇰🇷 Korea, Republic of](./KR/) | KR | 9 |
 | [🇱🇹 Lithuania](./LT/) | LT | 1 |
 | [🇲🇾 Malaysia](./MY/) | MY | 1 |
-| [🇳🇱 Netherlands](./NL/) | NL | 21 |
+| [🇳🇱 Netherlands](./NL/) | NL | 20 |
 | [🇳🇴 Norway](./NO/) | NO | 1 |
 | [🇵🇦 Panama](./PA/) | PA | 1 |
 | [🇵🇱 Poland](./PL/) | PL | 1 |
 | [🇵🇹 Portugal](./PT/) | PT | 1 |
-| [🇷🇴 Romania](./RO/) | RO | 2 |
+| [🇷🇴 Romania](./RO/) | RO | 3 |
 | [🇷🇸 Serbia](./RS/) | RS | 2 |
 | [🇷🇺 Russia](./RU/) | RU | 2 |
 | [🇸🇨 Seychelles](./SC/) | SC | 3 |
 | [🇸🇪 Sweden](./SE/) | SE | 2 |
-| [🇸🇬 Singapore](./SG/) | SG | 11 |
-| [🇹🇭 Thailand](./TH/) | TH | 4 |
+| [🇸🇬 Singapore](./SG/) | SG | 12 |
+| [🇹🇭 Thailand](./TH/) | TH | 2 |
 | [🇹🇷 Turkey](./TR/) | TR | 4 |
-| [🇹🇼 Taiwan](./TW/) | TW | 1 |
+| [🇹🇼 Taiwan](./TW/) | TW | 3 |
 | [🇺🇦 Ukraine](./UA/) | UA | 1 |
-| [🇺🇸 United States](./US/) | US | 89 |
+| [🇺🇸 United States](./US/) | US | 95 |
 | [🇻🇬 Virgin Islands, British](./VG/) | VG | 2 |
-| [🇿🇦 South Africa](./ZA/) | ZA | 4 |
+| [🇿🇦 South Africa](./ZA/) | ZA | 3 |
 
 <details>
 <summary>🌐 All countries — full ISO flag map</summary>
@@ -121,7 +121,7 @@ Click a country to open its subscriptions.
 - 🇪🇬 Egypt
 - 🇪🇭 Western Sahara
 - 🇪🇷 Eritrea
-- 🇪🇸 [Spain](./ES/)
+- 🇪🇸 Spain
 - 🇪🇹 Ethiopia
 - 🇫🇮 [Finland](./FI/)
 - 🇫🇯 Fiji
@@ -148,7 +148,7 @@ Click a country to open its subscriptions.
 - 🇬🇺 Guam
 - 🇬🇼 Guinea-Bissau
 - 🇬🇾 Guyana
-- 🇭🇰 Hong Kong
+- 🇭🇰 [Hong Kong](./HK/)
 - 🇭🇲 Heard Island and McDonald Islands
 - 🇭🇳 Honduras
 - 🇭🇷 Croatia
