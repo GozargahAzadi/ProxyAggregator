@@ -4,36 +4,34 @@ Click a country to open its subscriptions.
 
 | Country | Code | Proxies |
 | --- | --- | ---: |
-| [🇦🇪 United Arab Emirates](./AE/) | AE | 1 |
-| [🇧🇬 Bulgaria](./BG/) | BG | 2 |
-| [🇨🇦 Canada](./CA/) | CA | 12 |
-| [🇨🇭 Switzerland](./CH/) | CH | 2 |
-| [🇨🇱 Chile](./CL/) | CL | 1 |
-| [🇩🇪 Germany](./DE/) | DE | 17 |
+| [🇦🇪 United Arab Emirates](./AE/) | AE | 2 |
+| [🇧🇬 Bulgaria](./BG/) | BG | 1 |
+| [🇨🇦 Canada](./CA/) | CA | 14 |
+| [🇨🇭 Switzerland](./CH/) | CH | 1 |
+| [🇩🇪 Germany](./DE/) | DE | 20 |
 | [🇪🇪 Estonia](./EE/) | EE | 1 |
-| [🇫🇮 Finland](./FI/) | FI | 3 |
-| [🇫🇷 France](./FR/) | FR | 13 |
-| [🇬🇧 United Kingdom](./GB/) | GB | 80 |
+| [🇫🇮 Finland](./FI/) | FI | 2 |
+| [🇫🇷 France](./FR/) | FR | 12 |
+| [🇬🇧 United Kingdom](./GB/) | GB | 84 |
 | [🇭🇰 Hong Kong](./HK/) | HK | 1 |
-| [🇮🇪 Ireland](./IE/) | IE | 1 |
+| [🇮🇱 Israel](./IL/) | IL | 1 |
 | [🇮🇳 India](./IN/) | IN | 2 |
 | [🇮🇷 Iran](./IR/) | IR | 6 |
 | [🇮🇹 Italy](./IT/) | IT | 1 |
 | [🇯🇵 Japan](./JP/) | JP | 4 |
-| [🇰🇷 Korea, Republic of](./KR/) | KR | 5 |
+| [🇰🇷 Korea, Republic of](./KR/) | KR | 4 |
 | [🇳🇱 Netherlands](./NL/) | NL | 21 |
 | [🇷🇴 Romania](./RO/) | RO | 3 |
 | [🇷🇺 Russia](./RU/) | RU | 3 |
 | [🇸🇨 Seychelles](./SC/) | SC | 1 |
 | [🇸🇪 Sweden](./SE/) | SE | 2 |
-| [🇸🇬 Singapore](./SG/) | SG | 4 |
-| [🇹🇭 Thailand](./TH/) | TH | 4 |
-| [🇹🇷 Turkey](./TR/) | TR | 3 |
-| [🇺🇦 Ukraine](./UA/) | UA | 1 |
-| [🇺🇸 United States](./US/) | US | 45 |
+| [🇸🇬 Singapore](./SG/) | SG | 5 |
+| [🇹🇭 Thailand](./TH/) | TH | 3 |
+| [🇹🇷 Turkey](./TR/) | TR | 2 |
+| [🇺🇸 United States](./US/) | US | 52 |
 | [🇻🇬 Virgin Islands, British](./VG/) | VG | 2 |
 | [🇻🇳 Vietnam](./VN/) | VN | 1 |
-| [🇿🇦 South Africa](./ZA/) | ZA | 3 |
+| [🇿🇦 South Africa](./ZA/) | ZA | 2 |
 
 <details>
 <summary>🌐 All countries — full ISO flag map</summary>
@@ -83,7 +81,7 @@ Click a country to open its subscriptions.
 - 🇨🇭 [Switzerland](./CH/)
 - 🇨🇮 Cote d'Ivoire
 - 🇨🇰 Cook Islands
-- 🇨🇱 [Chile](./CL/)
+- 🇨🇱 Chile
 - 🇨🇲 Cameroon
 - 🇨🇳 China
 - 🇨🇴 Colombia
@@ -139,8 +137,8 @@ Click a country to open its subscriptions.
 - 🇭🇹 Haiti
 - 🇭🇺 Hungary
 - 🇮🇩 Indonesia
-- 🇮🇪 [Ireland](./IE/)
-- 🇮🇱 Israel
+- 🇮🇪 Ireland
+- 🇮🇱 [Israel](./IL/)
 - 🇮🇲 Isle of Man
 - 🇮🇳 [India](./IN/)
 - 🇮🇴 British Indian Ocean Territory
@@ -267,7 +265,7 @@ Click a country to open its subscriptions.
 - 🇹🇻 Tuvalu
 - 🇹🇼 Taiwan
 - 🇹🇿 Tanzania
-- 🇺🇦 [Ukraine](./UA/)
+- 🇺🇦 Ukraine
 - 🇺🇬 Uganda
 - 🇺🇲 United States Minor Outlying Islands
 - 🇺🇸 [United States](./US/)
