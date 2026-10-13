@@ -6,34 +6,34 @@ Click a country to open its subscriptions.
 | --- | --- | ---: |
 | [🇦🇪 United Arab Emirates](./AE/) | AE | 1 |
 | [🇧🇬 Bulgaria](./BG/) | BG | 2 |
-| [🇨🇦 Canada](./CA/) | CA | 14 |
+| [🇨🇦 Canada](./CA/) | CA | 12 |
 | [🇨🇭 Switzerland](./CH/) | CH | 2 |
-| [🇩🇪 Germany](./DE/) | DE | 18 |
+| [🇨🇱 Chile](./CL/) | CL | 1 |
+| [🇩🇪 Germany](./DE/) | DE | 17 |
 | [🇪🇪 Estonia](./EE/) | EE | 1 |
-| [🇫🇮 Finland](./FI/) | FI | 4 |
-| [🇫🇷 France](./FR/) | FR | 14 |
+| [🇫🇮 Finland](./FI/) | FI | 3 |
+| [🇫🇷 France](./FR/) | FR | 13 |
 | [🇬🇧 United Kingdom](./GB/) | GB | 80 |
-| [🇭🇰 Hong Kong](./HK/) | HK | 2 |
+| [🇭🇰 Hong Kong](./HK/) | HK | 1 |
 | [🇮🇪 Ireland](./IE/) | IE | 1 |
 | [🇮🇳 India](./IN/) | IN | 2 |
 | [🇮🇷 Iran](./IR/) | IR | 6 |
 | [🇮🇹 Italy](./IT/) | IT | 1 |
-| [🇯🇵 Japan](./JP/) | JP | 5 |
-| [🇰🇷 Korea, Republic of](./KR/) | KR | 7 |
-| [🇳🇱 Netherlands](./NL/) | NL | 22 |
+| [🇯🇵 Japan](./JP/) | JP | 4 |
+| [🇰🇷 Korea, Republic of](./KR/) | KR | 5 |
+| [🇳🇱 Netherlands](./NL/) | NL | 21 |
 | [🇷🇴 Romania](./RO/) | RO | 3 |
 | [🇷🇺 Russia](./RU/) | RU | 3 |
 | [🇸🇨 Seychelles](./SC/) | SC | 1 |
 | [🇸🇪 Sweden](./SE/) | SE | 2 |
-| [🇸🇬 Singapore](./SG/) | SG | 5 |
-| [🇹🇭 Thailand](./TH/) | TH | 2 |
+| [🇸🇬 Singapore](./SG/) | SG | 4 |
+| [🇹🇭 Thailand](./TH/) | TH | 4 |
 | [🇹🇷 Turkey](./TR/) | TR | 3 |
-| [🇹🇼 Taiwan](./TW/) | TW | 1 |
 | [🇺🇦 Ukraine](./UA/) | UA | 1 |
-| [🇺🇸 United States](./US/) | US | 46 |
+| [🇺🇸 United States](./US/) | US | 45 |
 | [🇻🇬 Virgin Islands, British](./VG/) | VG | 2 |
 | [🇻🇳 Vietnam](./VN/) | VN | 1 |
-| [🇿🇦 South Africa](./ZA/) | ZA | 2 |
+| [🇿🇦 South Africa](./ZA/) | ZA | 3 |
 
 <details>
 <summary>🌐 All countries — full ISO flag map</summary>
@@ -83,7 +83,7 @@ Click a country to open its subscriptions.
 - 🇨🇭 [Switzerland](./CH/)
 - 🇨🇮 Cote d'Ivoire
 - 🇨🇰 Cook Islands
-- 🇨🇱 Chile
+- 🇨🇱 [Chile](./CL/)
 - 🇨🇲 Cameroon
 - 🇨🇳 China
 - 🇨🇴 Colombia
@@ -265,7 +265,7 @@ Click a country to open its subscriptions.
 - 🇹🇷 [Turkey](./TR/)
 - 🇹🇹 Trinidad and Tobago
 - 🇹🇻 Tuvalu
-- 🇹🇼 [Taiwan](./TW/)
+- 🇹🇼 Taiwan
 - 🇹🇿 Tanzania
 - 🇺🇦 [Ukraine](./UA/)
 - 🇺🇬 Uganda
