@@ -15,43 +15,43 @@ Click a country to open its subscriptions.
 | [🇨🇱 Chile](./CL/) | CL | 1 |
 | [🇨🇳 China](./CN/) | CN | 1 |
 | [🇨🇿 Czechia](./CZ/) | CZ | 1 |
-| [🇩🇪 Germany](./DE/) | DE | 27 |
+| [🇩🇪 Germany](./DE/) | DE | 25 |
 | [🇩🇰 Denmark](./DK/) | DK | 1 |
 | [🇪🇪 Estonia](./EE/) | EE | 1 |
 | [🇪🇸 Spain](./ES/) | ES | 3 |
-| [🇫🇮 Finland](./FI/) | FI | 3 |
+| [🇫🇮 Finland](./FI/) | FI | 2 |
 | [🇫🇷 France](./FR/) | FR | 18 |
-| [🇬🇧 United Kingdom](./GB/) | GB | 94 |
+| [🇬🇧 United Kingdom](./GB/) | GB | 91 |
 | [🇬🇷 Greece](./GR/) | GR | 1 |
 | [🇭🇰 Hong Kong](./HK/) | HK | 1 |
 | [🇭🇷 Croatia](./HR/) | HR | 1 |
 | [🇮🇪 Ireland](./IE/) | IE | 3 |
 | [🇮🇱 Israel](./IL/) | IL | 1 |
-| [🇮🇳 India](./IN/) | IN | 3 |
-| [🇮🇷 Iran](./IR/) | IR | 7 |
+| [🇮🇳 India](./IN/) | IN | 2 |
+| [🇮🇷 Iran](./IR/) | IR | 5 |
 | [🇮🇸 Iceland](./IS/) | IS | 1 |
-| [🇮🇹 Italy](./IT/) | IT | 3 |
+| [🇮🇹 Italy](./IT/) | IT | 2 |
 | [🇯🇵 Japan](./JP/) | JP | 6 |
-| [🇰🇷 Korea, Republic of](./KR/) | KR | 12 |
+| [🇰🇷 Korea, Republic of](./KR/) | KR | 9 |
 | [🇱🇹 Lithuania](./LT/) | LT | 3 |
 | [🇱🇻 Latvia](./LV/) | LV | 2 |
-| [🇲🇽 Mexico](./MX/) | MX | 2 |
+| [🇲🇽 Mexico](./MX/) | MX | 1 |
 | [🇲🇾 Malaysia](./MY/) | MY | 1 |
 | [🇳🇱 Netherlands](./NL/) | NL | 23 |
 | [🇵🇱 Poland](./PL/) | PL | 1 |
 | [🇷🇴 Romania](./RO/) | RO | 4 |
 | [🇷🇸 Serbia](./RS/) | RS | 1 |
-| [🇷🇺 Russia](./RU/) | RU | 3 |
+| [🇷🇺 Russia](./RU/) | RU | 4 |
 | [🇸🇨 Seychelles](./SC/) | SC | 2 |
-| [🇸🇪 Sweden](./SE/) | SE | 5 |
-| [🇸🇬 Singapore](./SG/) | SG | 10 |
-| [🇹🇭 Thailand](./TH/) | TH | 3 |
-| [🇹🇷 Turkey](./TR/) | TR | 2 |
+| [🇸🇪 Sweden](./SE/) | SE | 4 |
+| [🇸🇬 Singapore](./SG/) | SG | 9 |
+| [🇹🇭 Thailand](./TH/) | TH | 2 |
+| [🇹🇷 Turkey](./TR/) | TR | 3 |
 | [🇹🇼 Taiwan](./TW/) | TW | 1 |
 | [🇺🇦 Ukraine](./UA/) | UA | 1 |
-| [🇺🇸 United States](./US/) | US | 83 |
+| [🇺🇸 United States](./US/) | US | 74 |
 | [🇻🇬 Virgin Islands, British](./VG/) | VG | 2 |
-| [🇿🇦 South Africa](./ZA/) | ZA | 2 |
+| [🇿🇦 South Africa](./ZA/) | ZA | 3 |
 
 <details>
 <summary>🌐 All countries — full ISO flag map</summary>
