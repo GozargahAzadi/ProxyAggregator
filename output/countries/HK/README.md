@@ -1,6 +1,6 @@
 # 🇭🇰 Hong Kong
 
-2 healthy proxies.
+1 healthy proxy.
 
 ## 📋 All Protocols
 
@@ -15,5 +15,3 @@
 |---|---|---|
 | VLESS | [Open](./vless.txt) | `https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/countries/HK/vless.txt` |
 | VLESS Base64 | [Open](./vless-base64.txt) | `https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/countries/HK/vless-base64.txt` |
-| Socks5 | [Open](./socks5.txt) | `https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/countries/HK/socks5.txt` |
-| Socks5 Base64 | [Open](./socks5-base64.txt) | `https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/countries/HK/socks5-base64.txt` |
