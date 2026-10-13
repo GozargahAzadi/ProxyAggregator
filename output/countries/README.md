@@ -4,43 +4,42 @@ Click a country to open its subscriptions.
 
 | Country | Code | Proxies |
 | --- | --- | ---: |
+| [🇦🇪 United Arab Emirates](./AE/) | AE | 1 |
 | [🇧🇬 Bulgaria](./BG/) | BG | 2 |
 | [🇨🇦 Canada](./CA/) | CA | 14 |
-| [🇨🇭 Switzerland](./CH/) | CH | 1 |
-| [🇨🇳 China](./CN/) | CN | 1 |
-| [🇩🇪 Germany](./DE/) | DE | 15 |
+| [🇨🇭 Switzerland](./CH/) | CH | 2 |
+| [🇩🇪 Germany](./DE/) | DE | 18 |
 | [🇪🇪 Estonia](./EE/) | EE | 1 |
-| [🇫🇮 Finland](./FI/) | FI | 2 |
-| [🇫🇷 France](./FR/) | FR | 13 |
-| [🇬🇧 United Kingdom](./GB/) | GB | 81 |
+| [🇫🇮 Finland](./FI/) | FI | 4 |
+| [🇫🇷 France](./FR/) | FR | 14 |
+| [🇬🇧 United Kingdom](./GB/) | GB | 80 |
 | [🇭🇰 Hong Kong](./HK/) | HK | 2 |
 | [🇮🇪 Ireland](./IE/) | IE | 1 |
 | [🇮🇳 India](./IN/) | IN | 2 |
-| [🇮🇷 Iran](./IR/) | IR | 5 |
+| [🇮🇷 Iran](./IR/) | IR | 6 |
 | [🇮🇹 Italy](./IT/) | IT | 1 |
 | [🇯🇵 Japan](./JP/) | JP | 5 |
-| [🇰🇷 Korea, Republic of](./KR/) | KR | 6 |
-| [🇲🇾 Malaysia](./MY/) | MY | 1 |
-| [🇳🇱 Netherlands](./NL/) | NL | 21 |
+| [🇰🇷 Korea, Republic of](./KR/) | KR | 7 |
+| [🇳🇱 Netherlands](./NL/) | NL | 22 |
 | [🇷🇴 Romania](./RO/) | RO | 3 |
-| [🇷🇺 Russia](./RU/) | RU | 2 |
+| [🇷🇺 Russia](./RU/) | RU | 3 |
 | [🇸🇨 Seychelles](./SC/) | SC | 1 |
-| [🇸🇪 Sweden](./SE/) | SE | 1 |
+| [🇸🇪 Sweden](./SE/) | SE | 2 |
 | [🇸🇬 Singapore](./SG/) | SG | 5 |
-| [🇹🇷 Turkey](./TR/) | TR | 2 |
+| [🇹🇭 Thailand](./TH/) | TH | 2 |
+| [🇹🇷 Turkey](./TR/) | TR | 3 |
 | [🇹🇼 Taiwan](./TW/) | TW | 1 |
 | [🇺🇦 Ukraine](./UA/) | UA | 1 |
-| [🇺🇸 United States](./US/) | US | 45 |
+| [🇺🇸 United States](./US/) | US | 46 |
 | [🇻🇬 Virgin Islands, British](./VG/) | VG | 2 |
 | [🇻🇳 Vietnam](./VN/) | VN | 1 |
-| [🌐 Unknown](./XX/) | XX | 2 |
 | [🇿🇦 South Africa](./ZA/) | ZA | 2 |
 
 <details>
 <summary>🌐 All countries — full ISO flag map</summary>
 
 - 🇦🇩 Andorra
-- 🇦🇪 United Arab Emirates
+- 🇦🇪 [United Arab Emirates](./AE/)
 - 🇦🇫 Afghanistan
 - 🇦🇬 Antigua and Barbuda
 - 🇦🇮 Anguilla
@@ -86,7 +85,7 @@ Click a country to open its subscriptions.
 - 🇨🇰 Cook Islands
 - 🇨🇱 Chile
 - 🇨🇲 Cameroon
-- 🇨🇳 [China](./CN/)
+- 🇨🇳 China
 - 🇨🇴 Colombia
 - 🇨🇷 Costa Rica
 - 🇨🇺 Cuba
@@ -196,7 +195,7 @@ Click a country to open its subscriptions.
 - 🇲🇻 Maldives
 - 🇲🇼 Malawi
 - 🇲🇽 Mexico
-- 🇲🇾 [Malaysia](./MY/)
+- 🇲🇾 Malaysia
 - 🇲🇿 Mozambique
 - 🇳🇦 Namibia
 - 🇳🇨 New Caledonia
@@ -256,7 +255,7 @@ Click a country to open its subscriptions.
 - 🇹🇩 Chad
 - 🇹🇫 French Southern Territories
 - 🇹🇬 Togo
-- 🇹🇭 Thailand
+- 🇹🇭 [Thailand](./TH/)
 - 🇹🇯 Tajikistan
 - 🇹🇰 Tokelau
 - 🇹🇱 Timor-Leste
