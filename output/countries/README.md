@@ -6,29 +6,27 @@ Click a country to open its subscriptions.
 | --- | --- | ---: |
 | [🇦🇪 United Arab Emirates](./AE/) | AE | 3 |
 | [🇧🇬 Bulgaria](./BG/) | BG | 1 |
-| [🇧🇷 Brazil](./BR/) | BR | 1 |
 | [🇨🇦 Canada](./CA/) | CA | 13 |
 | [🇨🇭 Switzerland](./CH/) | CH | 1 |
+| [🇨🇱 Chile](./CL/) | CL | 1 |
 | [🇩🇪 Germany](./DE/) | DE | 21 |
 | [🇫🇮 Finland](./FI/) | FI | 5 |
 | [🇫🇷 France](./FR/) | FR | 12 |
-| [🇬🇧 United Kingdom](./GB/) | GB | 84 |
+| [🇬🇧 United Kingdom](./GB/) | GB | 83 |
 | [🇮🇪 Ireland](./IE/) | IE | 1 |
 | [🇮🇱 Israel](./IL/) | IL | 1 |
 | [🇮🇳 India](./IN/) | IN | 2 |
 | [🇮🇷 Iran](./IR/) | IR | 4 |
 | [🇮🇹 Italy](./IT/) | IT | 1 |
-| [🇯🇵 Japan](./JP/) | JP | 4 |
-| [🇰🇷 Korea, Republic of](./KR/) | KR | 6 |
+| [🇯🇵 Japan](./JP/) | JP | 5 |
+| [🇰🇷 Korea, Republic of](./KR/) | KR | 4 |
 | [🇱🇹 Lithuania](./LT/) | LT | 1 |
-| [🇲🇽 Mexico](./MX/) | MX | 1 |
-| [🇳🇱 Netherlands](./NL/) | NL | 20 |
-| [🇵🇱 Poland](./PL/) | PL | 1 |
+| [🇳🇱 Netherlands](./NL/) | NL | 19 |
 | [🇷🇴 Romania](./RO/) | RO | 3 |
-| [🇷🇺 Russia](./RU/) | RU | 2 |
+| [🇷🇺 Russia](./RU/) | RU | 1 |
 | [🇸🇨 Seychelles](./SC/) | SC | 1 |
-| [🇸🇪 Sweden](./SE/) | SE | 1 |
-| [🇸🇬 Singapore](./SG/) | SG | 3 |
+| [🇸🇪 Sweden](./SE/) | SE | 2 |
+| [🇸🇬 Singapore](./SG/) | SG | 4 |
 | [🇹🇭 Thailand](./TH/) | TH | 4 |
 | [🇹🇷 Turkey](./TR/) | TR | 2 |
 | [🇹🇼 Taiwan](./TW/) | TW | 2 |
@@ -71,7 +69,7 @@ Click a country to open its subscriptions.
 - 🇧🇳 Brunei Darussalam
 - 🇧🇴 Bolivia
 - 🇧🇶 Bonaire, Sint Eustatius and Saba
-- 🇧🇷 [Brazil](./BR/)
+- 🇧🇷 Brazil
 - 🇧🇸 Bahamas
 - 🇧🇹 Bhutan
 - 🇧🇻 Bouvet Island
@@ -86,7 +84,7 @@ Click a country to open its subscriptions.
 - 🇨🇭 [Switzerland](./CH/)
 - 🇨🇮 Cote d'Ivoire
 - 🇨🇰 Cook Islands
-- 🇨🇱 Chile
+- 🇨🇱 [Chile](./CL/)
 - 🇨🇲 Cameroon
 - 🇨🇳 China
 - 🇨🇴 Colombia
@@ -197,7 +195,7 @@ Click a country to open its subscriptions.
 - 🇲🇺 Mauritius
 - 🇲🇻 Maldives
 - 🇲🇼 Malawi
-- 🇲🇽 [Mexico](./MX/)
+- 🇲🇽 Mexico
 - 🇲🇾 Malaysia
 - 🇲🇿 Mozambique
 - 🇳🇦 Namibia
@@ -219,7 +217,7 @@ Click a country to open its subscriptions.
 - 🇵🇬 Papua New Guinea
 - 🇵🇭 Philippines
 - 🇵🇰 Pakistan
-- 🇵🇱 [Poland](./PL/)
+- 🇵🇱 Poland
 - 🇵🇲 Saint Pierre and Miquelon
 - 🇵🇳 Pitcairn
 - 🇵🇷 Puerto Rico
