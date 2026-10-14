@@ -5,31 +5,33 @@ Click a country to open its subscriptions.
 | Country | Code | Proxies |
 | --- | --- | ---: |
 | [🇦🇪 United Arab Emirates](./AE/) | AE | 2 |
-| [🇧🇬 Bulgaria](./BG/) | BG | 2 |
-| [🇨🇦 Canada](./CA/) | CA | 14 |
-| [🇨🇭 Switzerland](./CH/) | CH | 2 |
+| [🇧🇬 Bulgaria](./BG/) | BG | 1 |
+| [🇨🇦 Canada](./CA/) | CA | 13 |
+| [🇨🇭 Switzerland](./CH/) | CH | 1 |
 | [🇨🇱 Chile](./CL/) | CL | 1 |
-| [🇩🇪 Germany](./DE/) | DE | 18 |
+| [🇩🇪 Germany](./DE/) | DE | 19 |
 | [🇪🇪 Estonia](./EE/) | EE | 1 |
-| [🇫🇮 Finland](./FI/) | FI | 2 |
-| [🇫🇷 France](./FR/) | FR | 15 |
-| [🇬🇧 United Kingdom](./GB/) | GB | 84 |
-| [🇮🇪 Ireland](./IE/) | IE | 1 |
+| [🇫🇮 Finland](./FI/) | FI | 3 |
+| [🇫🇷 France](./FR/) | FR | 11 |
+| [🇬🇧 United Kingdom](./GB/) | GB | 83 |
+| [🇭🇰 Hong Kong](./HK/) | HK | 1 |
 | [🇮🇳 India](./IN/) | IN | 2 |
-| [🇮🇷 Iran](./IR/) | IR | 7 |
+| [🇮🇷 Iran](./IR/) | IR | 6 |
 | [🇮🇹 Italy](./IT/) | IT | 1 |
 | [🇯🇵 Japan](./JP/) | JP | 5 |
-| [🇰🇷 Korea, Republic of](./KR/) | KR | 6 |
-| [🇳🇱 Netherlands](./NL/) | NL | 20 |
+| [🇰🇷 Korea, Republic of](./KR/) | KR | 5 |
+| [🇳🇱 Netherlands](./NL/) | NL | 21 |
 | [🇷🇴 Romania](./RO/) | RO | 3 |
-| [🇷🇺 Russia](./RU/) | RU | 4 |
-| [🇸🇨 Seychelles](./SC/) | SC | 2 |
-| [🇸🇪 Sweden](./SE/) | SE | 1 |
+| [🇷🇺 Russia](./RU/) | RU | 3 |
+| [🇸🇨 Seychelles](./SC/) | SC | 1 |
+| [🇸🇪 Sweden](./SE/) | SE | 2 |
 | [🇸🇬 Singapore](./SG/) | SG | 4 |
 | [🇹🇭 Thailand](./TH/) | TH | 1 |
-| [🇹🇷 Turkey](./TR/) | TR | 3 |
-| [🇺🇸 United States](./US/) | US | 54 |
+| [🇹🇷 Turkey](./TR/) | TR | 2 |
+| [🇹🇼 Taiwan](./TW/) | TW | 1 |
+| [🇺🇸 United States](./US/) | US | 49 |
 | [🇻🇬 Virgin Islands, British](./VG/) | VG | 2 |
+| [🇻🇳 Vietnam](./VN/) | VN | 1 |
 | [🇿🇦 South Africa](./ZA/) | ZA | 2 |
 
 <details>
@@ -129,14 +131,14 @@ Click a country to open its subscriptions.
 - 🇬🇺 Guam
 - 🇬🇼 Guinea-Bissau
 - 🇬🇾 Guyana
-- 🇭🇰 Hong Kong
+- 🇭🇰 [Hong Kong](./HK/)
 - 🇭🇲 Heard Island and McDonald Islands
 - 🇭🇳 Honduras
 - 🇭🇷 Croatia
 - 🇭🇹 Haiti
 - 🇭🇺 Hungary
 - 🇮🇩 Indonesia
-- 🇮🇪 [Ireland](./IE/)
+- 🇮🇪 Ireland
 - 🇮🇱 Israel
 - 🇮🇲 Isle of Man
 - 🇮🇳 [India](./IN/)
@@ -262,7 +264,7 @@ Click a country to open its subscriptions.
 - 🇹🇷 [Turkey](./TR/)
 - 🇹🇹 Trinidad and Tobago
 - 🇹🇻 Tuvalu
-- 🇹🇼 Taiwan
+- 🇹🇼 [Taiwan](./TW/)
 - 🇹🇿 Tanzania
 - 🇺🇦 Ukraine
 - 🇺🇬 Uganda
@@ -275,7 +277,7 @@ Click a country to open its subscriptions.
 - 🇻🇪 Venezuela
 - 🇻🇬 [Virgin Islands, British](./VG/)
 - 🇻🇮 Virgin Islands, U.S.
-- 🇻🇳 Vietnam
+- 🇻🇳 [Vietnam](./VN/)
 - 🇻🇺 Vanuatu
 - 🇼🇫 Wallis and Futuna
 - 🇼🇸 Samoa

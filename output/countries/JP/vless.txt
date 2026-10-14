@@ -1,0 +1,1 @@
+vless://495c7195-85b8-498a-bf20-2ea9ce9175b5@139.162.84.224:443?host=snip.edgeoneai.cc.cd&network=ws&path=%2Ffdip%3Dsstp%3A%2F%2Fvpn%3Avpn%40VPNine1-vpn-200.opengw.net%3A443fp%3Dchrome&security=tls&sni=snip.edgeoneai.cc.cd#%F0%9F%87%AF%F0%9F%87%B5%20JP%20%7C%20VLESS%20%7C%201103ms%20%7C%20GozargahAzadi

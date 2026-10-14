@@ -1,6 +1,6 @@
 # 🇸🇨 Seychelles
 
-2 healthy proxies.
+1 healthy proxy.
 
 ## 📋 All Protocols
 
@@ -15,5 +15,3 @@
 |---|---|---|
 | VMess | [Open](./vmess.txt) | `https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/countries/SC/vmess.txt` |
 | VMess Base64 | [Open](./vmess-base64.txt) | `https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/countries/SC/vmess-base64.txt` |
-| Shadowsocks | [Open](./shadowsocks.txt) | `https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/countries/SC/shadowsocks.txt` |
-| Shadowsocks Base64 | [Open](./shadowsocks-base64.txt) | `https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/countries/SC/shadowsocks-base64.txt` |
