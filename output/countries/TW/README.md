@@ -1,6 +1,6 @@
 # 🇹🇼 Taiwan
 
-1 healthy proxy.
+2 healthy proxies.
 
 ## 📋 All Protocols
 
@@ -15,3 +15,5 @@
 |---|---|---|
 | VMess | [Open](./vmess.txt) | `https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/countries/TW/vmess.txt` |
 | VMess Base64 | [Open](./vmess-base64.txt) | `https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/countries/TW/vmess-base64.txt` |
+| Shadowsocks | [Open](./shadowsocks.txt) | `https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/countries/TW/shadowsocks.txt` |
+| Shadowsocks Base64 | [Open](./shadowsocks-base64.txt) | `https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/countries/TW/shadowsocks-base64.txt` |
