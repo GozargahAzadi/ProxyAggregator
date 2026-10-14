@@ -11,24 +11,25 @@ Click a country to open its subscriptions.
 | [🇩🇪 Germany](./DE/) | DE | 20 |
 | [🇪🇪 Estonia](./EE/) | EE | 1 |
 | [🇫🇮 Finland](./FI/) | FI | 2 |
-| [🇫🇷 France](./FR/) | FR | 12 |
-| [🇬🇧 United Kingdom](./GB/) | GB | 84 |
+| [🇫🇷 France](./FR/) | FR | 14 |
+| [🇬🇧 United Kingdom](./GB/) | GB | 85 |
 | [🇭🇰 Hong Kong](./HK/) | HK | 1 |
 | [🇮🇱 Israel](./IL/) | IL | 1 |
 | [🇮🇳 India](./IN/) | IN | 2 |
-| [🇮🇷 Iran](./IR/) | IR | 6 |
+| [🇮🇷 Iran](./IR/) | IR | 4 |
 | [🇮🇹 Italy](./IT/) | IT | 1 |
 | [🇯🇵 Japan](./JP/) | JP | 4 |
 | [🇰🇷 Korea, Republic of](./KR/) | KR | 4 |
 | [🇳🇱 Netherlands](./NL/) | NL | 21 |
 | [🇷🇴 Romania](./RO/) | RO | 3 |
-| [🇷🇺 Russia](./RU/) | RU | 3 |
+| [🇷🇺 Russia](./RU/) | RU | 2 |
 | [🇸🇨 Seychelles](./SC/) | SC | 1 |
 | [🇸🇪 Sweden](./SE/) | SE | 2 |
 | [🇸🇬 Singapore](./SG/) | SG | 5 |
-| [🇹🇭 Thailand](./TH/) | TH | 3 |
-| [🇹🇷 Turkey](./TR/) | TR | 2 |
-| [🇺🇸 United States](./US/) | US | 52 |
+| [🇹🇭 Thailand](./TH/) | TH | 4 |
+| [🇹🇷 Turkey](./TR/) | TR | 1 |
+| [🇺🇦 Ukraine](./UA/) | UA | 1 |
+| [🇺🇸 United States](./US/) | US | 53 |
 | [🇻🇬 Virgin Islands, British](./VG/) | VG | 2 |
 | [🇻🇳 Vietnam](./VN/) | VN | 1 |
 | [🇿🇦 South Africa](./ZA/) | ZA | 2 |
@@ -265,7 +266,7 @@ Click a country to open its subscriptions.
 - 🇹🇻 Tuvalu
 - 🇹🇼 Taiwan
 - 🇹🇿 Tanzania
-- 🇺🇦 Ukraine
+- 🇺🇦 [Ukraine](./UA/)
 - 🇺🇬 Uganda
 - 🇺🇲 United States Minor Outlying Islands
 - 🇺🇸 [United States](./US/)
