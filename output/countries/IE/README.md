@@ -1,6 +1,6 @@
 # 🇮🇪 Ireland
 
-2 healthy proxies.
+1 healthy proxy.
 
 ## 📋 All Protocols
 
