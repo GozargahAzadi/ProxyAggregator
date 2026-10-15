@@ -1,6 +1,6 @@
 # 🇯🇵 Japan
 
-8 healthy proxies.
+9 healthy proxies.
 
 ## 📋 All Protocols
 
@@ -19,3 +19,5 @@
 | VMess Base64 | [Open](./vmess-base64.txt) | `https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/countries/JP/vmess-base64.txt` |
 | Shadowsocks | [Open](./shadowsocks.txt) | `https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/countries/JP/shadowsocks.txt` |
 | Shadowsocks Base64 | [Open](./shadowsocks-base64.txt) | `https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/countries/JP/shadowsocks-base64.txt` |
+| Socks5 | [Open](./socks5.txt) | `https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/countries/JP/socks5.txt` |
+| Socks5 Base64 | [Open](./socks5-base64.txt) | `https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/countries/JP/socks5-base64.txt` |
