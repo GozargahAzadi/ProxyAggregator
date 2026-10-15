@@ -10,44 +10,43 @@ Click a country to open its subscriptions.
 | [🇧🇦 Bosnia and Herzegovina](./BA/) | BA | 1 |
 | [🇧🇬 Bulgaria](./BG/) | BG | 2 |
 | [🇧🇷 Brazil](./BR/) | BR | 1 |
-| [🇨🇦 Canada](./CA/) | CA | 13 |
+| [🇨🇦 Canada](./CA/) | CA | 14 |
 | [🇨🇭 Switzerland](./CH/) | CH | 2 |
-| [🇨🇱 Chile](./CL/) | CL | 1 |
+| [🇨🇳 China](./CN/) | CN | 1 |
 | [🇨🇿 Czechia](./CZ/) | CZ | 3 |
-| [🇩🇪 Germany](./DE/) | DE | 32 |
+| [🇩🇪 Germany](./DE/) | DE | 29 |
 | [🇪🇪 Estonia](./EE/) | EE | 2 |
 | [🇪🇸 Spain](./ES/) | ES | 2 |
 | [🇫🇮 Finland](./FI/) | FI | 5 |
-| [🇫🇷 France](./FR/) | FR | 15 |
-| [🇬🇧 United Kingdom](./GB/) | GB | 87 |
+| [🇫🇷 France](./FR/) | FR | 19 |
+| [🇬🇧 United Kingdom](./GB/) | GB | 85 |
 | [🇬🇷 Greece](./GR/) | GR | 1 |
 | [🇮🇪 Ireland](./IE/) | IE | 2 |
 | [🇮🇳 India](./IN/) | IN | 3 |
 | [🇮🇷 Iran](./IR/) | IR | 4 |
-| [🇮🇹 Italy](./IT/) | IT | 2 |
-| [🇯🇵 Japan](./JP/) | JP | 9 |
-| [🇰🇷 Korea, Republic of](./KR/) | KR | 3 |
+| [🇮🇹 Italy](./IT/) | IT | 1 |
+| [🇯🇵 Japan](./JP/) | JP | 5 |
+| [🇰🇷 Korea, Republic of](./KR/) | KR | 5 |
 | [🇱🇹 Lithuania](./LT/) | LT | 2 |
 | [🇱🇻 Latvia](./LV/) | LV | 1 |
 | [🇲🇾 Malaysia](./MY/) | MY | 1 |
-| [🇳🇱 Netherlands](./NL/) | NL | 23 |
+| [🇳🇱 Netherlands](./NL/) | NL | 24 |
 | [🇵🇦 Panama](./PA/) | PA | 1 |
 | [🇵🇹 Portugal](./PT/) | PT | 2 |
 | [🇷🇴 Romania](./RO/) | RO | 5 |
 | [🇷🇸 Serbia](./RS/) | RS | 2 |
 | [🇷🇺 Russia](./RU/) | RU | 3 |
 | [🇸🇨 Seychelles](./SC/) | SC | 1 |
-| [🇸🇪 Sweden](./SE/) | SE | 4 |
+| [🇸🇪 Sweden](./SE/) | SE | 5 |
 | [🇸🇬 Singapore](./SG/) | SG | 10 |
-| [🇹🇭 Thailand](./TH/) | TH | 3 |
-| [🇹🇷 Turkey](./TR/) | TR | 2 |
-| [🇹🇼 Taiwan](./TW/) | TW | 2 |
+| [🇹🇭 Thailand](./TH/) | TH | 2 |
+| [🇹🇷 Turkey](./TR/) | TR | 3 |
+| [🇹🇼 Taiwan](./TW/) | TW | 1 |
 | [🇺🇦 Ukraine](./UA/) | UA | 1 |
-| [🇺🇸 United States](./US/) | US | 73 |
+| [🇺🇸 United States](./US/) | US | 60 |
 | [🇻🇬 Virgin Islands, British](./VG/) | VG | 2 |
 | [🇻🇳 Vietnam](./VN/) | VN | 1 |
-| [🌐 Unknown](./XX/) | XX | 5 |
-| [🇿🇦 South Africa](./ZA/) | ZA | 3 |
+| [🇿🇦 South Africa](./ZA/) | ZA | 2 |
 
 <details>
 <summary>🌐 All countries — full ISO flag map</summary>
@@ -97,9 +96,9 @@ Click a country to open its subscriptions.
 - 🇨🇭 [Switzerland](./CH/)
 - 🇨🇮 Cote d'Ivoire
 - 🇨🇰 Cook Islands
-- 🇨🇱 [Chile](./CL/)
+- 🇨🇱 Chile
 - 🇨🇲 Cameroon
-- 🇨🇳 China
+- 🇨🇳 [China](./CN/)
 - 🇨🇴 Colombia
 - 🇨🇷 Costa Rica
 - 🇨🇺 Cuba
