@@ -1,1 +1,1 @@
-vless://965ffbbe-c6b6-4d5f-8dea-6d8abc55d9c0@95.174.68.188:14430?host=95.174.68.188&network=ws&path=%2Fvless&security=none&sni=95.174.68.188#%F0%9F%87%B1%F0%9F%87%B9%20LT%20%7C%20VLESS%20%7C%204860ms%20%7C%20GozargahAzadi
+vless://965ffbbe-c6b6-4d5f-8dea-6d8abc55d9c0@95.174.68.188:14430?host=95.174.68.188&network=ws&path=%2Fvless&security=none#%F0%9F%87%B1%F0%9F%87%B9%20LT%20%7C%20VLESS%20%7C%205017ms%20%7C%20GozargahAzadi
