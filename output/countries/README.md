@@ -10,44 +10,44 @@ Click a country to open its subscriptions.
 | [🇦🇺 Australia](./AU/) | AU | 1 |
 | [🇧🇪 Belgium](./BE/) | BE | 1 |
 | [🇧🇬 Bulgaria](./BG/) | BG | 2 |
-| [🇧🇾 Belarus](./BY/) | BY | 3 |
+| [🇧🇾 Belarus](./BY/) | BY | 1 |
 | [🇨🇦 Canada](./CA/) | CA | 15 |
 | [🇨🇭 Switzerland](./CH/) | CH | 4 |
 | [🇨🇱 Chile](./CL/) | CL | 1 |
 | [🇨🇳 China](./CN/) | CN | 1 |
 | [🇨🇾 Cyprus](./CY/) | CY | 2 |
 | [🇨🇿 Czechia](./CZ/) | CZ | 4 |
-| [🇩🇪 Germany](./DE/) | DE | 16 |
+| [🇩🇪 Germany](./DE/) | DE | 13 |
 | [🇩🇰 Denmark](./DK/) | DK | 1 |
 | [🇪🇸 Spain](./ES/) | ES | 2 |
-| [🇫🇮 Finland](./FI/) | FI | 4 |
-| [🇫🇷 France](./FR/) | FR | 20 |
+| [🇫🇮 Finland](./FI/) | FI | 5 |
+| [🇫🇷 France](./FR/) | FR | 17 |
 | [🇬🇧 United Kingdom](./GB/) | GB | 89 |
 | [🇭🇰 Hong Kong](./HK/) | HK | 1 |
 | [🇭🇺 Hungary](./HU/) | HU | 1 |
 | [🇮🇪 Ireland](./IE/) | IE | 1 |
 | [🇮🇳 India](./IN/) | IN | 4 |
-| [🇮🇷 Iran](./IR/) | IR | 3 |
-| [🇮🇸 Iceland](./IS/) | IS | 1 |
+| [🇮🇷 Iran](./IR/) | IR | 5 |
 | [🇮🇹 Italy](./IT/) | IT | 1 |
-| [🇯🇵 Japan](./JP/) | JP | 5 |
+| [🇯🇵 Japan](./JP/) | JP | 3 |
 | [🇰🇷 Korea, Republic of](./KR/) | KR | 7 |
 | [🇱🇹 Lithuania](./LT/) | LT | 2 |
 | [🇲🇽 Mexico](./MX/) | MX | 1 |
 | [🇲🇾 Malaysia](./MY/) | MY | 1 |
-| [🇳🇱 Netherlands](./NL/) | NL | 28 |
+| [🇳🇱 Netherlands](./NL/) | NL | 26 |
 | [🇳🇴 Norway](./NO/) | NO | 1 |
 | [🇵🇦 Panama](./PA/) | PA | 1 |
+| [🇵🇱 Poland](./PL/) | PL | 1 |
 | [🇵🇹 Portugal](./PT/) | PT | 2 |
 | [🇷🇴 Romania](./RO/) | RO | 4 |
 | [🇷🇺 Russia](./RU/) | RU | 3 |
 | [🇸🇨 Seychelles](./SC/) | SC | 1 |
 | [🇸🇪 Sweden](./SE/) | SE | 6 |
-| [🇸🇬 Singapore](./SG/) | SG | 9 |
-| [🇹🇭 Thailand](./TH/) | TH | 2 |
-| [🇹🇷 Turkey](./TR/) | TR | 2 |
+| [🇸🇬 Singapore](./SG/) | SG | 4 |
+| [🇹🇭 Thailand](./TH/) | TH | 3 |
+| [🇹🇷 Turkey](./TR/) | TR | 3 |
 | [🇺🇦 Ukraine](./UA/) | UA | 1 |
-| [🇺🇸 United States](./US/) | US | 67 |
+| [🇺🇸 United States](./US/) | US | 63 |
 | [🇻🇬 Virgin Islands, British](./VG/) | VG | 2 |
 | [🇿🇦 South Africa](./ZA/) | ZA | 3 |
 
@@ -162,7 +162,7 @@ Click a country to open its subscriptions.
 - 🇮🇴 British Indian Ocean Territory
 - 🇮🇶 Iraq
 - 🇮🇷 [Iran](./IR/)
-- 🇮🇸 [Iceland](./IS/)
+- 🇮🇸 Iceland
 - 🇮🇹 [Italy](./IT/)
 - 🇯🇪 Jersey
 - 🇯🇲 Jamaica
@@ -232,7 +232,7 @@ Click a country to open its subscriptions.
 - 🇵🇬 Papua New Guinea
 - 🇵🇭 Philippines
 - 🇵🇰 Pakistan
-- 🇵🇱 Poland
+- 🇵🇱 [Poland](./PL/)
 - 🇵🇲 Saint Pierre and Miquelon
 - 🇵🇳 Pitcairn
 - 🇵🇷 Puerto Rico
