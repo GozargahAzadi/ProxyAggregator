@@ -1,1 +1,1 @@
-vless://fcdb24e3-5e66-4c45-b89e-ac9441f4dcda@free.sahanwickramasinghe.me:80?host=free.sahanwickramasinghe.me&network=ws&path=%2F&security=none#%F0%9F%87%AB%F0%9F%87%B7%20FR%20%7C%20VLESS%20%7C%206304ms%20%7C%20GozargahAzadi
+vless://af827fd0-6381-426f-bc5e-dcd9a7baeaac@46.226.166.208:14430?network=ws&path=%2Fvless&security=none#%F0%9F%87%AB%F0%9F%87%B7%20FR%20%7C%20VLESS%20%7C%205557ms%20%7C%20GozargahAzadi
