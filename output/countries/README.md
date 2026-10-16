@@ -9,37 +9,39 @@ Click a country to open its subscriptions.
 | [🇧🇦 Bosnia and Herzegovina](./BA/) | BA | 1 |
 | [🇧🇪 Belgium](./BE/) | BE | 1 |
 | [🇧🇬 Bulgaria](./BG/) | BG | 1 |
-| [🇧🇾 Belarus](./BY/) | BY | 2 |
-| [🇨🇦 Canada](./CA/) | CA | 15 |
+| [🇧🇾 Belarus](./BY/) | BY | 1 |
+| [🇨🇦 Canada](./CA/) | CA | 16 |
 | [🇨🇭 Switzerland](./CH/) | CH | 1 |
-| [🇨🇳 China](./CN/) | CN | 1 |
+| [🇨🇱 Chile](./CL/) | CL | 1 |
+| [🇨🇳 China](./CN/) | CN | 2 |
 | [🇨🇾 Cyprus](./CY/) | CY | 2 |
 | [🇨🇿 Czechia](./CZ/) | CZ | 2 |
-| [🇩🇪 Germany](./DE/) | DE | 15 |
+| [🇩🇪 Germany](./DE/) | DE | 16 |
 | [🇪🇪 Estonia](./EE/) | EE | 1 |
 | [🇪🇸 Spain](./ES/) | ES | 2 |
 | [🇫🇮 Finland](./FI/) | FI | 7 |
-| [🇫🇷 France](./FR/) | FR | 16 |
-| [🇬🇧 United Kingdom](./GB/) | GB | 86 |
+| [🇫🇷 France](./FR/) | FR | 15 |
+| [🇬🇧 United Kingdom](./GB/) | GB | 87 |
 | [🇭🇰 Hong Kong](./HK/) | HK | 1 |
 | [🇭🇺 Hungary](./HU/) | HU | 1 |
 | [🇮🇪 Ireland](./IE/) | IE | 1 |
-| [🇮🇳 India](./IN/) | IN | 4 |
+| [🇮🇳 India](./IN/) | IN | 3 |
 | [🇮🇷 Iran](./IR/) | IR | 4 |
-| [🇮🇹 Italy](./IT/) | IT | 3 |
-| [🇯🇵 Japan](./JP/) | JP | 4 |
-| [🇰🇷 Korea, Republic of](./KR/) | KR | 4 |
+| [🇮🇹 Italy](./IT/) | IT | 2 |
+| [🇯🇵 Japan](./JP/) | JP | 7 |
+| [🇰🇷 Korea, Republic of](./KR/) | KR | 5 |
 | [🇱🇹 Lithuania](./LT/) | LT | 1 |
 | [🇱🇻 Latvia](./LV/) | LV | 1 |
+| [🇲🇽 Mexico](./MX/) | MX | 1 |
 | [🇲🇾 Malaysia](./MY/) | MY | 1 |
-| [🇳🇱 Netherlands](./NL/) | NL | 25 |
-| [🇵🇱 Poland](./PL/) | PL | 1 |
+| [🇳🇱 Netherlands](./NL/) | NL | 24 |
+| [🇵🇱 Poland](./PL/) | PL | 2 |
 | [🇷🇴 Romania](./RO/) | RO | 3 |
-| [🇷🇺 Russia](./RU/) | RU | 6 |
+| [🇷🇺 Russia](./RU/) | RU | 4 |
 | [🇸🇨 Seychelles](./SC/) | SC | 1 |
-| [🇸🇪 Sweden](./SE/) | SE | 4 |
-| [🇸🇬 Singapore](./SG/) | SG | 5 |
-| [🇹🇭 Thailand](./TH/) | TH | 2 |
+| [🇸🇪 Sweden](./SE/) | SE | 5 |
+| [🇸🇬 Singapore](./SG/) | SG | 4 |
+| [🇹🇭 Thailand](./TH/) | TH | 3 |
 | [🇹🇷 Turkey](./TR/) | TR | 3 |
 | [🇺🇦 Ukraine](./UA/) | UA | 1 |
 | [🇺🇸 United States](./US/) | US | 62 |
@@ -95,7 +97,7 @@ Click a country to open its subscriptions.
 - 🇨🇭 [Switzerland](./CH/)
 - 🇨🇮 Cote d'Ivoire
 - 🇨🇰 Cook Islands
-- 🇨🇱 Chile
+- 🇨🇱 [Chile](./CL/)
 - 🇨🇲 Cameroon
 - 🇨🇳 [China](./CN/)
 - 🇨🇴 Colombia
@@ -206,7 +208,7 @@ Click a country to open its subscriptions.
 - 🇲🇺 Mauritius
 - 🇲🇻 Maldives
 - 🇲🇼 Malawi
-- 🇲🇽 Mexico
+- 🇲🇽 [Mexico](./MX/)
 - 🇲🇾 [Malaysia](./MY/)
 - 🇲🇿 Mozambique
 - 🇳🇦 Namibia

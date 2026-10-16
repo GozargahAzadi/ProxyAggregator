@@ -1,6 +1,6 @@
 # 🇳🇱 Netherlands
 
-25 healthy proxies.
+24 healthy proxies.
 
 ## 📋 All Protocols
 
