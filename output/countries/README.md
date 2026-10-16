@@ -4,50 +4,51 @@ Click a country to open its subscriptions.
 
 | Country | Code | Proxies |
 | --- | --- | ---: |
-| [🇦🇪 United Arab Emirates](./AE/) | AE | 3 |
+| [🇦🇪 United Arab Emirates](./AE/) | AE | 4 |
 | [🇦🇱 Albania](./AL/) | AL | 1 |
 | [🇧🇦 Bosnia and Herzegovina](./BA/) | BA | 1 |
 | [🇧🇪 Belgium](./BE/) | BE | 1 |
 | [🇧🇬 Bulgaria](./BG/) | BG | 1 |
-| [🇧🇾 Belarus](./BY/) | BY | 1 |
+| [🇧🇷 Brazil](./BR/) | BR | 1 |
+| [🇧🇾 Belarus](./BY/) | BY | 2 |
 | [🇨🇦 Canada](./CA/) | CA | 16 |
 | [🇨🇭 Switzerland](./CH/) | CH | 1 |
 | [🇨🇱 Chile](./CL/) | CL | 1 |
-| [🇨🇳 China](./CN/) | CN | 2 |
-| [🇨🇾 Cyprus](./CY/) | CY | 2 |
+| [🇨🇳 China](./CN/) | CN | 1 |
+| [🇨🇾 Cyprus](./CY/) | CY | 1 |
 | [🇨🇿 Czechia](./CZ/) | CZ | 2 |
-| [🇩🇪 Germany](./DE/) | DE | 16 |
+| [🇩🇪 Germany](./DE/) | DE | 15 |
 | [🇪🇪 Estonia](./EE/) | EE | 1 |
 | [🇪🇸 Spain](./ES/) | ES | 2 |
 | [🇫🇮 Finland](./FI/) | FI | 7 |
 | [🇫🇷 France](./FR/) | FR | 15 |
-| [🇬🇧 United Kingdom](./GB/) | GB | 87 |
+| [🇬🇧 United Kingdom](./GB/) | GB | 91 |
 | [🇭🇰 Hong Kong](./HK/) | HK | 1 |
 | [🇭🇺 Hungary](./HU/) | HU | 1 |
 | [🇮🇪 Ireland](./IE/) | IE | 1 |
-| [🇮🇳 India](./IN/) | IN | 3 |
+| [🇮🇳 India](./IN/) | IN | 4 |
 | [🇮🇷 Iran](./IR/) | IR | 4 |
-| [🇮🇹 Italy](./IT/) | IT | 2 |
-| [🇯🇵 Japan](./JP/) | JP | 7 |
-| [🇰🇷 Korea, Republic of](./KR/) | KR | 5 |
+| [🇮🇹 Italy](./IT/) | IT | 1 |
+| [🇯🇵 Japan](./JP/) | JP | 6 |
+| [🇰🇷 Korea, Republic of](./KR/) | KR | 2 |
 | [🇱🇹 Lithuania](./LT/) | LT | 1 |
 | [🇱🇻 Latvia](./LV/) | LV | 1 |
 | [🇲🇽 Mexico](./MX/) | MX | 1 |
 | [🇲🇾 Malaysia](./MY/) | MY | 1 |
-| [🇳🇱 Netherlands](./NL/) | NL | 24 |
+| [🇳🇱 Netherlands](./NL/) | NL | 25 |
 | [🇵🇱 Poland](./PL/) | PL | 2 |
 | [🇷🇴 Romania](./RO/) | RO | 3 |
-| [🇷🇺 Russia](./RU/) | RU | 4 |
+| [🇷🇺 Russia](./RU/) | RU | 5 |
 | [🇸🇨 Seychelles](./SC/) | SC | 1 |
-| [🇸🇪 Sweden](./SE/) | SE | 5 |
-| [🇸🇬 Singapore](./SG/) | SG | 4 |
+| [🇸🇪 Sweden](./SE/) | SE | 4 |
+| [🇸🇬 Singapore](./SG/) | SG | 2 |
 | [🇹🇭 Thailand](./TH/) | TH | 3 |
 | [🇹🇷 Turkey](./TR/) | TR | 3 |
 | [🇺🇦 Ukraine](./UA/) | UA | 1 |
-| [🇺🇸 United States](./US/) | US | 62 |
+| [🇺🇸 United States](./US/) | US | 61 |
 | [🇻🇬 Virgin Islands, British](./VG/) | VG | 2 |
-| [🇻🇳 Vietnam](./VN/) | VN | 2 |
-| [🇿🇦 South Africa](./ZA/) | ZA | 2 |
+| [🇻🇳 Vietnam](./VN/) | VN | 1 |
+| [🇿🇦 South Africa](./ZA/) | ZA | 3 |
 
 <details>
 <summary>🌐 All countries — full ISO flag map</summary>
@@ -82,7 +83,7 @@ Click a country to open its subscriptions.
 - 🇧🇳 Brunei Darussalam
 - 🇧🇴 Bolivia
 - 🇧🇶 Bonaire, Sint Eustatius and Saba
-- 🇧🇷 Brazil
+- 🇧🇷 [Brazil](./BR/)
 - 🇧🇸 Bahamas
 - 🇧🇹 Bhutan
 - 🇧🇻 Bouvet Island
