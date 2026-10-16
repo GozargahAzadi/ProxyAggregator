@@ -1,6 +1,6 @@
 # 🇮🇳 India
 
-2 healthy proxies.
+3 healthy proxies.
 
 ## 📋 All Protocols
 
@@ -15,5 +15,7 @@
 |---|---|---|
 | VLESS | [Open](./vless.txt) | `https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/countries/IN/vless.txt` |
 | VLESS Base64 | [Open](./vless-base64.txt) | `https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/countries/IN/vless-base64.txt` |
+| VMess | [Open](./vmess.txt) | `https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/countries/IN/vmess.txt` |
+| VMess Base64 | [Open](./vmess-base64.txt) | `https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/countries/IN/vmess-base64.txt` |
 | Shadowsocks | [Open](./shadowsocks.txt) | `https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/countries/IN/shadowsocks.txt` |
 | Shadowsocks Base64 | [Open](./shadowsocks-base64.txt) | `https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/countries/IN/shadowsocks-base64.txt` |

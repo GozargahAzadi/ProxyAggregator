@@ -1,2 +1,2 @@
-vless://1af36694-b548-4b18-89a0-bc076eab4ed7@178.172.227.124:14430?host=178.172.227.124&network=ws&path=%2Fvless&security=none&sni=178.172.227.124#%F0%9F%87%A7%F0%9F%87%BE%20BY%20%7C%20VLESS%20%7C%204548ms%20%7C%20GozargahAzadi
-vless://b6e5dc56-836f-48c1-9163-b0b0b43b647d@178.172.227.228:14430?host=178.172.227.228&network=ws&path=%2Fvless&security=none&sni=178.172.227.228#%F0%9F%87%A7%F0%9F%87%BE%20BY%20%7C%20VLESS%20%7C%204966ms%20%7C%20GozargahAzadi
+vless://b6e5dc56-836f-48c1-9163-b0b0b43b647d@178.172.227.228:14430?host=178.172.227.228&network=ws&path=%2Fvless&security=none&sni=178.172.227.228#%F0%9F%87%A7%F0%9F%87%BE%20BY%20%7C%20VLESS%20%7C%204602ms%20%7C%20GozargahAzadi
+vless://1af36694-b548-4b18-89a0-bc076eab4ed7@178.172.227.124:14430?host=178.172.227.124&network=ws&path=%2Fvless&security=none&sni=178.172.227.124#%F0%9F%87%A7%F0%9F%87%BE%20BY%20%7C%20VLESS%20%7C%204619ms%20%7C%20GozargahAzadi
