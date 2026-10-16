@@ -1,6 +1,6 @@
 # 🇫🇷 France
 
-26 healthy proxies.
+23 healthy proxies.
 
 ## 📋 All Protocols
 
