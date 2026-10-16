@@ -1,0 +1,1 @@
+vless://f399ad26-114a-4757-98e6-2595d7c63fc3@15.235.196.80:52014?host=kqjifhg9rw.tradsc8p9xp7wxyqmc1wy0ah.workers.dev&network=ws&path=%2F%40Marisa_kristi&security=tls&sni=kqjifhg9rw.tradsc8p9xp7wxyqmc1wy0ah.workers.dev#%F0%9F%87%A8%F0%9F%87%A6%20CA%20%7C%20VLESS%20%7C%20533ms%20%7C%20GozargahAzadi
