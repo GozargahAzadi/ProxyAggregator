@@ -1,4 +1,4 @@
-ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTpzcFF1T2VxeFYzbm14U25TbW9qVTFtT0lTVmdPQnZGRQ==@ms-ip.xqnetwork.ir:8880#%F0%9F%87%A6%F0%9F%87%AA%20AE%20%7C%20SS%20%7C%201189ms%20%7C%20GozargahAzadi
-ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTpzcFF1T2VxeFYzbm14U25TbW9qVTFtT0lTVmdPQnZGRQ==@ms-ip.xqnetwork.ir:332#%F0%9F%87%A6%F0%9F%87%AA%20AE%20%7C%20SS%20%7C%201279ms%20%7C%20GozargahAzadi
-vless://39947382-3212-41c9-bc3a-589574ac8b23@84.235.244.108:22573?host=uae.unixzone.us&network=ws&path=%2F&security=none#%F0%9F%87%A6%F0%9F%87%AA%20AE%20%7C%20VLESS%20%7C%204576ms%20%7C%20GozargahAzadi
-vless://39947382-3212-41c9-bc3a-589574ac8b23@uae.unixzone.us:22573?network=ws&security=none#%F0%9F%87%A6%F0%9F%87%AA%20AE%20%7C%20VLESS%20%7C%204606ms%20%7C%20GozargahAzadi
+ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTpzcFF1T2VxeFYzbm14U25TbW9qVTFtT0lTVmdPQnZGRQ==@ms-ip.xqnetwork.ir:8880#%F0%9F%87%A6%F0%9F%87%AA%20AE%20%7C%20SS%20%7C%201184ms%20%7C%20GozargahAzadi
+ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTpzcFF1T2VxeFYzbm14U25TbW9qVTFtT0lTVmdPQnZGRQ==@ms-ip.xqnetwork.ir:332#%F0%9F%87%A6%F0%9F%87%AA%20AE%20%7C%20SS%20%7C%201185ms%20%7C%20GozargahAzadi
+vless://39947382-3212-41c9-bc3a-589574ac8b23@84.235.244.108:22573?host=uae.unixzone.us&network=ws&path=%2F&security=none#%F0%9F%87%A6%F0%9F%87%AA%20AE%20%7C%20VLESS%20%7C%204611ms%20%7C%20GozargahAzadi
+vless://39947382-3212-41c9-bc3a-589574ac8b23@uae.unixzone.us:22573?network=ws&security=none#%F0%9F%87%A6%F0%9F%87%AA%20AE%20%7C%20VLESS%20%7C%204615ms%20%7C%20GozargahAzadi

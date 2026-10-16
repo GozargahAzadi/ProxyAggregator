@@ -15,11 +15,11 @@ Click a country to open its subscriptions.
 | [🇨🇳 China](./CN/) | CN | 2 |
 | [🇨🇾 Cyprus](./CY/) | CY | 2 |
 | [🇨🇿 Czechia](./CZ/) | CZ | 2 |
-| [🇩🇪 Germany](./DE/) | DE | 15 |
+| [🇩🇪 Germany](./DE/) | DE | 17 |
 | [🇪🇪 Estonia](./EE/) | EE | 1 |
 | [🇪🇸 Spain](./ES/) | ES | 2 |
 | [🇫🇮 Finland](./FI/) | FI | 6 |
-| [🇫🇷 France](./FR/) | FR | 17 |
+| [🇫🇷 France](./FR/) | FR | 19 |
 | [🇬🇧 United Kingdom](./GB/) | GB | 90 |
 | [🇭🇰 Hong Kong](./HK/) | HK | 1 |
 | [🇭🇺 Hungary](./HU/) | HU | 1 |
@@ -27,26 +27,24 @@ Click a country to open its subscriptions.
 | [🇮🇱 Israel](./IL/) | IL | 1 |
 | [🇮🇳 India](./IN/) | IN | 4 |
 | [🇮🇷 Iran](./IR/) | IR | 5 |
-| [🇮🇹 Italy](./IT/) | IT | 3 |
-| [🇯🇵 Japan](./JP/) | JP | 6 |
-| [🇰🇷 Korea, Republic of](./KR/) | KR | 4 |
+| [🇮🇹 Italy](./IT/) | IT | 2 |
+| [🇯🇵 Japan](./JP/) | JP | 9 |
+| [🇰🇷 Korea, Republic of](./KR/) | KR | 3 |
 | [🇱🇹 Lithuania](./LT/) | LT | 1 |
 | [🇱🇻 Latvia](./LV/) | LV | 1 |
-| [🇲🇽 Mexico](./MX/) | MX | 1 |
 | [🇲🇾 Malaysia](./MY/) | MY | 1 |
 | [🇳🇱 Netherlands](./NL/) | NL | 28 |
-| [🇵🇱 Poland](./PL/) | PL | 2 |
+| [🇵🇱 Poland](./PL/) | PL | 1 |
 | [🇷🇴 Romania](./RO/) | RO | 3 |
-| [🇷🇺 Russia](./RU/) | RU | 5 |
+| [🇷🇺 Russia](./RU/) | RU | 4 |
 | [🇸🇨 Seychelles](./SC/) | SC | 1 |
 | [🇸🇪 Sweden](./SE/) | SE | 5 |
-| [🇸🇬 Singapore](./SG/) | SG | 3 |
-| [🇹🇭 Thailand](./TH/) | TH | 2 |
+| [🇸🇬 Singapore](./SG/) | SG | 4 |
+| [🇹🇭 Thailand](./TH/) | TH | 3 |
 | [🇹🇷 Turkey](./TR/) | TR | 2 |
-| [🇺🇦 Ukraine](./UA/) | UA | 1 |
-| [🇺🇸 United States](./US/) | US | 63 |
+| [🇺🇸 United States](./US/) | US | 66 |
 | [🇻🇬 Virgin Islands, British](./VG/) | VG | 2 |
-| [🇻🇳 Vietnam](./VN/) | VN | 2 |
+| [🇻🇳 Vietnam](./VN/) | VN | 1 |
 | [🇿🇦 South Africa](./ZA/) | ZA | 3 |
 
 <details>
@@ -208,7 +206,7 @@ Click a country to open its subscriptions.
 - 🇲🇺 Mauritius
 - 🇲🇻 Maldives
 - 🇲🇼 Malawi
-- 🇲🇽 [Mexico](./MX/)
+- 🇲🇽 Mexico
 - 🇲🇾 [Malaysia](./MY/)
 - 🇲🇿 Mozambique
 - 🇳🇦 Namibia
@@ -281,7 +279,7 @@ Click a country to open its subscriptions.
 - 🇹🇻 Tuvalu
 - 🇹🇼 Taiwan
 - 🇹🇿 Tanzania
-- 🇺🇦 [Ukraine](./UA/)
+- 🇺🇦 Ukraine
 - 🇺🇬 Uganda
 - 🇺🇲 United States Minor Outlying Islands
 - 🇺🇸 [United States](./US/)

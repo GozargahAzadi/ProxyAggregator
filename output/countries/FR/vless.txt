@@ -1,4 +1,6 @@
-vless://af827fd0-6381-426f-bc5e-dcd9a7baeaac@46.226.166.208:14430?network=ws&path=%2Fvless&security=none#%F0%9F%87%AB%F0%9F%87%B7%20FR%20%7C%20VLESS%20%7C%204601ms%20%7C%20GozargahAzadi
-vless://40cc9b52-25b8-4cd5-8b45-715ae26e6baf@sc-thenetherlands1.09vpn.com:80?host=sc-thenetherlands1.09vpn.com&network=ws&path=%2Fvless%2F&security=none#%F0%9F%87%AB%F0%9F%87%B7%20FR%20%7C%20VLESS%20%7C%204624ms%20%7C%20GozargahAzadi
-vless://c136a12c-4260-48a7-a1e6-fbda83a11045@free.sahanwickramasinghe.me:8443?host=free.sahanwickramasinghe.me&network=ws&path=%2F&security=tls&sni=free.sahanwickramasinghe.me#%F0%9F%87%AB%F0%9F%87%B7%20FR%20%7C%20VLESS%20%7C%205162ms%20%7C%20GozargahAzadi
-vless://fcdb24e3-5e66-4c45-b89e-ac9441f4dcda@free.sahanwickramasinghe.me:80?network=ws&security=none#%F0%9F%87%AB%F0%9F%87%B7%20FR%20%7C%20VLESS%20%7C%205190ms%20%7C%20GozargahAzadi
+vless://40cc9b52-25b8-4cd5-8b45-715ae26e6baf@163.172.214.188:80?network=ws&path=%2Fvless%2F&security=none#%F0%9F%87%AB%F0%9F%87%B7%20FR%20%7C%20VLESS%20%7C%204542ms%20%7C%20GozargahAzadi
+vless://40cc9b52-25b8-4cd5-8b45-715ae26e6baf@sc-thenetherlands1.09vpn.com:80?host=sc-thenetherlands1.09vpn.com&network=ws&path=%2Fvless%2F&security=none#%F0%9F%87%AB%F0%9F%87%B7%20FR%20%7C%20VLESS%20%7C%204545ms%20%7C%20GozargahAzadi
+vless://e73df646-1f62-41bf-8c50-653497d603d0@sc-thenetherlands2.09vpn.com:80?host=SC-TheNetherlands2.09vpn.com&network=ws&path=%2Fvless%2F#%F0%9F%87%AB%F0%9F%87%B7%20FR%20%7C%20VLESS%20%7C%204549ms%20%7C%20GozargahAzadi
+vless://af827fd0-6381-426f-bc5e-dcd9a7baeaac@46.226.166.208:14430?network=ws&path=%2Fvless&security=none#%F0%9F%87%AB%F0%9F%87%B7%20FR%20%7C%20VLESS%20%7C%204598ms%20%7C%20GozargahAzadi
+vless://c136a12c-4260-48a7-a1e6-fbda83a11045@free.sahanwickramasinghe.me:8443?host=free.sahanwickramasinghe.me&network=ws&path=%2F&security=tls&sni=free.sahanwickramasinghe.me#%F0%9F%87%AB%F0%9F%87%B7%20FR%20%7C%20VLESS%20%7C%205123ms%20%7C%20GozargahAzadi
+vless://fcdb24e3-5e66-4c45-b89e-ac9441f4dcda@free.sahanwickramasinghe.me:80?network=ws&security=none#%F0%9F%87%AB%F0%9F%87%B7%20FR%20%7C%20VLESS%20%7C%205227ms%20%7C%20GozargahAzadi
