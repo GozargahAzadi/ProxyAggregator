@@ -1,6 +1,6 @@
 # 🇭🇰 Hong Kong
 
-1 healthy proxy.
+2 healthy proxies.
 
 ## 📋 All Protocols
 
@@ -15,3 +15,5 @@
 |---|---|---|
 | Shadowsocks | [Open](./shadowsocks.txt) | `https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/countries/HK/shadowsocks.txt` |
 | Shadowsocks Base64 | [Open](./shadowsocks-base64.txt) | `https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/countries/HK/shadowsocks-base64.txt` |
+| Socks5 | [Open](./socks5.txt) | `https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/countries/HK/socks5.txt` |
+| Socks5 Base64 | [Open](./socks5-base64.txt) | `https://raw.githubusercontent.com/GozargahAzadi/ProxyAggregator/main/output/countries/HK/socks5-base64.txt` |
