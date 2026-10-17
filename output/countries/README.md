@@ -4,55 +4,52 @@ Click a country to open its subscriptions.
 
 | Country | Code | Proxies |
 | --- | --- | ---: |
-| [🇦🇪 United Arab Emirates](./AE/) | AE | 6 |
+| [🇦🇪 United Arab Emirates](./AE/) | AE | 8 |
 | [🇦🇱 Albania](./AL/) | AL | 3 |
 | [🇦🇹 Austria](./AT/) | AT | 1 |
 | [🇧🇦 Bosnia and Herzegovina](./BA/) | BA | 1 |
 | [🇧🇪 Belgium](./BE/) | BE | 1 |
 | [🇧🇬 Bulgaria](./BG/) | BG | 1 |
 | [🇧🇷 Brazil](./BR/) | BR | 2 |
-| [🇧🇾 Belarus](./BY/) | BY | 1 |
+| [🇧🇾 Belarus](./BY/) | BY | 3 |
 | [🇨🇦 Canada](./CA/) | CA | 17 |
 | [🇨🇭 Switzerland](./CH/) | CH | 1 |
 | [🇨🇱 Chile](./CL/) | CL | 1 |
-| [🇨🇳 China](./CN/) | CN | 2 |
-| [🇨🇾 Cyprus](./CY/) | CY | 1 |
+| [🇨🇳 China](./CN/) | CN | 1 |
 | [🇨🇿 Czechia](./CZ/) | CZ | 2 |
-| [🇩🇪 Germany](./DE/) | DE | 25 |
+| [🇩🇪 Germany](./DE/) | DE | 22 |
 | [🇩🇰 Denmark](./DK/) | DK | 1 |
 | [🇪🇪 Estonia](./EE/) | EE | 1 |
 | [🇪🇸 Spain](./ES/) | ES | 2 |
 | [🇫🇮 Finland](./FI/) | FI | 7 |
-| [🇫🇷 France](./FR/) | FR | 19 |
-| [🇬🇧 United Kingdom](./GB/) | GB | 88 |
+| [🇫🇷 France](./FR/) | FR | 20 |
+| [🇬🇧 United Kingdom](./GB/) | GB | 87 |
 | [🇬🇪 Georgia](./GE/) | GE | 1 |
 | [🇬🇷 Greece](./GR/) | GR | 1 |
-| [🇭🇰 Hong Kong](./HK/) | HK | 3 |
+| [🇭🇰 Hong Kong](./HK/) | HK | 2 |
 | [🇮🇪 Ireland](./IE/) | IE | 1 |
 | [🇮🇱 Israel](./IL/) | IL | 1 |
-| [🇮🇳 India](./IN/) | IN | 3 |
-| [🇮🇷 Iran](./IR/) | IR | 5 |
-| [🇮🇹 Italy](./IT/) | IT | 4 |
-| [🇯🇵 Japan](./JP/) | JP | 9 |
-| [🇰🇷 Korea, Republic of](./KR/) | KR | 3 |
+| [🇮🇳 India](./IN/) | IN | 4 |
+| [🇮🇷 Iran](./IR/) | IR | 4 |
+| [🇮🇹 Italy](./IT/) | IT | 3 |
+| [🇯🇵 Japan](./JP/) | JP | 7 |
+| [🇰🇷 Korea, Republic of](./KR/) | KR | 4 |
 | [🇱🇹 Lithuania](./LT/) | LT | 2 |
-| [🇲🇽 Mexico](./MX/) | MX | 1 |
 | [🇲🇾 Malaysia](./MY/) | MY | 1 |
-| [🇳🇱 Netherlands](./NL/) | NL | 33 |
+| [🇳🇱 Netherlands](./NL/) | NL | 29 |
 | [🇵🇱 Poland](./PL/) | PL | 2 |
 | [🇷🇴 Romania](./RO/) | RO | 3 |
-| [🇷🇺 Russia](./RU/) | RU | 3 |
+| [🇷🇺 Russia](./RU/) | RU | 5 |
 | [🇸🇨 Seychelles](./SC/) | SC | 1 |
-| [🇸🇪 Sweden](./SE/) | SE | 6 |
-| [🇸🇬 Singapore](./SG/) | SG | 10 |
-| [🇹🇭 Thailand](./TH/) | TH | 5 |
+| [🇸🇪 Sweden](./SE/) | SE | 4 |
+| [🇸🇬 Singapore](./SG/) | SG | 7 |
+| [🇹🇭 Thailand](./TH/) | TH | 2 |
 | [🇹🇷 Turkey](./TR/) | TR | 3 |
 | [🇺🇦 Ukraine](./UA/) | UA | 1 |
-| [🇺🇸 United States](./US/) | US | 88 |
+| [🇺🇸 United States](./US/) | US | 79 |
 | [🇻🇬 Virgin Islands, British](./VG/) | VG | 2 |
 | [🇻🇳 Vietnam](./VN/) | VN | 1 |
-| [🌐 Unknown](./XX/) | XX | 3 |
-| [🇿🇦 South Africa](./ZA/) | ZA | 3 |
+| [🇿🇦 South Africa](./ZA/) | ZA | 4 |
 
 <details>
 <summary>🌐 All countries — full ISO flag map</summary>
@@ -111,7 +108,7 @@ Click a country to open its subscriptions.
 - 🇨🇻 Cabo Verde
 - 🇨🇼 Curacao
 - 🇨🇽 Christmas Island
-- 🇨🇾 [Cyprus](./CY/)
+- 🇨🇾 Cyprus
 - 🇨🇿 [Czechia](./CZ/)
 - 🇩🇪 [Germany](./DE/)
 - 🇩🇯 Djibouti
@@ -213,7 +210,7 @@ Click a country to open its subscriptions.
 - 🇲🇺 Mauritius
 - 🇲🇻 Maldives
 - 🇲🇼 Malawi
-- 🇲🇽 [Mexico](./MX/)
+- 🇲🇽 Mexico
 - 🇲🇾 [Malaysia](./MY/)
 - 🇲🇿 Mozambique
 - 🇳🇦 Namibia
