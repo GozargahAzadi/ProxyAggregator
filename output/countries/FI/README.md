@@ -1,6 +1,6 @@
 # 🇫🇮 Finland
 
-5 healthy proxies.
+4 healthy proxies.
 
 ## 📋 All Protocols
 
