@@ -1,6 +1,6 @@
 # 🇺🇸 United States
 
-79 healthy proxies.
+73 healthy proxies.
 
 ## 📋 All Protocols
 

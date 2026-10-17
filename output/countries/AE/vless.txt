@@ -1,5 +1,5 @@
-vless://d342d11e-d224-4463-b982-532309285094@31.57.190.15:443?host=ccc.010304.xyz&network=ws&path=%2Ffp%3Dchrome&security=tls&sni=ccc.010304.xyz#%F0%9F%87%A6%F0%9F%87%AA%20AE%20%7C%20VLESS%20%7C%20521ms%20%7C%20GozargahAzadi
-vless://d342d11e-d224-4463-b982-532309285094@31.57.190.50:443?host=ccc.010304.xyz&network=ws&path=%2F&security=tls&sni=ccc.010304.xyz#%F0%9F%87%A6%F0%9F%87%AA%20AE%20%7C%20VLESS%20%7C%20531ms%20%7C%20GozargahAzadi
-vless://39947382-3212-41c9-bc3a-589574ac8b23@84.235.244.108:22573?host=uae.unixzone.us&network=ws&path=%2F&security=none#%F0%9F%87%A6%F0%9F%87%AA%20AE%20%7C%20VLESS%20%7C%204601ms%20%7C%20GozargahAzadi
-vless://aee7ae19-672f-49d8-8a92-aa7cdfc89f89@185.253.116.33:14430?host=185.253.116.33&network=ws&path=%2Fvless#%F0%9F%87%A6%F0%9F%87%AA%20AE%20%7C%20VLESS%20%7C%204605ms%20%7C%20GozargahAzadi
-vless://39947382-3212-41c9-bc3a-589574ac8b23@uae.unixzone.us:22573?host=uae.unixzone.us&network=ws&path=%2F&security=none#%F0%9F%87%A6%F0%9F%87%AA%20AE%20%7C%20VLESS%20%7C%204654ms%20%7C%20GozargahAzadi
+vless://d342d11e-d224-4463-b982-532309285094@31.57.190.50:443?host=ccc.010304.xyz&network=ws&path=%2F&security=tls&sni=ccc.010304.xyz#%F0%9F%87%A6%F0%9F%87%AA%20AE%20%7C%20VLESS%20%7C%20630ms%20%7C%20GozargahAzadi
+vless://d342d11e-d224-4463-b982-532309285094@31.57.190.15:443?host=ccc.010304.xyz&network=ws&path=%2Ffp%3Dchrome&security=tls&sni=ccc.010304.xyz#%F0%9F%87%A6%F0%9F%87%AA%20AE%20%7C%20VLESS%20%7C%20645ms%20%7C%20GozargahAzadi
+vless://aee7ae19-672f-49d8-8a92-aa7cdfc89f89@185.253.116.33:14430?host=185.253.116.33&network=ws&path=%2Fvless#%F0%9F%87%A6%F0%9F%87%AA%20AE%20%7C%20VLESS%20%7C%204638ms%20%7C%20GozargahAzadi
+vless://39947382-3212-41c9-bc3a-589574ac8b23@84.235.244.108:22573?host=uae.unixzone.us&network=ws&path=%2F&security=none#%F0%9F%87%A6%F0%9F%87%AA%20AE%20%7C%20VLESS%20%7C%204670ms%20%7C%20GozargahAzadi
+vless://39947382-3212-41c9-bc3a-589574ac8b23@uae.unixzone.us:22573?host=uae.unixzone.us&network=ws&path=%2F&security=none#%F0%9F%87%A6%F0%9F%87%AA%20AE%20%7C%20VLESS%20%7C%204700ms%20%7C%20GozargahAzadi
