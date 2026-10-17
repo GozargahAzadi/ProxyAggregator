@@ -1,6 +1,6 @@
 # 🇩🇪 Germany
 
-26 healthy proxies.
+25 healthy proxies.
 
 ## 📋 All Protocols
 

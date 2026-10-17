@@ -1,7 +1,6 @@
-https://146.70.242.130:443#%F0%9F%87%B8%F0%9F%87%AA%20SE%20%7C%20HTTPS%20%7C%20452ms%20%7C%20GozargahAzadi
-https://149.50.216.65:443#%F0%9F%87%B8%F0%9F%87%AA%20SE%20%7C%20HTTPS%20%7C%20465ms%20%7C%20GozargahAzadi
-vless://acc10ba5-a222-44b3-8a1a-4f247ffc6466@89.22.224.146:43788?host=c6dbx99g6stb418qeo.t3jmlj0r152zji4htdkm9.workers.dev&network=ws&path=%2F%40Marisa_kristi&security=tls&sni=c6dbx99g6stb418qeo.t3jmlj0r152zji4htdkm9.workers.dev#%F0%9F%87%B8%F0%9F%87%AA%20SE%20%7C%20VLESS%20%7C%20606ms%20%7C%20GozargahAzadi
-ss://YWVzLTI1Ni1nY206QXhJWVd0c2tKV0lJYWVmVw==@70.34.212.124:8388#%F0%9F%87%B8%F0%9F%87%AA%20SE%20%7C%20SS%20%7C%201143ms%20%7C%20GozargahAzadi
-vless://d342d11e-d224-4463-b982-532309285094@77.110.97.245:443?host=ccc.010304.xyz&network=ws&path=%2Ffp%3Dchrome&security=tls&sni=ccc.010304.xyz#%F0%9F%87%B8%F0%9F%87%AA%20SE%20%7C%20VLESS%20%7C%204370ms%20%7C%20GozargahAzadi
-vless://80de563a-cac8-40ea-8cb0-4cb082dd92f9@5.178.109.174:14430?host=5.178.109.174&network=ws&path=%2Fvless&security=none&sni=5.178.109.174#%F0%9F%87%B8%F0%9F%87%AA%20SE%20%7C%20VLESS%20%7C%204665ms%20%7C%20GozargahAzadi
-vless://57f7772d-f5d6-4d8f-992d-5fa5e0d6da55@193.188.21.253:14430?host=193.188.21.253&network=ws&path=%2Fvless&sni=193.188.21.253#%F0%9F%87%B8%F0%9F%87%AA%20SE%20%7C%20VLESS%20%7C%207040ms%20%7C%20GozargahAzadi
+https://146.70.242.130:443#%F0%9F%87%B8%F0%9F%87%AA%20SE%20%7C%20HTTPS%20%7C%20408ms%20%7C%20GozargahAzadi
+https://149.50.216.65:443#%F0%9F%87%B8%F0%9F%87%AA%20SE%20%7C%20HTTPS%20%7C%20414ms%20%7C%20GozargahAzadi
+vless://d342d11e-d224-4463-b982-532309285094@77.110.97.245:443?host=ccc.010304.xyz&network=ws&path=%2Ffp%3Dchrome&security=tls&sni=ccc.010304.xyz#%F0%9F%87%B8%F0%9F%87%AA%20SE%20%7C%20VLESS%20%7C%20808ms%20%7C%20GozargahAzadi
+vless://acc10ba5-a222-44b3-8a1a-4f247ffc6466@89.22.224.146:43788?host=c6dbx99g6stb418qeo.t3jmlj0r152zji4htdkm9.workers.dev&network=ws&path=%2F%40Marisa_kristi&security=tls&sni=c6dbx99g6stb418qeo.t3jmlj0r152zji4htdkm9.workers.dev#%F0%9F%87%B8%F0%9F%87%AA%20SE%20%7C%20VLESS%20%7C%20920ms%20%7C%20GozargahAzadi
+ss://YWVzLTI1Ni1nY206QXhJWVd0c2tKV0lJYWVmVw==@70.34.212.124:8388#%F0%9F%87%B8%F0%9F%87%AA%20SE%20%7C%20SS%20%7C%201125ms%20%7C%20GozargahAzadi
+vless://80de563a-cac8-40ea-8cb0-4cb082dd92f9@5.178.109.174:14430?host=5.178.109.174&network=ws&path=%2Fvless&security=none&sni=5.178.109.174#%F0%9F%87%B8%F0%9F%87%AA%20SE%20%7C%20VLESS%20%7C%204590ms%20%7C%20GozargahAzadi
