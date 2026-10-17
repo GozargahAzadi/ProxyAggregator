@@ -6,23 +6,24 @@ Click a country to open its subscriptions.
 | --- | --- | ---: |
 | [🇦🇪 United Arab Emirates](./AE/) | AE | 8 |
 | [🇧🇬 Bulgaria](./BG/) | BG | 2 |
-| [🇧🇾 Belarus](./BY/) | BY | 3 |
-| [🇨🇦 Canada](./CA/) | CA | 12 |
+| [🇧🇾 Belarus](./BY/) | BY | 2 |
+| [🇨🇦 Canada](./CA/) | CA | 13 |
 | [🇨🇭 Switzerland](./CH/) | CH | 2 |
+| [🇨🇱 Chile](./CL/) | CL | 1 |
 | [🇨🇳 China](./CN/) | CN | 2 |
-| [🇨🇾 Cyprus](./CY/) | CY | 1 |
-| [🇩🇪 Germany](./DE/) | DE | 25 |
+| [🇩🇪 Germany](./DE/) | DE | 26 |
 | [🇪🇪 Estonia](./EE/) | EE | 1 |
-| [🇫🇮 Finland](./FI/) | FI | 2 |
+| [🇫🇮 Finland](./FI/) | FI | 3 |
 | [🇫🇷 France](./FR/) | FR | 12 |
-| [🇬🇧 United Kingdom](./GB/) | GB | 83 |
+| [🇬🇧 United Kingdom](./GB/) | GB | 85 |
 | [🇭🇰 Hong Kong](./HK/) | HK | 3 |
 | [🇮🇱 Israel](./IL/) | IL | 1 |
 | [🇮🇳 India](./IN/) | IN | 4 |
 | [🇮🇷 Iran](./IR/) | IR | 3 |
 | [🇯🇵 Japan](./JP/) | JP | 8 |
-| [🇰🇷 Korea, Republic of](./KR/) | KR | 3 |
+| [🇰🇷 Korea, Republic of](./KR/) | KR | 6 |
 | [🇱🇹 Lithuania](./LT/) | LT | 1 |
+| [🇲🇽 Mexico](./MX/) | MX | 1 |
 | [🇲🇾 Malaysia](./MY/) | MY | 1 |
 | [🇳🇱 Netherlands](./NL/) | NL | 25 |
 | [🇳🇴 Norway](./NO/) | NO | 1 |
@@ -30,8 +31,8 @@ Click a country to open its subscriptions.
 | [🇷🇺 Russia](./RU/) | RU | 4 |
 | [🇸🇨 Seychelles](./SC/) | SC | 1 |
 | [🇸🇪 Sweden](./SE/) | SE | 2 |
-| [🇸🇬 Singapore](./SG/) | SG | 6 |
-| [🇹🇭 Thailand](./TH/) | TH | 3 |
+| [🇸🇬 Singapore](./SG/) | SG | 10 |
+| [🇹🇭 Thailand](./TH/) | TH | 2 |
 | [🇹🇷 Turkey](./TR/) | TR | 2 |
 | [🇺🇦 Ukraine](./UA/) | UA | 1 |
 | [🇺🇸 United States](./US/) | US | 53 |
@@ -87,7 +88,7 @@ Click a country to open its subscriptions.
 - 🇨🇭 [Switzerland](./CH/)
 - 🇨🇮 Cote d'Ivoire
 - 🇨🇰 Cook Islands
-- 🇨🇱 Chile
+- 🇨🇱 [Chile](./CL/)
 - 🇨🇲 Cameroon
 - 🇨🇳 [China](./CN/)
 - 🇨🇴 Colombia
@@ -96,7 +97,7 @@ Click a country to open its subscriptions.
 - 🇨🇻 Cabo Verde
 - 🇨🇼 Curacao
 - 🇨🇽 Christmas Island
-- 🇨🇾 [Cyprus](./CY/)
+- 🇨🇾 Cyprus
 - 🇨🇿 Czechia
 - 🇩🇪 [Germany](./DE/)
 - 🇩🇯 Djibouti
@@ -198,7 +199,7 @@ Click a country to open its subscriptions.
 - 🇲🇺 Mauritius
 - 🇲🇻 Maldives
 - 🇲🇼 Malawi
-- 🇲🇽 Mexico
+- 🇲🇽 [Mexico](./MX/)
 - 🇲🇾 [Malaysia](./MY/)
 - 🇲🇿 Mozambique
 - 🇳🇦 Namibia
