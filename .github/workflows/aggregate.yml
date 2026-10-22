@@ -1,0 +1,107 @@
+# ProxyAggregator — scheduled aggregation pipeline
+#
+# Runs on GitHub Actions, collects public proxy configs, verifies them,
+# and publishes results to the default branch.
+# No external dependencies required (stdlib-only Python).
+# No VPS, no database server.
+
+name: ProxyAggregator
+
+on:
+  schedule:
+    # Every 15 minutes (GitHub schedule is best-effort)
+    - cron: '*/15 * * * *'
+  workflow_dispatch:
+    inputs:
+      force:
+        description: 'Force run (ignore freshness gate)'
+        required: false
+        default: 'false'
+  push:
+    branches: [main]
+    paths:
+      - 'proxy_aggregator/**'
+      - '.github/workflows/aggregate.yml'
+
+concurrency:
+  group: aggregate
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+env:
+  UPDATE_INTERVAL_MINUTES: "15"
+  FRESHNESS_GATE_MINUTES: "13"
+  PUBLISH_BRANCH: main
+  OUT_MARK: "[auto-output]"
+
+jobs:
+  aggregate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      # ── Freshness gate ────────────────────────────────────────────────
+      - name: Freshness gate
+        id: gate
+        run: |
+          FORCE="${{ github.event.inputs.force }}"
+          EVENT="${{ github.event_name }}"
+          if [ "$FORCE" = "true" ] || [ "$EVENT" = "workflow_dispatch" ] || \
+             [ "$EVENT" = "push" ]; then
+            echo "should_run=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          # Check remote index.json age
+          git fetch --depth=1 origin "$PUBLISH_BRANCH" 2>/dev/null || true
+          if git show FETCH_HEAD:index.json >/tmp/gate_index.json 2>/dev/null && \
+             [ -s /tmp/gate_index.json ]; then
+            AGE=$(python3 -c "
+import json, time
+d = json.load(open('/tmp/gate_index.json'))
+print(int(time.time() - d.get('updated_at_unix', 0)))
+" 2>/dev/null || echo "99999")
+            GATE_SEC=$((FRESHNESS_GATE_MINUTES * 60))
+            if [ "$AGE" -ge "$GATE_SEC" ]; then
+              echo "should_run=true" >> "$GITHUB_OUTPUT"
+            else
+              echo "should_run=false" >> "$GITHUB_OUTPUT"
+            fi
+          else
+            echo "should_run=true" >> "$GITHUB_OUTPUT"
+          fi
+          echo "Age: ${AGE:-unknown}s, Gate: ${GATE_SEC}s"
+
+      # ── Python setup ──────────────────────────────────────────────────
+      - name: Setup Python
+        if: steps.gate.outputs.should_run == 'true'
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install test dependencies
+        if: steps.gate.outputs.should_run == 'true'
+        run: python -m pip install --upgrade pip pytest
+
+      # ── Tests ─────────────────────────────────────────────────────────
+      - name: Run tests
+        if: steps.gate.outputs.should_run == 'true'
+        run: python -m pytest proxy_aggregator/tests/ -v --tb=short
+
+      # ── Run aggregation ───────────────────────────────────────────────
+      - name: Run aggregator
+        if: steps.gate.outputs.should_run == 'true'
+        run: python -m proxy_aggregator.aggregate --out .
+
+      # ── Publish ───────────────────────────────────────────────────────
+      - name: Publish outputs
+        if: steps.gate.outputs.should_run == 'true'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python scripts/publish.py --branch "$PUBLISH_BRANCH" --out-mark "$OUT_MARK"

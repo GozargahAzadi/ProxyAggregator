@@ -1,0 +1,57 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+pip-wheel-metadata/
+*.whl
+
+# Virtual environments
+venv/
+env/
+.venv/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Test artifacts
+coverage/
+.pytest_cache/
+htmlcov/
+
+# Generated outputs
+all/
+verified/
+fast/
+secure/
+heavy/
+light/
+protocols/
+archive/
+Countries/
+index.json
+health.json
+state.json
+top100.txt
+pipeline.json
+validation.json
+
+# Cache
+.cache/
+
+# Local config (secrets)
+.env
+.env.local
