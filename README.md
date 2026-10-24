@@ -1,22 +1,20 @@
 # ProxyAggregator
 
-A fully automated, stdlib-only proxy configuration aggregator that runs on GitHub Actions — no VPS, no database, no external dependencies.
-
-Inspired by [0xRadikal/Free-v2ray-Configs](https://github.com/0xRadikal/Free-v2ray-Configs) but built from scratch with zero external packages.
+A fully automated proxy configuration aggregator that runs on GitHub Actions — no VPS, no database, no permanently running server. Collects public proxy configs, deduplicates them by connection-relevant identity, verifies through-proxy connectivity using a pinned Xray-core binary, and publishes categorized feeds.
 
 ## Features
 
 - **Collect** from multiple public HTTP/HTTPS feeds
 - **Parse** VLESS, VMess, Trojan, Shadowsocks, Hysteria2 configs
 - **Deduplicate** using CDN-aware fingerprints
-- **Verify** with real TCP/TLS connectivity checks (3 rounds)
+- **Verify** with real through-proxy HTTP requests via Xray-core (3 rounds)
 - **Categorize** into `all`, `verified`, `fast`, `secure` buckets
 - **Export** to plain text, base64 subscriptions, JSON indexes
 - **Publish** via rolling-squash commits (O(1) git history growth)
 
 ## Requirements
 
-- Python 3.12+ (uses only standard library)
+- Python 3.12+ (core logic uses only standard library; Xray-core binary for L3 verification)
 - Git
 - GitHub repository with push access
 
@@ -77,11 +75,10 @@ state.json     Rolling yield history
 
 ## Limitations
 
-- **L3 verification** uses direct TCP/TLS checks, not full proxy tunneling (would require xray-core binary)
-- **No GeoIP** — country classification requires external database (optional in future)
+- **GeoIP** — country classification requires an external MaxMind database (optional in future)
 - **No Clash/Sing-box export** — YAML/JSON client configs need additional converters
-
-These are v1 tradeoffs for a stdlib-only, zero-dependency design.
+- **Hysteria2 verification unsupported** — QUIC (UDP) cannot be tested via HTTP tunnel; configs are structurally checked but never marked as `verified`
+- **Runner-dependent** — verification results reflect the network conditions of the GitHub Actions runner (US-based by default), not your local geography
 
 ## Project Structure
 
@@ -93,11 +90,11 @@ proxy_aggregator/
 ├── parsers.py           # Protocol detection, parsing, normalization
 ├── sources.py           # Source fetching with retries
 ├── dedup.py             # Fingerprint-based deduplication
-├── verification.py      # TCP/TLS verification
+├── verification.py      # Through-proxy verification via Xray-core + stdlib fallback
 ├── ranking.py           # Latency-based ranking
 ├── exporters.py         # Output file generation
 ├── aggregate.py         # Main pipeline orchestration
-└── tests/               # Test suite (89 tests)
+└── tests/               # Test suite (100+ tests)
     ├── test_models.py
     ├── test_parsers.py
     ├── test_sources.py

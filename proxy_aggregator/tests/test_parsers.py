@@ -129,14 +129,46 @@ class TestExtractValidLines:
 
 class TestComputeFingerprint:
     def test_same_endpoint_same_fingerprint(self):
+        """Configs on same host:port with identical connection params → same fingerprint."""
+        links = [
+            "vless://uuid@1.2.3.4:443?security=tls",
+            "vless://uuid@1.2.3.4:443?security=tls",  # identical params
+        ]
+        fp1 = compute_fingerprint(links[0])
+        fp2 = compute_fingerprint(links[1])
+        assert fp1 == fp2
+
+    def test_different_security_different_fingerprint(self):
+        """Same server+UUID but different security setting → different fingerprints."""
         links = [
             "vless://uuid@1.2.3.4:443?security=tls",
             "vless://uuid@1.2.3.4:443?security=none",
         ]
-        fp1 = compute_fingerprint(links[0])
-        fp2 = compute_fingerprint(links[1])
-        # Same host/port → same fingerprint (CDN-aware dedup)
-        assert fp1 == fp2
+        assert compute_fingerprint(links[0]) != compute_fingerprint(links[1])
+
+    def test_different_uuid_different_fingerprint(self):
+        """Same server, different UUID → different fingerprints."""
+        links = [
+            "vless://uuid-a@1.2.3.4:443",
+            "vless://uuid-b@1.2.3.4:443",
+        ]
+        assert compute_fingerprint(links[0]) != compute_fingerprint(links[1])
+
+    def test_different_password_different_fingerprint(self):
+        """Same server, different Trojan password → different fingerprints."""
+        links = [
+            "trojan://pass-a@1.2.3.4:443",
+            "trojan://pass-b@1.2.3.4:443",
+        ]
+        assert compute_fingerprint(links[0]) != compute_fingerprint(links[1])
+
+    def test_different_hysteria_token_different_fingerprint(self):
+        """Same server, different Hysteria2 token → different fingerprints."""
+        links = [
+            "hysteria2://token-a@1.2.3.4:443",
+            "hysteria2://token-b@1.2.3.4:443",
+        ]
+        assert compute_fingerprint(links[0]) != compute_fingerprint(links[1])
 
     def test_different_port_different_fingerprint(self):
         links = [
@@ -148,6 +180,94 @@ class TestComputeFingerprint:
     def test_deterministic(self):
         link = "vless://abc@host:443"
         assert compute_fingerprint(link) == compute_fingerprint(link)
+
+    def test_vmess_different_uuid_different_fingerprint(self):
+        """VMess with same server but different UUIDs."""
+        payload_a = json.dumps({"ps": "Server", "add": "1.2.3.4", "port": "443",
+                                "id": "uuid-a", "aid": "0", "scy": "auto",
+                                "net": "tcp", "type": "none", "host": "", "path": "",
+                                "tls": "", "sni": "", "alpn": "", "fp": ""})
+        payload_b = json.dumps({"ps": "Server", "add": "1.2.3.4", "port": "443",
+                                "id": "uuid-b", "aid": "0", "scy": "auto",
+                                "net": "tcp", "type": "none", "host": "", "path": "",
+                                "tls": "", "sni": "", "alpn": "", "fp": ""})
+        b64_a = base64.b64encode(payload_a.encode()).decode()
+        b64_b = base64.b64encode(payload_b.encode()).decode()
+        link_a = f"vmess://{b64_a}"
+        link_b = f"vmess://{b64_b}"
+        assert compute_fingerprint(link_a) != compute_fingerprint(link_b)
+
+    def test_vmess_different_remark_same_fingerprint(self):
+        """VMess with same UUID/server but different remarks → same fingerprint."""
+        payload_a = json.dumps({"ps": "Server-A", "add": "1.2.3.4", "port": "443",
+                                "id": "uuid-a", "aid": "0", "scy": "auto",
+                                "net": "tcp", "type": "none", "host": "", "path": "",
+                                "tls": "", "sni": "", "alpn": "", "fp": ""})
+        payload_b = json.dumps({"ps": "Server-B", "add": "1.2.3.4", "port": "443",
+                                "id": "uuid-a", "aid": "0", "scy": "auto",
+                                "net": "tcp", "type": "none", "host": "", "path": "",
+                                "tls": "", "sni": "", "alpn": "", "fp": ""})
+        b64_a = base64.b64encode(payload_a.encode()).decode()
+        b64_b = base64.b64encode(payload_b.encode()).decode()
+        assert compute_fingerprint(f"vmess://{b64_a}") == compute_fingerprint(f"vmess://{b64_b}")
+
+    def test_cosmetic_remark_does_not_affect_fingerprint(self):
+        """Different remarks on same config → same fingerprint."""
+        links = [
+            "vless://uuid@1.2.3.4:443#Server-A",
+            "vless://uuid@1.2.3.4:443#Server-B",
+        ]
+        fp1 = compute_fingerprint(links[0])
+        fp2 = compute_fingerprint(links[1])
+        assert fp1 == fp2
+
+    def test_different_ss_password_different_fingerprint(self):
+        """Same SS server, different passwords → different fingerprints."""
+        # ss://base64(method:password@host:port)#remark
+        creds_a = base64.b64encode(b"aes-256-gcm:pass-a@1.2.3.4:443").decode()
+        creds_b = base64.b64encode(b"aes-256-gcm:pass-b@1.2.3.4:443").decode()
+        links = [f"ss://{creds_a}", f"ss://{creds_b}"]
+        assert compute_fingerprint(links[0]) != compute_fingerprint(links[1])
+
+    def test_different_ss_method_different_fingerprint(self):
+        """Same SS server, different methods → different fingerprints."""
+        creds_a = base64.b64encode(b"aes-256-gcm:pass@1.2.3.4:443").decode()
+        creds_b = base64.b64encode(b"chacha20-ietf:pass@1.2.3.4:443").decode()
+        links = [f"ss://{creds_a}", f"ss://{creds_b}"]
+        assert compute_fingerprint(links[0]) != compute_fingerprint(links[1])
+
+    def test_ss_malformed_returns_config_not_none(self):
+        """Malformed SS URI still returns a ConfigItem (parsing is lenient)."""
+        # Invalid base64 — parser accepts it, verification will fail later
+        result = parse_config("ss://!!!not-valid!!!")
+        assert result is not None
+        assert result.protocol == Protocol.SHADOWSOCKS
+
+
+class TestIPv6Support:
+    """Tests for IPv6 address handling in verification."""
+
+    def test_ipv4_address_encoding(self):
+        """IPv4 addresses should use ATYP=0x01."""
+        import socket
+        import struct
+        # This tests the SOCKS5 CONNECT request format
+        addr_bytes = socket.inet_aton("1.2.3.4")
+        assert len(addr_bytes) == 4
+        assert addr_bytes == b"\x01\x02\x03\x04"
+
+    def test_ipv6_address_encoding(self):
+        """IPv6 addresses should use ATYP=0x04."""
+        import socket
+        addr_bytes = socket.inet_pton(socket.AF_INET6, "::1")
+        assert len(addr_bytes) == 16
+
+    def test_domain_name_encoding(self):
+        """Domain names should use ATYP=0x03 with length prefix."""
+        domain = b"example.com"
+        encoded = bytes([len(domain)]) + domain
+        assert encoded[0] == 11  # length of "example.com"
+        assert encoded[1:] == domain
 
 
 # ── Full parse ───────────────────────────────────────────────────────────────

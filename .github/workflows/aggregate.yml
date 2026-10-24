@@ -2,8 +2,7 @@
 #
 # Runs on GitHub Actions, collects public proxy configs, verifies them,
 # and publishes results to the default branch.
-# No external dependencies required (stdlib-only Python).
-# No VPS, no database server.
+# Xray-core binary is pinned and SHA-256 verified before execution.
 
 name: ProxyAggregator
 
@@ -25,7 +24,7 @@ on:
 
 concurrency:
   group: aggregate
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 permissions:
   contents: write
@@ -35,6 +34,12 @@ env:
   FRESHNESS_GATE_MINUTES: "13"
   PUBLISH_BRANCH: main
   OUT_MARK: "[auto-output]"
+  # Xray-core pin — latest stable as of 2026-10-21
+  # When updating XRAY_VERSION, independently verify XRAY_SHA256 by downloading
+  # the release zip and running: sha256sum Xray-linux-64.zip
+  XRAY_VERSION: "v26.10.21"
+  XRAY_BIN_PATH: ".cache/xray"
+  XRAY_SHA256: "0eec3ed4163c273d8c8bf821f7d219e257921cf584aa3fb970715e458e631978"
 
 jobs:
   aggregate:
@@ -58,7 +63,6 @@ jobs:
             echo "should_run=true" >> "$GITHUB_OUTPUT"
             exit 0
           fi
-          # Check remote index.json age
           git fetch --depth=1 origin "$PUBLISH_BRANCH" 2>/dev/null || true
           if git show FETCH_HEAD:index.json >/tmp/gate_index.json 2>/dev/null && \
              [ -s /tmp/gate_index.json ]; then
@@ -89,6 +93,44 @@ print(int(time.time() - d.get('updated_at_unix', 0)))
         if: steps.gate.outputs.should_run == 'true'
         run: python -m pip install --upgrade pip pytest
 
+      # ── Xray-core binary (pinned + SHA-256 verified) ──────────────────
+      - name: Download Xray-core
+        if: steps.gate.outputs.should_run == 'true'
+        env:
+          XRAY_URL: "https://github.com/XTLS/Xray-core/releases/download/${{ env.XRAY_VERSION }}/Xray-linux-64.zip"
+        run: |
+          set -euo pipefail
+          mkdir -p .cache
+          ZIP=".cache/Xray-linux-64.zip"
+          BIN=".cache/xray"
+          if [ ! -f "$BIN" ]; then
+            echo "Downloading Xray-core ${{ env.XRAY_VERSION }} ..."
+            curl -fsSL --retry 3 --retry-delay 2 --connect-timeout 15 --max-time 120 \
+              "$XRAY_URL" -o "$ZIP"
+            GOT=$(sha256sum "$ZIP" | cut -d' ' -f1)
+            if [ "$GOT" != "${{ env.XRAY_SHA256 }}" ]; then
+              echo "::error::Xray-core zip checksum mismatch (tampered or corrupt)"
+              echo "  expected ${{ env.XRAY_SHA256 }}"
+              echo "  actual   $GOT"
+              rm -f "$ZIP"
+              exit 1
+            fi
+            echo "  sha256 verified ✓"
+            unzip -q -o "$ZIP" xray -d .cache
+            chmod +x "$BIN"
+            rm -f "$ZIP"
+          else
+            echo "Using cached Xray-core binary"
+          fi
+          # Always verify the binary before use
+          GOT_BIN=$(sha256sum "$BIN" | cut -d' ' -f1)
+          if [ "$GOT_BIN" != "${{ env.XRAY_SHA256 }}" ]; then
+            echo "::error::Xray-core binary checksum mismatch after extraction"
+            exit 1
+          fi
+          echo "  binary sha256 verified ✓"
+          .cache/xray version
+
       # ── Tests ─────────────────────────────────────────────────────────
       - name: Run tests
         if: steps.gate.outputs.should_run == 'true'
@@ -97,6 +139,8 @@ print(int(time.time() - d.get('updated_at_unix', 0)))
       # ── Run aggregation ───────────────────────────────────────────────
       - name: Run aggregator
         if: steps.gate.outputs.should_run == 'true'
+        env:
+          XRAY_BIN: ".cache/xray"
         run: python -m proxy_aggregator.aggregate --out .
 
       # ── Publish ───────────────────────────────────────────────────────

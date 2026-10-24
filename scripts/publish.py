@@ -57,10 +57,10 @@ def main() -> int:
     args = parser.parse_args()
 
     # Check required outputs exist
+    # Note: clash.yaml and singbox.json are not yet implemented — remove once converters are added
     must_exist = [
         "index.json", "health.json",
         "all/configs.txt", "all/configs_base64.txt",
-        "all/clash.yaml", "all/singbox.json",
     ]
     missing = [f for f in must_exist if not os.path.exists(f) or not os.path.getsize(f)]
     if missing:
@@ -108,7 +108,7 @@ def main() -> int:
 
     # Force push with lease
     try:
-        run(["git", "push", "origin", "HEAD", args.branch,
+        run(["git", "push", "origin", f"HEAD:refs/heads/{args.branch}",
              "--force-with-lease"], check=True)
         print(f"✅ Published to {args.branch}")
         return 0
