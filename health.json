@@ -1,0 +1,90 @@
+{
+  "run": {
+    "started_at": 15901.7889189,
+    "elapsed_sec": 98.47,
+    "sources": [
+      {
+        "url": "https://raw.githubusercontent.com/4n0nymou3/multi-proxy-config-fetcher/refs/heads/main/configs/proxy_configs.txt",
+        "status": "ok",
+        "http_code": 200,
+        "duration_sec": 4.14,
+        "config_count": 0,
+        "error": null,
+        "retry_count": 0
+      },
+      {
+        "url": "https://raw.githubusercontent.com/roosterkid/openproxylist/refs/heads/main/V2RAY_RAW.txt",
+        "status": "ok",
+        "http_code": 200,
+        "duration_sec": 4.33,
+        "config_count": 0,
+        "error": null,
+        "retry_count": 0
+      },
+      {
+        "url": "https://raw.githubusercontent.com/iampedii/whitedns-sub/main/base64.txt",
+        "status": "ok",
+        "http_code": 200,
+        "duration_sec": 4.9,
+        "config_count": 200,
+        "error": null,
+        "retry_count": 0
+      },
+      {
+        "url": "https://raw.githubusercontent.com/ALIILAPRO/v2rayNG-Config/main/server.txt",
+        "status": "ok",
+        "http_code": 200,
+        "duration_sec": 12.83,
+        "config_count": 0,
+        "error": null,
+        "retry_count": 0
+      },
+      {
+        "url": "https://raw.githubusercontent.com/Epodonios/v2ray-configs/main/All_Configs_Sub.txt",
+        "status": "ok",
+        "http_code": 200,
+        "duration_sec": 16.0,
+        "config_count": 0,
+        "error": null,
+        "retry_count": 0
+      }
+    ],
+    "total_configs": 200,
+    "unique_configs": 167,
+    "duplicates_removed": 33,
+    "broken_removed": 0,
+    "verified_count": 0,
+    "fast_count": 0,
+    "secure_count": 0,
+    "top_count": 0,
+    "cascade": {
+      "rounds": 3,
+      "ever_ok": 0,
+      "stable": 0,
+      "per_round_ok": [
+        0,
+        0,
+        0
+      ],
+      "structural_only_total": 486
+    },
+    "runner_exit_country": null
+  },
+  "cascade": {
+    "rounds": 3,
+    "ever_ok": 0,
+    "stable": 0,
+    "per_round_ok": [
+      0,
+      0,
+      0
+    ],
+    "structural_only_total": 486
+  },
+  "latency_stats": {
+    "count": 0,
+    "min": null,
+    "median": null,
+    "max": null
+  }
+}

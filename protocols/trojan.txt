@@ -1,0 +1,4 @@
+trojan://Trojan@82164024@ca.tronsg.com:443?sni=ca.tronsg.com&allowInsecure=1&type=tcp&fp=chrome#%F0%9F%87%A8%F0%9F%87%A6%20%7C%20%40WhiteDNS%20%7C%20CA67%7C2.5MB%2Fs%7CDNSOK%7CGPT%E2%81%BA-CA
+trojan://e26a229d-e8f2-4ff9-8c7d-58a9d83ee437@139.180.146.200:8886?sni=139.180.146.200&allowInsecure=1&type=tcp&fp=chrome#%F0%9F%87%B8%F0%9F%87%AC%20%7C%20%40WhiteDNS%20%7C%20SG197%7C2.6MB%2Fs%7CDNSOK%7CGPT%E2%81%BA-SG
+trojan://e56e752c86a640cd@gu232.izzzzzi.com:20052?sni=gu232.izzzzzi.com&type=tcp&fp=chrome#%F0%9F%87%B9%F0%9F%87%BC%20%7C%20%40WhiteDNS%20%7C%20TW11%7C1.6MB%2Fs%7CDNSOK%7CGPT%E2%81%BA-TW
+trojan://ee844c5ef7504bcf@jus134.pacemakere.com:20017?sni=jus134.pacemakere.com&type=tcp&fp=chrome#%F0%9F%87%BA%F0%9F%87%B8%20%7C%20%40WhiteDNS%20%7C%20US619%7C1.5MB%2Fs%7CDNSOK%7CGPT%E2%81%BA-US
