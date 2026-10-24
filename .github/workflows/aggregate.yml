@@ -35,11 +35,14 @@ env:
   PUBLISH_BRANCH: main
   OUT_MARK: "[auto-output]"
   # Xray-core pin — latest stable as of 2026-10-21
-  # When updating XRAY_VERSION, independently verify XRAY_SHA256 by downloading
-  # the release zip and running: sha256sum Xray-linux-64.zip
+  # When updating XRAY_VERSION, independently verify both SHA-256 values:
+  #   sha256sum Xray-linux-64.zip     (zip artifact hash)
+  #   sha256sum .cache/xray           (extracted binary hash, after unzip)
   XRAY_VERSION: "v26.10.21"
   XRAY_BIN_PATH: ".cache/xray"
-  XRAY_SHA256: "0eec3ed4163c273d8c8bf821f7d219e257921cf584aa3fb970715e458e631978"
+  XRAY_ZIP_SHA256: "0eec3ed4163c273d8c8bf821f7d219e257921cf584aa3fb970715e458e631978"
+  # Verified against Xray-linux-64.zip.dgst from v26.10.21 release (2026-10-21)
+  XRAY_BIN_SHA256: "a9a53b08d10818df10d0464dfed36878344faa9e0c5215f3e5b5b09f68f94f5f"
 
 jobs:
   aggregate:
@@ -66,11 +69,7 @@ jobs:
           git fetch --depth=1 origin "$PUBLISH_BRANCH" 2>/dev/null || true
           if git show FETCH_HEAD:index.json >/tmp/gate_index.json 2>/dev/null && \
              [ -s /tmp/gate_index.json ]; then
-            AGE=$(python3 -c "
-import json, time
-d = json.load(open('/tmp/gate_index.json'))
-print(int(time.time() - d.get('updated_at_unix', 0)))
-" 2>/dev/null || echo "99999")
+            AGE=$(python3 -c "import json,time;d=json.load(open('/tmp/gate_index.json'));print(int(time.time()-d.get('updated_at_unix',0)))" 2>/dev/null || echo "99999")
             GATE_SEC=$((FRESHNESS_GATE_MINUTES * 60))
             if [ "$AGE" -ge "$GATE_SEC" ]; then
               echo "should_run=true" >> "$GITHUB_OUTPUT"
@@ -100,6 +99,11 @@ print(int(time.time() - d.get('updated_at_unix', 0)))
           XRAY_URL: "https://github.com/XTLS/Xray-core/releases/download/${{ env.XRAY_VERSION }}/Xray-linux-64.zip"
         run: |
           set -euo pipefail
+          # Binary checksum is required — fail if not configured
+          if [ -z "${{ env.XRAY_BIN_SHA256 }}" ]; then
+            echo "::error::XRAY_BIN_SHA256 is not set; binary integrity verification is disabled"
+            exit 1
+          fi
           mkdir -p .cache
           ZIP=".cache/Xray-linux-64.zip"
           BIN=".cache/xray"
@@ -107,25 +111,27 @@ print(int(time.time() - d.get('updated_at_unix', 0)))
             echo "Downloading Xray-core ${{ env.XRAY_VERSION }} ..."
             curl -fsSL --retry 3 --retry-delay 2 --connect-timeout 15 --max-time 120 \
               "$XRAY_URL" -o "$ZIP"
-            GOT=$(sha256sum "$ZIP" | cut -d' ' -f1)
-            if [ "$GOT" != "${{ env.XRAY_SHA256 }}" ]; then
+            GOT_ZIP=$(sha256sum "$ZIP" | cut -d' ' -f1)
+            if [ "$GOT_ZIP" != "${{ env.XRAY_ZIP_SHA256 }}" ]; then
               echo "::error::Xray-core zip checksum mismatch (tampered or corrupt)"
-              echo "  expected ${{ env.XRAY_SHA256 }}"
-              echo "  actual   $GOT"
+              echo "  expected ${{ env.XRAY_ZIP_SHA256 }}"
+              echo "  actual   $GOT_ZIP"
               rm -f "$ZIP"
               exit 1
             fi
-            echo "  sha256 verified ✓"
+            echo "  zip sha256 verified ✓"
             unzip -q -o "$ZIP" xray -d .cache
             chmod +x "$BIN"
             rm -f "$ZIP"
           else
             echo "Using cached Xray-core binary"
           fi
-          # Always verify the binary before use
+          # Always verify the extracted binary before use
           GOT_BIN=$(sha256sum "$BIN" | cut -d' ' -f1)
-          if [ "$GOT_BIN" != "${{ env.XRAY_SHA256 }}" ]; then
+          if [ "$GOT_BIN" != "${{ env.XRAY_BIN_SHA256 }}" ]; then
             echo "::error::Xray-core binary checksum mismatch after extraction"
+            echo "  expected ${{ env.XRAY_BIN_SHA256 }}"
+            echo "  actual   $GOT_BIN"
             exit 1
           fi
           echo "  binary sha256 verified ✓"
